@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: injectionlab-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: injectionlab-api
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongodb:27017/injectionlab
+      - JWT_SECRET=injectionlab_super_secret_jwt_key_2024_change_in_production
+      - JWT_REFRESH_SECRET=injectionlab_refresh_secret_2024_change_in_production
+      - JWT_EXPIRES_IN=15m
+      - JWT_REFRESH_EXPIRES_IN=7d
+      - NODE_ENV=production
+      - FRONTEND_URL=http://localhost:3000
+    depends_on:
+      - mongodb
+
+  frontend:
+    build: ./frontend
+    container_name: injectionlab-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000/api
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:

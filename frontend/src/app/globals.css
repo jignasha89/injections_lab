@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cyber-bg: #ffffff;
+  --color-cyber-card: #f8fafc;
+  --color-cyber-border: #cbd5e1;
+  --color-cyber-primary: #09090b;
+  --color-cyber-accent: #2563eb;
+  --color-cyber-purple: #1d4ed8;
+  --color-cyber-success: #16a34a;
+  --color-cyber-warning: #ea580c;
+  --color-cyber-danger: #dc2626;
+}
+
+html {
+  font-size: 20px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 22px;
+  }
+}
+
+@media (min-width: 1200px) {
+  html {
+    font-size: 24px;
+  }
+}
+
+@media (min-width: 1600px) {
+  html {
+    font-size: 26px;
+  }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #09090b;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar for Light Cyber Theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
+}
+
+/* Light Translucent Panel Utility */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(9, 9, 11, 0.08);
+}
+
+.glass-panel-glow {
+  box-shadow: 0 0 15px rgba(37, 99, 235, 0.08);
+}
+
+.text-glow {
+  text-shadow: 0 0 6px rgba(37, 99, 235, 0.2);
+}
+
+.text-glow-purple {
+  text-shadow: 0 0 6px rgba(29, 78, 216, 0.2);
+}
