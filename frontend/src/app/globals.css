@@ -1,83 +1,77 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cyber-bg: #ffffff;
-  --color-cyber-card: #f8fafc;
-  --color-cyber-border: #cbd5e1;
-  --color-cyber-primary: #09090b;
-  --color-cyber-accent: #2563eb;
-  --color-cyber-purple: #1d4ed8;
-  --color-cyber-success: #16a34a;
-  --color-cyber-warning: #ea580c;
-  --color-cyber-danger: #dc2626;
+  --color-cyber-bg: #050508;
+  --color-cyber-card: #0d0e15;
+  --color-cyber-border: #1e2230;
+  --color-cyber-primary: #ffffff;
+  --color-cyber-accent: #00f0ff;
+  --color-cyber-purple: #9d4edd;
+  --color-cyber-success: #00ff88;
+  --color-cyber-warning: #ffb703;
+  --color-cyber-danger: #ff2a5f;
 }
 
 html {
-  font-size: 20px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 22px;
-  }
-}
-
-@media (min-width: 1200px) {
-  html {
-    font-size: 24px;
-  }
-}
-
-@media (min-width: 1600px) {
-  html {
-    font-size: 26px;
-  }
+  font-size: 16px;
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #09090b;
+  --background: #050508;
+  --foreground: #f8fafc;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
 }
 
-/* Custom Scrollbar for Light Cyber Theme */
+/* Official Logo High-Res Display */
+.dark-logo {
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.35));
+}
+
+/* Custom Scrollbar for Dark Cyberpunk Theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #0a0b10;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #1e2235;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2563eb;
+  background: #00f0ff;
 }
 
-/* Light Translucent Panel Utility */
+/* Dark Glassmorphism Panel Utility */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(9, 9, 11, 0.08);
+  background: rgba(13, 14, 21, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-panel-glow {
-  box-shadow: 0 0 15px rgba(37, 99, 235, 0.08);
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.12);
 }
 
 .text-glow {
-  text-shadow: 0 0 6px rgba(37, 99, 235, 0.2);
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+.text-glow-green {
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
 }
 
 .text-glow-purple {
-  text-shadow: 0 0 6px rgba(29, 78, 216, 0.2);
+  text-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
 }
+

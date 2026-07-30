@@ -107,6 +107,30 @@ export const usersStore: MemoryUser[] = [
     ],
     createdAt: new Date(),
   },
+  // ── Public Demo Account (safe to share with anyone) ──
+  {
+    _id: 'public_demo_id',
+    username: 'InjectionLab Demo',
+    email: 'open@gmail.com',
+    passwordHash: bcrypt.hashSync('open@123', 12),
+    role: 'student',
+    progress: labsData.map((lab, i) => ({
+      labSlug: lab.slug,
+      completed: i < 5,
+      quizScore: i < 5 ? 70 + i * 5 : 0,
+      completedAt: i < 5 ? new Date(Date.now() - (5 - i) * 24 * 60 * 60 * 1000) : undefined,
+      bookmarked: i === 1 || i === 7,
+    })),
+    achievements: [{ id: 'first_lab', earnedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) }],
+    notes: [
+      {
+        labSlug: 'sql-injection-classic',
+        content: 'Classic SQLi: try \' OR \'1\'=\'1\'-- in any login field to bypass authentication.',
+        updatedAt: new Date(),
+      },
+    ],
+    createdAt: new Date(),
+  },
 ];
 
 export const reportsStore: MemoryReport[] = [

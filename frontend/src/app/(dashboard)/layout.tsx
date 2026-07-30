@@ -15,17 +15,14 @@ export default function DashboardLayout({
   const router = useRouter();
   const { token, setAuth, setProgress, setAchievements, setNotes } = useStore();
   const [loading, setLoading] = useState(true);
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // 1. Client-side authentication check
     if (!token) {
       router.push('/login');
       return;
     }
 
-    // 2. Load user stats, progress, achievements, notes from backend
     const loadUserData = async () => {
       try {
         const [meRes, progRes, notesRes] = await Promise.all([
@@ -41,7 +38,6 @@ export default function DashboardLayout({
         setLoading(false);
       } catch (err) {
         console.error('Failed to sync user session:', err);
-        // If API fails, fall back to offline/localStorage but proceed
         setLoading(false);
       }
     };
@@ -51,33 +47,34 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-cyber-bg text-cyber-accent">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-t-cyber-accent border-r-transparent border-l-transparent border-b-cyber-purple rounded-full animate-spin" />
-          <p className="text-sm font-mono tracking-widest uppercase animate-pulse">Initializing Lab Environment...</p>
+      <div className="flex h-screen w-screen items-center justify-center bg-[#050508] text-cyan-400 font-mono">
+        <div className="flex flex-col items-center gap-4 p-8 rounded-2xl bg-[#0a0b10] border border-zinc-800 shadow-[0_0_30px_rgba(0,240,255,0.15)]">
+          <div className="w-10 h-10 border-4 border-t-cyan-400 border-r-transparent border-l-transparent border-b-purple-500 rounded-full animate-spin" />
+          <p className="text-xs tracking-widest uppercase animate-pulse text-zinc-300">Initializing InjectionLab Environment...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-cyber-bg text-slate-800">
+    <div className="flex min-h-screen bg-[#050508] text-zinc-100 font-sans selection:bg-cyan-500 selection:text-black">
       {/* Mobile Sidebar Overlay Backdrop */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/40 z-40 lg:hidden backdrop-blur-sm transition-opacity duration-300"
+          className="fixed inset-0 bg-black/70 z-40 lg:hidden backdrop-blur-md transition-opacity duration-300"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
       
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#050508]">
         <Navbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-        <main className="flex-1 p-6 md:p-10 overflow-y-auto max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
           {children}
         </main>
       </div>
     </div>
   );
 }
+

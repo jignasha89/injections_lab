@@ -2,52 +2,89 @@
 
 import { useState } from 'react';
 import { api } from '@/lib/api';
-import { motion } from 'framer-motion';
-import { 
-  Scan, 
-  ShieldAlert, 
-  CheckCircle, 
-  AlertTriangle, 
-  Server, 
-  HelpCircle, 
-  Save, 
-  ChevronDown, 
-  ChevronUp, 
-  Globe 
+import {
+  Scan,
+  ShieldAlert,
+  CheckCircle,
+  AlertTriangle,
+  Server,
+  Save,
+  ChevronDown,
+  ChevronUp,
+  Globe,
+  Code2,
+  Target,
+  Zap,
+  Shield,
+  Eye,
+  BookOpen,
 } from 'lucide-react';
-import Link from 'next/link';
 
 interface Finding {
   type: string;
+  injectionFamily: string;
   location: string;
   parameter?: string;
+  paramValue?: string;
   severity: 'Critical' | 'High' | 'Medium' | 'Low' | 'Info';
+  confidence: 'Confirmed' | 'Likely' | 'Possible' | 'Low';
   cvss: number;
   cwe: string;
   owasp: string;
   description: string;
+  evidence: string;
+  pocPayload: string;
   recommendation: string;
 }
 
 interface ScanResult {
   targetUrl: string;
+  scanTimestamp: string;
   parameters: string[];
+  paramValues: Record<string, string>;
   pathSegments: string[];
+  domain: string;
+  techStackClues: string[];
   potentialInjectionPoints: {
     type: string;
     location: string;
     risk: string;
+    reason: string;
   }[];
   findings: Finding[];
-  techStackClues: string[];
   summary: {
     totalPages: number;
     injectionPoints: number;
     parameters: number;
     riskScore: number;
+    highestSeverity: string;
     owaspCoverage: string[];
+    familiesTested: string[];
+    injectionFamilyCounts: Record<string, number>;
   };
 }
+
+const SEV_STYLES: Record<string, string> = {
+  Critical: 'text-rose-400 border-rose-500/40 bg-rose-500/10',
+  High: 'text-orange-400 border-orange-500/40 bg-orange-500/10',
+  Medium: 'text-yellow-400 border-yellow-500/40 bg-yellow-500/10',
+  Low: 'text-cyan-400 border-cyan-500/40 bg-cyan-500/10',
+  Info: 'text-zinc-400 border-zinc-700/60 bg-zinc-800/50',
+};
+
+const CONFIDENCE_STYLES: Record<string, string> = {
+  Confirmed: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+  Likely: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
+  Possible: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
+  Low: 'text-zinc-400 bg-zinc-800 border-zinc-700',
+};
+
+const FAMILY_COLORS: Record<string, string> = {
+  'SQL/NoSQL Injection': 'text-rose-300',
+  'Client-Side / XSS': 'text-amber-300',
+  'Server-Side / Code Execution': 'text-purple-300',
+  'Protocol / Header / Log / AI Injection': 'text-cyan-300',
+};
 
 export default function ScannerPage() {
   const [url, setUrl] = useState('');
@@ -58,12 +95,39 @@ export default function ScannerPage() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [expandedFinding, setExpandedFinding] = useState<number | null>(null);
+  const [filterFamily, setFilterFamily] = useState<string>('All');
 
-  // Preset vulnerable urls for user convenience
   const presets = [
-    { name: 'Vulnerable Portal', url: 'http://localhost:3000/labs/crlf-injection?redirect=https://safe.com' },
-    { name: 'SMTP Injection Lab', url: 'http://localhost:3000/labs/smtp-injection?to=admin@myapp.com' },
-    { name: 'Log4Shell Simulator', url: 'http://localhost:3000/labs/log4shell?ua=jndi:ldap://test' },
+    {
+      name: 'PHP Admin Portal',
+      url: 'http://vuln-app.test/admin/login.php?username=admin&password=test&redirect=/dashboard',
+      tag: 'SQLi + Auth',
+    },
+    {
+      name: 'Search + Redirect',
+      url: 'https://example.com/search?q=test&redirect=https://safe.com&id=1&page=home',
+      tag: 'XSS + Redirect',
+    },
+    {
+      name: 'File Include Portal',
+      url: 'http://vuln.test/index.php?file=contact&template=home&page=about&lang=en',
+      tag: 'LFI + SSTI',
+    },
+    {
+      name: 'REST API Endpoint',
+      url: 'https://api.target.com/api/v1/users?id=5&sort=name&filter=active&token=abc123',
+      tag: 'NoSQL + HPP',
+    },
+    {
+      name: 'AI Chat Interface',
+      url: 'https://ai-app.test/api/chat?prompt=hello&model=gpt4&url=https://source.com',
+      tag: 'Prompt Injection',
+    },
+    {
+      name: 'Email & Log System',
+      url: 'http://app.test/contact?to=admin@site.com&subject=test&log=event&ua=Mozilla',
+      tag: 'SMTP + Log',
+    },
   ];
 
   const handleScan = async (e: React.FormEvent) => {
@@ -71,6 +135,8 @@ export default function ScannerPage() {
     setError('');
     setResult(null);
     setSaveSuccess(false);
+    setExpandedFinding(null);
+    setFilterFamily('All');
 
     if (!authorized) {
       setError('You must confirm authorized permission to inspect the target.');
@@ -78,7 +144,6 @@ export default function ScannerPage() {
     }
 
     setLoading(true);
-
     try {
       const res = await api.post('/scanner/analyze', { url, authorized });
       setResult(res.data);
@@ -94,10 +159,9 @@ export default function ScannerPage() {
     if (!result) return;
     setSaving(true);
     setSaveSuccess(false);
-
     try {
       await api.post('/reports/generate', {
-        title: `Safe Inspection - ${new URL(result.targetUrl).hostname}`,
+        title: `Heuristic Scan — ${result.domain}`,
         targetUrl: result.targetUrl,
         scanType: 'url',
         summary: result.summary,
@@ -107,279 +171,350 @@ export default function ScannerPage() {
       setSaveSuccess(true);
     } catch (err) {
       console.error(err);
-      setError('Failed to save report to server logs.');
+      setError('Failed to save report.');
     } finally {
       setSaving(false);
     }
   };
 
-  const toggleFinding = (index: number) => {
-    setExpandedFinding(expandedFinding === index ? null : index);
-  };
+  const filteredFindings = result?.findings.filter(
+    (f) => filterFamily === 'All' || f.injectionFamily === filterFamily
+  ) ?? [];
+
+  const families = result
+    ? ['All', ...Object.keys(result.summary.injectionFamilyCounts)]
+    : ['All'];
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500 text-slate-800">
+    <div className="space-y-8 animate-in fade-in duration-500 text-zinc-100 font-sans">
       {/* Page Header */}
       <div>
-        <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">Target Inspector</h2>
-        <p className="text-slate-600 text-base mt-1.5 font-semibold">
-          Perform safe, structural, and educational analysis of routes to identify parameters, forms, and vulnerability mappings.
+        <h2 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-3">
+          Injection Scanner{' '}
+          <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold">
+            55 Injection Modules
+          </span>
+        </h2>
+        <p className="text-zinc-400 text-sm mt-1.5 font-mono">
+          Heuristic URL parser detecting SQL/NoSQL, XSS, Command Injection, SSRF, Prompt Injection &amp; more — no real exploit payloads sent.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* URL Scanner Setup Card */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-            <h3 className="text-base font-bold tracking-wider text-slate-800 uppercase border-b border-slate-100 pb-2">
+        {/* ── Left: Config ── */}
+        <div className="lg:col-span-1 space-y-5">
+          {/* Scan Form */}
+          <div className="bg-[#0c0d14] p-6 rounded-2xl border border-zinc-800/80 shadow-2xl space-y-5">
+            <h3 className="text-xs font-mono font-bold tracking-wider text-cyan-400 uppercase border-b border-zinc-800/80 pb-2">
               Configure Target
             </h3>
 
-            <form onSubmit={handleScan} className="space-y-5">
+            <form onSubmit={handleScan} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                  Target Endpoint URL
+                <label className="block text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                  Target URL
                 </label>
                 <div className="relative">
                   <input
                     type="url"
                     required
-                    placeholder="https://example.com/login"
+                    placeholder="https://target.com/page?id=1&user=admin"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3.5 rounded-2xl text-sm bg-slate-50 border border-slate-200 text-slate-955 placeholder-slate-450 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl text-xs font-mono bg-[#050508] border border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:bg-[#0a0b12] focus:border-cyan-500/50 focus:outline-none transition"
                   />
-                  <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400" />
+                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                 </div>
               </div>
 
-              {/* Consent Toggle */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3 shadow-inner">
+              <div className="p-3.5 rounded-xl bg-[#050508] border border-zinc-800 flex items-start gap-2.5">
                 <input
                   type="checkbox"
                   id="authorized"
                   checked={authorized}
                   onChange={(e) => setAuthorized(e.target.checked)}
-                  className="mt-1 h-5 w-5 rounded-md border-slate-300 text-blue-600 focus:ring-blue-500 focus:ring-2"
+                  className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-cyan-500 focus:ring-cyan-500/40"
                 />
-                <label htmlFor="authorized" className="text-xs font-bold text-slate-655 text-slate-600 cursor-pointer select-none leading-relaxed">
-                  I confirm that I have explicit authorization to audit and inspect this target website or application.
+                <label htmlFor="authorized" className="text-xs text-zinc-300 cursor-pointer select-none leading-relaxed">
+                  I confirm I have authorized permission to test this target endpoint.
                 </label>
               </div>
 
-              {error && <p className="text-xs font-bold text-red-600">{error}</p>}
+              {error && <p className="text-xs font-mono font-bold text-rose-400">{error}</p>}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 rounded-2xl text-sm font-bold bg-slate-950 text-white shadow-md hover:bg-slate-900 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl text-xs font-mono font-bold bg-cyan-500 hover:bg-cyan-400 text-black shadow-[0_0_20px_rgba(0,240,255,0.25)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
-                    <div className="w-4.5 h-4.5 border-2 border-t-white border-r-transparent border-l-transparent border-b-white rounded-full animate-spin" />
-                    Analyzing Target...
+                    <div className="w-4 h-4 border-2 border-t-black border-r-transparent border-l-transparent border-b-black rounded-full animate-spin" />
+                    Analyzing Parameters...
                   </>
                 ) : (
                   <>
-                    <Scan className="w-4.5 h-4.5" />
-                    Execute Safe Scan
+                    <Scan className="w-4 h-4" />
+                    Run Injection Scan
                   </>
                 )}
               </button>
             </form>
 
-            <div className="border-t border-slate-200 pt-4">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-                Built-in Demo Presets
+            {/* Presets */}
+            <div className="border-t border-zinc-800/80 pt-4">
+              <h4 className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider mb-2.5">
+                Demo Targets
               </h4>
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {presets.map((preset) => (
                   <button
                     key={preset.name}
-                    onClick={() => {
-                      setUrl(preset.url);
-                      setAuthorized(true);
-                    }}
-                    className="w-full text-left px-4 py-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 transition-all text-xs flex justify-between items-center shadow-sm"
+                    onClick={() => { setUrl(preset.url); setAuthorized(true); }}
+                    className="w-full text-left px-3 py-2.5 rounded-xl bg-[#050508] hover:bg-zinc-900/60 border border-zinc-800 transition-all"
                   >
-                    <span className="font-bold text-slate-800">{preset.name}</span>
-                    <span className="font-mono text-[10px] text-slate-500 truncate max-w-[155px] font-bold">{preset.url}</span>
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="font-mono font-bold text-xs text-zinc-200">{preset.name}</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">{preset.tag}</span>
+                    </div>
+                    <p className="text-[10px] font-mono text-zinc-600 truncate">{preset.url}</p>
                   </button>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Educational Disclaimer Panel */}
-          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-2 shadow-sm">
-            <div className="flex items-center gap-2 font-bold text-amber-800">
-              <ShieldAlert className="w-5 h-5 shrink-0" />
-              <span>SAFETY NOTICE</span>
+          {/* Warning Card */}
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300 space-y-2">
+            <div className="flex items-center gap-2 font-mono font-bold">
+              <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>EDUCATIONAL USE ONLY</span>
             </div>
-            <p className="font-semibold leading-relaxed">
-              This tool performs passive analysis by parsing path variables and parameters. It does NOT send malicious payloads or run exploits. It exists to map routing points to educational CWE modules.
+            <p className="text-zinc-300 text-[11px] leading-relaxed">
+              This engine performs passive structural heuristic analysis. No exploit payloads or real HTTP requests are sent to target systems.
             </p>
           </div>
         </div>
 
-        {/* Results Screen */}
+        {/* ── Right: Results ── */}
         <div className="lg:col-span-2">
           {!result && !loading && (
-            <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm flex flex-col items-center justify-center min-h-[400px]">
-              <div className="p-4.5 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 mb-4 shadow-sm">
+            <div className="bg-[#0c0d14] rounded-2xl p-12 text-center border border-zinc-800/80 flex flex-col items-center justify-center min-h-[420px]">
+              <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 mb-4">
                 <Scan className="w-8 h-8 animate-pulse" />
               </div>
-              <h3 className="font-bold text-lg text-slate-900">No Target Inspected</h3>
-              <p className="text-sm text-slate-500 mt-2 max-w-sm font-bold leading-relaxed">
-                Enter an authorized URL or choose a demo lab configuration to map structural vulnerabilities.
+              <h3 className="font-mono font-bold text-base text-white">No Scan Running</h3>
+              <p className="text-xs text-zinc-400 mt-2 max-w-sm leading-relaxed">
+                Enter a URL with query parameters (e.g. <span className="text-cyan-400 font-mono">?id=1&user=admin</span>) to detect injection vulnerabilities across 55 attack categories.
               </p>
+              <div className="mt-6 grid grid-cols-2 gap-2 text-[11px] font-mono text-zinc-500 max-w-xs">
+                {['SQL Injection', 'XSS Variants', 'Command Injection', 'SSRF', 'SSTI', 'Prompt Injection', 'Path Traversal', 'Log4Shell'].map(t => (
+                  <span key={t} className="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-center">{t}</span>
+                ))}
+              </div>
             </div>
           )}
 
           {loading && (
-            <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm flex flex-col items-center justify-center min-h-[400px]">
-              <div className="w-12 h-12 border-4 border-t-blue-600 border-r-transparent border-l-transparent border-b-slate-950 rounded-full animate-spin mb-4" />
-              <h3 className="font-bold text-lg text-slate-900">Performing Analysis...</h3>
-              <p className="text-sm text-slate-500 mt-2 font-bold leading-relaxed">
-                Extracting cookies, parsing header mappings, and cataloging potential injection risks.
+            <div className="bg-[#0c0d14] rounded-2xl p-12 text-center border border-zinc-800/80 flex flex-col items-center justify-center min-h-[420px]">
+              <div className="w-12 h-12 border-4 border-t-cyan-400 border-r-transparent border-l-transparent border-b-rose-500 rounded-full animate-spin mb-4" />
+              <h3 className="font-mono font-bold text-base text-white">Running 55-Module Scan...</h3>
+              <p className="text-xs text-zinc-400 mt-2 font-mono">
+                Mapping parameters → Running injection pattern rules → Building report
               </p>
             </div>
           )}
 
           {result && (
-            <div className="space-y-6">
-              {/* Scan Overview */}
-              <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-4">
+            <div className="space-y-5">
+              {/* Summary Bar */}
+              <div className="bg-[#0c0d14] p-5 rounded-2xl border border-zinc-800/80 space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-zinc-800 pb-4">
                   <div>
-                    <h3 className="font-extrabold text-lg text-slate-900">Scan Assessment</h3>
-                    <p className="text-xs md:text-sm text-slate-500 font-mono mt-1 font-bold">{result.targetUrl}</p>
+                    <h3 className="font-mono font-bold text-base text-white">Scan Report</h3>
+                    <p className="text-xs text-cyan-400 font-mono mt-0.5 truncate max-w-sm">{result.targetUrl}</p>
+                    <p className="text-[10px] text-zinc-600 font-mono mt-0.5">{new Date(result.scanTimestamp).toLocaleString()}</p>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleSaveReport}
-                      disabled={saving || saveSuccess}
-                      className="px-4.5 py-3 rounded-2xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm"
-                    >
-                      <Save className="w-4 h-4" />
-                      {saving ? 'Saving...' : saveSuccess ? 'Saved' : 'Save Report'}
-                    </button>
-                  </div>
+                  <button
+                    onClick={handleSaveReport}
+                    disabled={saving || saveSuccess}
+                    className="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition-all flex items-center gap-1.5 disabled:opacity-50 shrink-0"
+                  >
+                    <Save className="w-4 h-4" />
+                    {saving ? 'Saving...' : saveSuccess ? '✓ Saved' : 'Save Report'}
+                  </button>
                 </div>
 
                 {saveSuccess && (
-                  <div className="mb-4 p-3.5 rounded-2xl bg-green-50 border border-green-200 text-xs text-green-700 flex items-center gap-2 font-bold animate-in fade-in duration-300 shadow-sm">
-                    <CheckCircle className="w-4.5 h-4.5 shrink-0 text-green-600" />
-                    <span>Report has been successfully logged to your security archive.</span>
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2 font-mono">
+                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                    Report saved to your security archive.
                   </div>
                 )}
 
-                {/* Score Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Risk Score</p>
-                    <p className="text-xl font-bold font-mono text-red-600 mt-1">{result.summary.riskScore} / 10</p>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-mono">
+                  <div className="p-3.5 bg-[#050508] rounded-xl border border-zinc-800">
+                    <p className="text-[10px] text-zinc-500 uppercase">Risk Score</p>
+                    <p className={`text-xl font-bold mt-1 ${result.summary.riskScore >= 9 ? 'text-rose-400' : result.summary.riskScore >= 7 ? 'text-orange-400' : result.summary.riskScore >= 5 ? 'text-yellow-400' : 'text-cyan-400'}`}>
+                      {result.summary.riskScore} <span className="text-sm text-zinc-500">/ 10</span>
+                    </p>
                   </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Findings Found</p>
-                    <p className="text-xl font-bold font-mono text-blue-600 mt-1">{result.summary.injectionPoints}</p>
+                  <div className="p-3.5 bg-[#050508] rounded-xl border border-zinc-800">
+                    <p className="text-[10px] text-zinc-500 uppercase">Findings</p>
+                    <p className="text-xl font-bold text-rose-400 mt-1">{result.summary.injectionPoints}</p>
                   </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Parameters</p>
-                    <p className="text-xl font-bold font-mono text-slate-900 mt-1">{result.summary.parameters}</p>
+                  <div className="p-3.5 bg-[#050508] rounded-xl border border-zinc-800">
+                    <p className="text-[10px] text-zinc-500 uppercase">Parameters</p>
+                    <p className="text-xl font-bold text-white mt-1">{result.summary.parameters}</p>
                   </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">OWASP Covered</p>
-                    <p className="text-xl font-bold font-mono text-slate-900 mt-1">{result.summary.owaspCoverage.length}</p>
+                  <div className="p-3.5 bg-[#050508] rounded-xl border border-zinc-800">
+                    <p className="text-[10px] text-zinc-500 uppercase">OWASP</p>
+                    <p className="text-xl font-bold text-purple-400 mt-1">{result.summary.owaspCoverage.length}</p>
                   </div>
+                </div>
+
+                {/* Highest Severity */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className={`text-xs font-mono font-bold px-3 py-1 rounded-full border ${SEV_STYLES[result.summary.highestSeverity] || SEV_STYLES['Info']}`}>
+                    ⚠ Highest: {result.summary.highestSeverity}
+                  </span>
+                  {result.summary.owaspCoverage.map((o) => (
+                    <span key={o} className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">{o}</span>
+                  ))}
                 </div>
 
                 {/* Tech Stack */}
                 {result.techStackClues.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-slate-100">
-                    <p className="text-xs text-slate-600 font-bold mb-2 flex items-center gap-1.5">
-                      <Server className="w-4 h-4 text-blue-600" /> Tech Stack Clues:
+                  <div className="pt-2 border-t border-zinc-800/80">
+                    <p className="text-xs text-zinc-400 font-mono mb-2 flex items-center gap-1.5">
+                      <Server className="w-4 h-4 text-cyan-400" /> Tech Stack Fingerprint:
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {result.techStackClues.map((t) => (
-                        <span key={t} className="px-3 py-1.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700">
-                          {t}
-                        </span>
+                        <span key={t} className="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 text-xs font-mono text-cyan-300">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Family Breakdown */}
+                {Object.keys(result.summary.injectionFamilyCounts).length > 0 && (
+                  <div className="pt-2 border-t border-zinc-800/80">
+                    <p className="text-xs text-zinc-400 font-mono mb-2">Findings by Category:</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {Object.entries(result.summary.injectionFamilyCounts).map(([family, count]) => (
+                        <div key={family} className="flex items-center justify-between px-3 py-2 rounded-lg bg-zinc-900/60 border border-zinc-800">
+                          <span className={`text-[11px] font-mono ${FAMILY_COLORS[family] || 'text-zinc-300'}`}>{family}</span>
+                          <span className="text-xs font-mono font-bold text-white">{count}</span>
+                        </div>
                       ))}
                     </div>
                   </div>
                 )}
               </div>
 
+              {/* Findings Filter */}
+              <div className="flex gap-2 flex-wrap">
+                {families.map((fam) => (
+                  <button
+                    key={fam}
+                    onClick={() => setFilterFamily(fam)}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold border transition-all ${filterFamily === fam
+                      ? 'bg-cyan-500 text-black border-cyan-400'
+                      : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:border-cyan-500/40'
+                    }`}
+                  >
+                    {fam === 'All' ? `All (${result.findings.length})` : `${fam.split(' / ')[0]} (${result.summary.injectionFamilyCounts[fam] || 0})`}
+                  </button>
+                ))}
+              </div>
+
               {/* Finding Cards */}
-              <div className="space-y-4">
-                <h4 className="text-sm md:text-base font-bold tracking-wider text-slate-800 uppercase">
-                  Identified Finding Details
-                </h4>
-
-                {result.findings.map((finding, idx) => {
+              <div className="space-y-3">
+                {filteredFindings.length === 0 && (
+                  <div className="text-center py-8 text-zinc-500 text-sm font-mono">
+                    No findings in this category.
+                  </div>
+                )}
+                {filteredFindings.map((finding, idx) => {
                   const isExpanded = expandedFinding === idx;
-                  const sevColors = {
-                    Critical: 'text-red-700 border-red-200 bg-red-50',
-                    High: 'text-amber-700 border-amber-200 bg-amber-50',
-                    Medium: 'text-yellow-800 border-yellow-200 bg-yellow-50',
-                    Low: 'text-blue-700 border-blue-200 bg-blue-50',
-                    Info: 'text-slate-700 border-slate-200 bg-slate-50',
-                  };
-
                   return (
-                    <div key={idx} className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:border-slate-300 transition-all">
+                    <div key={idx} className="bg-[#0c0d14] rounded-2xl border border-zinc-800/80 overflow-hidden">
                       <button
-                        onClick={() => toggleFinding(idx)}
-                        className="w-full px-5 py-4.5 flex items-center justify-between text-left hover:bg-slate-50 transition-all gap-4"
+                        onClick={() => setExpandedFinding(isExpanded ? null : idx)}
+                        className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-zinc-900/40 transition-all gap-4"
                       >
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2.5">
-                            <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold ${sevColors[finding.severity]}`}>
+                        <div className="space-y-1.5 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className={`text-[10px] font-mono px-2 py-0.5 rounded border font-bold ${SEV_STYLES[finding.severity]}`}>
                               {finding.severity}
                             </span>
-                            <span className="text-sm md:text-base font-bold text-slate-900">{finding.type}</span>
+                            <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${CONFIDENCE_STYLES[finding.confidence]}`}>
+                              {finding.confidence}
+                            </span>
+                            <span className="text-sm font-mono font-bold text-white">{finding.type}</span>
                           </div>
-                          <p className="text-xs text-slate-500 font-mono truncate max-w-lg font-bold">{finding.location}</p>
+                          <div className="flex items-center gap-3">
+                            <p className="text-[11px] text-zinc-500 font-mono truncate">{finding.location}</p>
+                            <span className={`text-[10px] font-mono shrink-0 ${FAMILY_COLORS[finding.injectionFamily] || 'text-zinc-400'}`}>
+                              {finding.injectionFamily}
+                            </span>
+                          </div>
                         </div>
-                        {isExpanded ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
+                        {isExpanded ? <ChevronUp className="w-4 h-4 text-zinc-400 shrink-0" /> : <ChevronDown className="w-4 h-4 text-zinc-400 shrink-0" />}
                       </button>
 
                       {isExpanded && (
-                        <div className="px-5 pb-5 pt-2 border-t border-slate-100 space-y-4 text-xs md:text-sm animate-in fade-in duration-300">
+                        <div className="px-5 pb-5 pt-3 border-t border-zinc-800/60 space-y-4 text-xs animate-in fade-in duration-200">
+                          {/* Description */}
                           <div>
-                            <span className="text-xs font-bold text-slate-655 text-slate-500 uppercase tracking-wider block mb-1">
-                              Threat Description
+                            <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+                              <BookOpen className="w-3 h-3" /> Threat Description
                             </span>
-                            <p className="text-slate-700 font-semibold leading-relaxed">{finding.description}</p>
+                            <p className="text-zinc-300 leading-relaxed">{finding.description}</p>
                           </div>
 
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            <div>
-                              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-0.5">
-                                CVSS Score
-                              </span>
-                              <span className="font-mono text-red-600 font-bold">{finding.cvss} / 10</span>
-                            </div>
-                            <div>
-                              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-0.5">
-                                CWE Reference
-                              </span>
-                              <span className="font-mono text-blue-600 font-bold">{finding.cwe}</span>
-                            </div>
-                            <div>
-                              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-0.5">
-                                OWASP Mapping
-                              </span>
-                              <span className="font-mono text-slate-900 font-bold">{finding.owasp}</span>
+                          {/* Evidence */}
+                          <div className="p-3 bg-zinc-900/60 rounded-xl border border-zinc-800">
+                            <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+                              <Eye className="w-3 h-3" /> Detection Evidence
+                            </span>
+                            <p className="text-zinc-300 font-mono text-[11px] leading-relaxed">{finding.evidence}</p>
+                          </div>
+
+                          {/* PoC Payload */}
+                          <div>
+                            <span className="text-[10px] font-mono font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+                              <Code2 className="w-3 h-3" /> Safe PoC Payload (Educational)
+                            </span>
+                            <div className="p-3 bg-[#050508] rounded-xl border border-rose-500/20 font-mono text-[11px] text-rose-300 break-all">
+                              {finding.pocPayload}
                             </div>
                           </div>
 
-                          <div className="p-4 bg-green-50 rounded-3xl border border-green-200">
-                            <span className="text-xs text-green-800 font-bold flex items-center gap-1.5 mb-2">
-                              <AlertTriangle className="w-4 h-4 text-green-600" /> Secure Mitigation
+                          {/* Scores */}
+                          <div className="grid grid-cols-3 gap-3 font-mono">
+                            <div className="p-3 bg-[#050508] rounded-xl border border-zinc-800">
+                              <span className="text-[10px] text-zinc-500 block">CVSS Score</span>
+                              <span className="text-rose-400 font-bold text-sm">{finding.cvss} / 10</span>
+                            </div>
+                            <div className="p-3 bg-[#050508] rounded-xl border border-zinc-800">
+                              <span className="text-[10px] text-zinc-500 block">CWE</span>
+                              <span className="text-cyan-400 font-bold text-sm">{finding.cwe}</span>
+                            </div>
+                            <div className="p-3 bg-[#050508] rounded-xl border border-zinc-800">
+                              <span className="text-[10px] text-zinc-500 block">OWASP</span>
+                              <span className="text-purple-400 font-bold text-sm">{finding.owasp}</span>
+                            </div>
+                          </div>
+
+                          {/* Recommendation */}
+                          <div className="p-3.5 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
+                            <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+                              <Shield className="w-3 h-3" /> Recommended Fix
                             </span>
-                            <p className="text-xs md:text-sm text-green-900 font-semibold leading-relaxed">{finding.recommendation}</p>
+                            <p className="text-zinc-300 leading-relaxed">{finding.recommendation}</p>
                           </div>
                         </div>
                       )}

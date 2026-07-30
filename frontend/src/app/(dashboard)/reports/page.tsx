@@ -9,14 +9,11 @@ import {
   FileText, 
   Trash2, 
   Download, 
-  Eye, 
-  AlertTriangle, 
   ShieldCheck, 
-  Calendar, 
-  Globe, 
   ArrowLeft,
   ChevronRight,
-  TrendingUp
+  Globe,
+  Calendar
 } from 'lucide-react';
 
 interface Finding {
@@ -125,7 +122,7 @@ export default function ReportsPage() {
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
-        backgroundColor: '#ffffff',
+        backgroundColor: '#0c0d14',
       });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -145,153 +142,131 @@ export default function ReportsPage() {
         heightLeft -= pageHeight;
       }
 
-      const filename = `${selectedReport.title.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_audit_report.pdf`;
-      pdf.save(filename);
+      pdf.save(`InjectionLab-Audit-${selectedReport._id.slice(-8)}.pdf`);
     } catch (err) {
-      console.error('PDF export failed:', err);
+      console.error('Failed to export PDF:', err);
     } finally {
       setExporting(false);
     }
   };
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500 text-slate-800">
-      {/* Detail View */}
+    <div className="space-y-8 animate-in fade-in duration-500 text-zinc-100 font-sans">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-3">
+            Security Audit Archive <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold">PDF Reports</span>
+          </h2>
+          <p className="text-zinc-400 text-sm mt-1.5 font-mono">
+            Review archived target scan evaluations, export executive PDF reports, and trace vulnerability histories.
+          </p>
+        </div>
+
+        {selectedReport && (
+          <button
+            onClick={() => router.push('/reports')}
+            className="px-3.5 py-2 rounded-xl text-xs font-mono font-bold bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-all flex items-center gap-1.5 self-start sm:self-auto"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Archive List
+          </button>
+        )}
+      </div>
+
+      {/* Detail View Mode */}
       {selectedReport ? (
         <div className="space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-            <button
-              onClick={() => router.push('/reports')}
-              className="px-4.5 py-3 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-1.5 shadow-sm"
-            >
-              <ArrowLeft className="w-4 h-4" /> Back to History
-            </button>
+          {/* Action Bar */}
+          <div className="flex justify-end gap-3">
             <button
               onClick={exportPDF}
               disabled={exporting}
-              className="px-4.5 py-3 rounded-xl text-xs font-bold bg-slate-950 text-white hover:bg-slate-900 active:scale-95 transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-md"
+              className="px-4 py-2.5 rounded-xl text-xs font-mono font-bold bg-cyan-500 text-black hover:bg-cyan-400 shadow-[0_0_15px_rgba(0,240,255,0.2)] transition-all flex items-center gap-2 disabled:opacity-50"
             >
               <Download className="w-4 h-4" />
-              {exporting ? 'Generating PDF...' : 'Download PDF Report'}
+              {exporting ? 'Generating PDF...' : 'Download Official PDF Report'}
             </button>
           </div>
 
           {loadingDetail ? (
-            <p className="text-sm text-slate-500 text-center py-12 font-semibold">Loading audit details...</p>
+            <p className="text-xs font-mono text-zinc-500 text-center py-8">Loading audit detail sheet...</p>
           ) : (
-            <div ref={pdfRef} className="bg-white p-8 md:p-10 rounded-3xl border border-slate-200 space-y-8 text-slate-800 max-w-4xl mx-auto shadow-md">
-              {/* Header Title */}
-              <div className="border-b border-slate-200 pb-6 flex flex-col md:flex-row justify-between gap-4 items-start">
+            <div ref={pdfRef} className="bg-[#0c0d14] p-8 rounded-2xl border border-zinc-800/80 shadow-2xl space-y-6 text-zinc-100">
+              {/* Report Header */}
+              <div className="border-b border-zinc-800 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-blue-600">SECURITY AUDIT SHEETS</span>
-                  <h2 className="text-3xl font-extrabold text-slate-900 mt-1">{selectedReport.title}</h2>
-                  <p className="text-xs md:text-sm text-slate-600 mt-2 font-mono flex items-center gap-1 font-bold">
-                    <Globe className="w-3.5 h-3.5 text-slate-500" /> {selectedReport.targetUrl}
+                  <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest">InjectionLab Audit Report</span>
+                  <h3 className="text-2xl font-extrabold text-white font-mono mt-1">{selectedReport.title}</h3>
+                  <p className="text-xs text-zinc-400 font-mono mt-1 flex items-center gap-1">
+                    <Globe className="w-3.5 h-3.5 text-cyan-400" /> {selectedReport.targetUrl}
                   </p>
                 </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 font-bold shadow-sm">
-                    <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                    <span>{new Date(selectedReport.createdAt).toLocaleDateString()}</span>
-                  </div>
+                <div className="text-left md:text-right font-mono text-xs text-zinc-400">
+                  <p>REPORT ID: #{selectedReport._id.slice(-8)}</p>
+                  <p className="mt-1 flex items-center gap-1 md:justify-end">
+                    <Calendar className="w-3.5 h-3.5 text-zinc-500" /> {new Date(selectedReport.createdAt).toLocaleDateString()}
+                  </p>
                 </div>
               </div>
 
-              {/* Assessment Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl text-center shadow-sm">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider font-extrabold">Assessment Score</p>
-                  <p className="text-3xl font-black font-mono text-red-600 mt-2">{selectedReport.summary.riskScore}</p>
+              {/* Summary Metrics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono">
+                <div className="p-4 bg-[#050508] rounded-xl border border-zinc-800">
+                  <p className="text-[10px] text-zinc-500 uppercase">Risk Score</p>
+                  <p className="text-xl font-bold text-rose-400 mt-1">{selectedReport.summary.riskScore} / 10</p>
                 </div>
-                <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl text-center shadow-sm">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider font-extrabold">Total Findings</p>
-                  <p className="text-3xl font-black font-mono text-blue-600 mt-2">{selectedReport.findings.length}</p>
+                <div className="p-4 bg-[#050508] rounded-xl border border-zinc-800">
+                  <p className="text-[10px] text-zinc-500 uppercase">Vulnerability Flags</p>
+                  <p className="text-xl font-bold text-cyan-400 mt-1">{selectedReport.summary.injectionPoints}</p>
                 </div>
-                <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl text-center shadow-sm">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider font-extrabold">Parameters</p>
-                  <p className="text-3xl font-black font-mono text-slate-900 mt-2">{selectedReport.summary.parameters}</p>
+                <div className="p-4 bg-[#050508] rounded-xl border border-zinc-800">
+                  <p className="text-[10px] text-zinc-500 uppercase">Parameters</p>
+                  <p className="text-xl font-bold text-white mt-1">{selectedReport.summary.parameters}</p>
                 </div>
-                <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl text-center shadow-sm">
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider font-extrabold">OWASP Coverage</p>
-                  <p className="text-3xl font-black font-mono text-slate-900 mt-2">{selectedReport.summary.owaspCoverage.length}</p>
+                <div className="p-4 bg-[#050508] rounded-xl border border-zinc-800">
+                  <p className="text-[10px] text-zinc-500 uppercase">OWASP Categories</p>
+                  <p className="text-xl font-bold text-purple-400 mt-1">{selectedReport.summary.owaspCoverage.length}</p>
                 </div>
               </div>
 
-              {/* Executive Summary */}
-              <div className="space-y-3">
-                <h3 className="text-sm md:text-base font-bold tracking-wider text-slate-900 uppercase border-l-4 border-blue-600 pl-3">
-                  Executive Summary
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed font-semibold">
-                  A passive security inspection was performed on the target route. The analysis identified structural parameters, form values, cookies, and header contexts used in data flows. We mapped matching vulnerability risks to OWASP security metrics and listed non-destructive diagnostic guidance and mitigations below.
-                </p>
-              </div>
+              {/* Detailed Findings */}
+              <div className="space-y-4 pt-4 border-t border-zinc-800">
+                <h4 className="text-xs font-mono font-bold tracking-wider text-zinc-300 uppercase">
+                  Cataloged Vulnerabilities ({selectedReport.findings.length})
+                </h4>
 
-              {/* Findings Section */}
-              <div className="space-y-6">
-                <h3 className="text-sm md:text-base font-bold tracking-wider text-slate-900 uppercase border-l-4 border-blue-600 pl-3">
-                  Identified Threats and Vulnerabilities
-                </h3>
-
-                {selectedReport.findings.length === 0 ? (
-                  <p className="text-sm text-slate-500 italic font-bold">No vulnerability risks identified.</p>
-                ) : (
-                  <div className="space-y-6">
-                    {selectedReport.findings.map((f, i) => (
-                      <div key={i} className="p-6 rounded-3xl bg-white border border-slate-200 space-y-4 shadow-sm">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-xl border border-blue-200 shadow-sm">
-                              #{i + 1}
-                            </span>
-                            <h4 className="text-sm md:text-base font-bold text-slate-900">{f.type}</h4>
-                          </div>
-                          <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 font-extrabold">
-                            CVSS {f.cvss} / Severity: {f.severity}
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono font-bold">
-                          <div>
-                            <span className="text-slate-500 block mb-0.5">LOCATION:</span>
-                            <span className="text-slate-800 break-all">{f.location}</span>
-                          </div>
-                          <div>
-                            <span className="text-slate-500 block mb-0.5">CWE MAPPING:</span>
-                            <span className="text-blue-600">{f.cwe}</span>
-                          </div>
-                          <div>
-                            <span className="text-slate-500 block mb-0.5">OWASP METRIC:</span>
-                            <span className="text-slate-900">{f.owasp}</span>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <span className="text-[10px] text-slate-500 uppercase tracking-widest font-extrabold block">Vulnerability Description</span>
-                          <p className="text-xs md:text-sm text-slate-600 leading-relaxed font-semibold">{f.description}</p>
-                        </div>
-
-                        <div className="p-4 bg-green-50 border border-green-200 rounded-2xl shadow-inner space-y-1">
-                          <span className="text-[10px] text-green-800 font-extrabold uppercase tracking-wider flex items-center gap-1.5">
-                            <ShieldCheck className="w-4.5 h-4.5 text-green-600" /> Secure Coding Recommendation
-                          </span>
-                          <p className="text-xs md:text-sm text-green-950 font-bold leading-relaxed">{f.recommendation}</p>
-                        </div>
+                {selectedReport.findings.map((f, i) => (
+                  <div key={i} className="p-4 rounded-xl bg-[#050508] border border-zinc-800 space-y-3 font-sans">
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex items-center gap-2 font-mono">
+                        <span className="text-xs font-bold text-white">{f.type}</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold">
+                          {f.severity}
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-cyan-400">
+                          {f.cwe}
+                        </span>
                       </div>
-                    ))}
+                      <span className="font-mono text-xs text-rose-400 font-bold">CVSS {f.cvss}</span>
+                    </div>
+
+                    <p className="text-xs text-zinc-300 leading-relaxed">{f.description}</p>
+                    <p className="text-xs text-emerald-400 font-mono flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Fix: {f.recommendation}
+                    </p>
                   </div>
-                )}
+                ))}
               </div>
 
-              {/* Technology Stack Detected */}
+              {/* Tech Stack */}
               {selectedReport.techStack.length > 0 && (
-                <div className="space-y-3 border-t border-slate-200 pt-6">
-                  <h3 className="text-xs md:text-sm font-bold tracking-wider text-slate-700 uppercase">
-                    Detected Technologies Stack
-                  </h3>
-                  <div className="flex flex-wrap gap-2.5">
+                <div className="pt-4 border-t border-zinc-800 space-y-2">
+                  <h4 className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
+                    Detected Tech Stack Clues
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
                     {selectedReport.techStack.map((tech) => (
-                      <span key={tech} className="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold bg-blue-50 border border-blue-200 text-blue-700">
+                      <span key={tech} className="px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800 text-xs font-mono text-cyan-300">
                         {tech}
                       </span>
                     ))}
@@ -299,88 +274,71 @@ export default function ReportsPage() {
                 </div>
               )}
 
-              {/* PDF Footer Disclaimer */}
-              <div className="border-t border-slate-200 pt-6 text-[10px] text-slate-500 text-center uppercase tracking-widest font-bold leading-relaxed">
-                <p>This report is for authorized educational and threat modeling use only.</p>
-                <p className="mt-1">Generated via InjectionLab — Learn. Detect. Fix.</p>
+              {/* Footer */}
+              <div className="pt-6 border-t border-zinc-800 text-[10px] font-mono text-zinc-500 flex justify-between">
+                <span>InjectionLab Educational Platform</span>
+                <span>CONFIDENTIAL AUDIT DOCUMENT</span>
               </div>
             </div>
           )}
         </div>
       ) : (
-        /* History Index View */
-        <div className="space-y-6 text-slate-800">
-          <div>
-            <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">Audit Archives</h2>
-            <p className="text-slate-600 text-sm mt-1.5 font-semibold">
-              View generated reports, study security logs, and export executive assessment summaries in PDF formats.
-            </p>
-          </div>
-
+        /* Archive List Mode */
+        <div className="space-y-4">
           {loading ? (
-            <p className="text-sm text-slate-500 text-center py-12 font-semibold">Loading archives...</p>
+            <p className="text-xs font-mono text-zinc-500 text-center py-8">Fetching audit history...</p>
           ) : reports.length === 0 ? (
-            <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center flex flex-col items-center justify-center min-h-[300px] shadow-sm">
-              <FileText className="w-8 h-8 text-slate-400 mb-4 animate-pulse" />
-              <h3 className="font-bold text-base text-slate-800">No reports recorded</h3>
-              <p className="text-xs text-slate-500 mt-2 max-w-sm font-semibold">
-                Run security scans inside the Target Inspector or complete demo labs to generate vulnerability records.
-              </p>
+            <div className="bg-[#0c0d14] p-12 rounded-2xl border border-zinc-800 text-center space-y-3">
+              <FileText className="w-8 h-8 text-zinc-500 mx-auto animate-pulse" />
+              <p className="text-xs font-mono text-zinc-400">No archived reports saved yet.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4">
               {reports.map((report) => (
                 <div
                   key={report._id}
                   onClick={() => router.push(`/reports?id=${report._id}`)}
-                  className="bg-white p-6 rounded-3xl border border-slate-200 hover:border-blue-400 transition-all cursor-pointer flex flex-col justify-between group shadow-sm hover:shadow-md"
+                  className="bg-[#0c0d14] p-5 rounded-2xl border border-zinc-800/80 hover:border-cyan-500/40 transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 group"
                 >
-                  <div>
-                    <div className="flex justify-between items-start gap-4">
-                      <span className="text-[10px] px-2.5 py-1 rounded-full bg-slate-50 border border-slate-200 text-slate-700 font-mono font-bold capitalize">
-                        {report.scanType} Mode
-                      </span>
-                      <span className="text-xs font-bold text-slate-500">
-                        {new Date(report.createdAt).toLocaleDateString()}
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 font-mono">
+                      <h3 className="text-base font-bold text-white group-hover:text-cyan-400 transition-colors">
+                        {report.title}
+                      </h3>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-400 capitalize">
+                        {report.scanType}
                       </span>
                     </div>
-
-                    <h3 className="font-extrabold text-base md:text-lg text-slate-900 mt-4 group-hover:text-blue-600 transition-colors truncate">
-                      {report.title}
-                    </h3>
-                    <p className="text-xs md:text-sm text-slate-500 font-mono mt-1 truncate max-w-xs font-semibold">{report.targetUrl}</p>
-
-                    <div className="grid grid-cols-3 gap-2 mt-6 font-mono text-xs border-t border-slate-100 pt-4 font-bold">
-                      <div>
-                        <span className="text-[10px] text-slate-500 block mb-0.5">RISK SCORE:</span>
-                        <span className="text-red-600 font-bold">{report.summary.riskScore}</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-slate-500 block mb-0.5">FINDINGS:</span>
-                        <span className="text-blue-600 font-bold">{report.summary.injectionPoints}</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-slate-500 block mb-0.5">PARAMS:</span>
-                        <span className="text-slate-900 font-bold">{report.summary.parameters}</span>
-                      </div>
-                    </div>
+                    <p className="text-xs font-mono text-zinc-400">{report.targetUrl}</p>
+                    <p className="text-[10px] font-mono text-zinc-500">
+                      {new Date(report.createdAt).toLocaleString()}
+                    </p>
                   </div>
 
-                  <div className="mt-6 flex justify-between items-center gap-4">
-                    <button className="text-xs md:text-sm text-blue-600 font-bold group-hover:underline flex items-center gap-1">
-                      Open Audit Sheet <ChevronRight className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={(e) => handleDelete(report._id, e)}
-                      className="p-2 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-600 border border-transparent hover:border-red-100 transition-all shadow-sm"
-                      aria-label="Delete report"
-                    >
-                      <Trash2 className="w-4.5 h-4.5" />
-                    </button>
+                  <div className="flex items-center gap-6 font-mono text-xs">
+                    <div>
+                      <span className="text-[10px] text-zinc-500 block">FINDINGS</span>
+                      <span className="text-cyan-400 font-bold">{report.summary.injectionPoints}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-zinc-500 block">RISK SCORE</span>
+                      <span className="text-rose-400 font-bold">{report.summary.riskScore}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => handleDelete(report._id, e)}
+                        className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-rose-400 hover:border-rose-500/30 transition-all"
+                        aria-label="Delete report"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <ChevronRight className="w-5 h-5 text-zinc-500 group-hover:text-cyan-400 transition-colors" />
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
+
           )}
         </div>
       )}

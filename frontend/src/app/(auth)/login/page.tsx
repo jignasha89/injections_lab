@@ -11,8 +11,8 @@ import { ShieldCheck, Eye, EyeOff, AlertCircle } from 'lucide-react';
 export default function LoginPage() {
   const router = useRouter();
   const { token, setAuth } = useStore();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('open@gmail.com');
+  const [password, setPassword] = useState('open@123');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -41,53 +41,62 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden">
-      {/* Background Soft Gradients */}
-      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-slate-200/50 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center bg-[#050508] p-4 relative overflow-hidden text-zinc-100 font-sans">
+      {/* Background Cyber Gradients */}
+      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[140px] pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="w-full max-w-md bg-white p-8 md:p-10 rounded-2xl shadow-xl border border-slate-200 relative z-10"
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md bg-[#0c0d14] p-8 rounded-2xl shadow-2xl border border-zinc-800/80 relative z-10 space-y-6"
       >
         {/* Header */}
-        <div className="flex flex-col items-center gap-2 mb-8">
-          <div className="p-3.5 rounded-xl bg-slate-900 text-white shadow-md">
-            <ShieldCheck className="w-8 h-8" />
+        <div className="flex flex-col items-center gap-2">
+          <div className="p-1 rounded-3xl bg-black/40 border border-cyan-500/40 shadow-[0_0_35px_rgba(0,240,255,0.3)]">
+            <img 
+              src="/logo.png" 
+              alt="InjectionLab Logo" 
+              className="w-20 h-20 object-contain dark-logo scale-105"
+            />
           </div>
-          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-950 mt-2">
-            Access InjectionLab
+          <h2 className="text-2xl font-extrabold tracking-tight text-white font-mono mt-1 flex items-center gap-1.5">
+            Injection<span className="text-cyan-400">Lab</span>
           </h2>
-          <p className="text-xs text-slate-500 font-medium">Cybersecurity Education & Demonstration Platform</p>
+          <p className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest text-center">
+            Learn • Test • Secure
+          </p>
+          <span className="text-[10px] font-mono text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded-full mt-1">
+            55 Attack Vectors • Interactive Security Platform
+          </span>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3 text-sm text-red-700">
-            <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
-            <p className="font-semibold">{error}</p>
+          <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-2.5 text-xs text-rose-300 font-mono">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <p>{error}</p>
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 font-mono">
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">
               Email Address
             </label>
             <input
               type="email"
               required
-              placeholder="e.g., student@injectionlab.local"
+              placeholder="e.g., jignasha89@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg text-sm bg-slate-50 border border-slate-200 text-slate-950 placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all duration-150"
+              className="w-full px-3.5 py-2.5 rounded-xl text-xs bg-[#050508] border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-cyan-500/50"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">
               Password
             </label>
             <div className="relative">
@@ -97,38 +106,56 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-4 pr-10 py-3 rounded-lg text-sm bg-slate-50 border border-slate-200 text-slate-950 placeholder-slate-400 focus:bg-white focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all duration-150"
+                className="w-full pl-3.5 pr-10 py-2.5 rounded-xl text-xs bg-[#050508] border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-cyan-500/50"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+          </div>
+
+          <div className="flex gap-2 text-[10px]">
+            <button
+              type="button"
+              onClick={() => { setEmail('open@gmail.com'); setPassword('open@123'); }}
+              className="flex-1 py-1.5 px-2 rounded-lg bg-zinc-900 border border-cyan-500/30 text-cyan-300 font-bold hover:bg-zinc-800 transition"
+            >
+              🌐 Public View (open@gmail.com)
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEmail('jignasha89@gmail.com'); setPassword('jignasha@893'); }}
+              className="flex-1 py-1.5 px-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition"
+            >
+              🔒 Admin / Personal
+            </button>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-lg text-sm font-bold bg-slate-950 text-white hover:bg-slate-900 active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none shadow-md"
+            className="w-full py-3 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-black shadow-[0_0_15px_rgba(0,240,255,0.25)] transition-all disabled:opacity-50"
           >
-            {loading ? 'Authenticating Security Session...' : 'Authenticate'}
+            {loading ? 'Authenticating Security Token...' : 'Authorize Session'}
           </button>
         </form>
 
         {/* Footer */}
-        <div className="mt-8 text-center text-xs text-slate-500 font-medium">
+        <div className="text-center text-xs text-zinc-400 font-mono">
           <span>New student? </span>
-          <Link href="/register" className="text-blue-600 hover:text-blue-800 hover:underline font-bold">
-            Register Lab Account
+          <Link href="/register" className="text-cyan-400 hover:underline font-bold">
+            Create Lab Account
           </Link>
-          <div className="mt-6 pt-4 border-t border-slate-100 text-[10px] text-slate-400 uppercase tracking-widest font-semibold">
-            AUTHORIZED DEMO ACCESS ONLY
+          <div className="mt-4 pt-3 border-t border-zinc-800/80 text-[10px] text-zinc-500 uppercase tracking-widest">
+            AUTHORIZED DEMO ENVIRONMENT
           </div>
         </div>
       </motion.div>
     </div>
   );
 }
+

