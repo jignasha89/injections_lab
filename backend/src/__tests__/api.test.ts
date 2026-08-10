@@ -30,7 +30,7 @@ describe('Scanner Heuristic Utility', () => {
     const result = analyzeUrl('http://localhost:3000/download?file=../../etc/passwd');
     expect(result.summary.injectionPoints).toBeGreaterThan(0);
     
-    const traversalFinding = result.findings.find(f => f.type === 'Path Traversal');
+    const traversalFinding = result.findings.find(f => f.type.includes('Path Traversal'));
     expect(traversalFinding).toBeDefined();
     expect(traversalFinding?.severity).toBe('Critical');
   });

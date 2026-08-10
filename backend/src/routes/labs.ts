@@ -1,11 +1,11 @@
-import { Router, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { labsData } from '../data/labsData';
 
 const router = Router();
 
 // GET /api/labs - list all labs
-router.get('/', (_req, res: Response) => {
+router.get('/', (_req: Request, res: Response): void => {
   const list = labsData.map(({ slug, title, category, severity, cvss, cwe, owasp, shortDescription, tags }) => ({
     slug, title, category, severity, cvss, cwe, owasp, shortDescription, tags,
   }));
@@ -13,7 +13,7 @@ router.get('/', (_req, res: Response) => {
 });
 
 // GET /api/labs/:slug - get full lab data
-router.get('/:slug', (req, res: Response) => {
+router.get('/:slug', (req: Request, res: Response): void => {
   const lab = labsData.find((l) => l.slug === req.params.slug);
   if (!lab) {
     res.status(404).json({ error: 'Lab not found' });

@@ -1,9 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-export interface AuthRequest extends Request {
+export interface AuthRequest<
+  P = Record<string, any>,
+  ResBody = any,
+  ReqBody = any,
+  ReqQuery = any,
+  Locals extends Record<string, any> = Record<string, any>
+> extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
   userId?: string;
   userRole?: string;
+  body: ReqBody;
+  params: P;
 }
 
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction): void => {

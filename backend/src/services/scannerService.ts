@@ -515,6 +515,7 @@ const INJECTION_RULES: InjectionRule[] = [
     cwe: 'CWE-113',
     owasp: 'A03:2021',
     paramNamePattern: /^(redirect|return|location|url|next|goto|dest|header|host|referer|origin|lang|locale|accept|encoding|charset)$/i,
+    paramValuePattern: /(%0d|%0a|\r|\n)/i,
     pocPayload: '%0d%0aSet-Cookie:%20sessionid=malicious',
     description: 'Parameters reflected in HTTP response headers without stripping CR (\\r) and LF (\\n) characters enable HTTP Response Splitting — attackers inject fake headers and cache-poison responses.',
     recommendation: 'Strip or reject \\r and \\n (URL-encoded: %0d, %0a) in all header-reflected values. Use framework header-setting APIs instead of raw header concatenation.',
@@ -1214,12 +1215,15 @@ export function analyzeUrl(rawUrl: string): ScanResult {
     let evidence = '';
 
     // Check per-parameter matching
-    if (rule.paramNamePattern) {
+    if (rule.paramNamePattern || rule.paramValuePattern) {
       for (const param of parameters) {
-        const nameMatch = rule.paramNamePattern.test(param);
-        const valueMatch = rule.paramValuePattern ? rule.paramValuePattern.test(paramValues[param] || '') : true;
+        const val = paramValues[param] || '';
+        const nameMatch = rule.paramNamePattern ? rule.paramNamePattern.test(param) : false;
+        const valueMatch = rule.paramValuePattern ? rule.paramValuePattern.test(val) : false;
 
-        const shouldMatch = rule.requireBoth ? (nameMatch && valueMatch) : nameMatch;
+        const shouldMatch = rule.requireBoth
+          ? (nameMatch && valueMatch)
+          : (rule.paramNamePattern && rule.paramValuePattern ? (nameMatch || valueMatch) : (rule.paramNamePattern ? nameMatch : valueMatch));
 
         if (shouldMatch) {
           // Check additional constraints
