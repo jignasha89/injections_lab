@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
+import dotenv from 'dotenv'
 import mongoose from 'mongoose';
 
 import authRoutes from './routes/auth';
@@ -65,7 +65,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/user', userRoutes);
 
 // Health check
-app.get('/api/health', (_req: express.Request, res: express.Response): void => {
+app.get('/api/health', (_req, res) => {
   res.json({
     status: 'ok',
     message: 'InjectionLab API is running',
@@ -75,12 +75,12 @@ app.get('/api/health', (_req: express.Request, res: express.Response): void => {
 });
 
 // 404 handler
-app.use((_req: express.Request, res: express.Response): void => {
+app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
 // Global error handler
-app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction): void => {
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Internal server error' });
 });
@@ -102,7 +102,7 @@ if (process.env.USE_MEMORY_DB === 'true') {
         console.log(`⚠️  For authorized educational use only.`);
       });
     })
-    .catch((err: unknown) => {
+    .catch((err) => {
       console.warn('⚠️ MongoDB connection error. Falling back to IN-MEMORY DATABASE mode.');
       process.env.USE_MEMORY_DB = 'true';
       app.listen(PORT, () => {

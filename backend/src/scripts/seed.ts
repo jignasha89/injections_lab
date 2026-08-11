@@ -35,9 +35,9 @@ async function seed() {
     });
 
     const student = new User({
-      username: 'jignasha panchal',
-      email: 'jignasha89@gmail.com',
-      passwordHash: 'jignasha@893', // pre-save hook hashes this
+      username: 'student',
+      email: 'student@injectionlab.local',
+      passwordHash: 'student@123', // pre-save hook hashes this
       role: 'student',
       progress: labsData.map((lab, i) => ({
         labSlug: lab.slug,
@@ -62,7 +62,7 @@ async function seed() {
     await student.save();
     console.log('Users created:');
     console.log('- admin@injectionlab.local / admin12345 (Admin)');
-    console.log('- jignasha89@gmail.com / jignasha@893 (Student)');
+    console.log('- student@injectionlab.local / student@123 (Student)');
 
     // 3. Create Sample Scan Reports
     console.log('Creating sample scan reports...');

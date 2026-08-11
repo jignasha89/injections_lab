@@ -14,8 +14,7 @@ import {
   Flame,
   ChevronRight,
   ExternalLink,
-  ShieldCheck,
-  UserCheck
+  ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { labsData } from '@/data/labsData';
@@ -211,24 +210,6 @@ export default function DashboardPage() {
           <div className="mt-3">
             <h4 className="text-2xl font-bold font-mono text-white">{stats.jsonInputs}</h4>
             <p className="text-[10px] text-zinc-400 font-mono mt-1">REST API fields</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Team Information Section */}
-      <div className="bg-[#0c0d14] p-6 rounded-2xl border border-zinc-800/80 shadow-2xl space-y-4">
-        <h3 className="text-xs font-mono font-bold tracking-wider text-zinc-300 uppercase flex items-center gap-2 border-b border-zinc-800/80 pb-3">
-          <UserCheck className="w-4 h-4 text-cyan-400" /> Project Team Information
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
-          <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 flex items-center justify-between">
-            <span className="text-zinc-400 font-bold">Project Developer:</span>
-            <span className="text-sm font-extrabold text-white">Jignasha</span>
-          </div>
-
-          <div className="p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 flex items-center justify-between">
-            <span className="text-zinc-400 font-bold">Team Members:</span>
-            <span className="text-sm font-extrabold text-white">Dwij, Yashi</span>
           </div>
         </div>
       </div>

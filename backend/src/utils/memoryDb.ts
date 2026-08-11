@@ -86,9 +86,9 @@ export const usersStore: MemoryUser[] = [
   // Default student user
   {
     _id: 'student_mem_id',
-    username: 'jignasha panchal',
-    email: 'jignasha89@gmail.com',
-    passwordHash: bcrypt.hashSync('jignasha@893', 12),
+    username: 'student',
+    email: 'student@injectionlab.local',
+    passwordHash: bcrypt.hashSync('student@123', 12),
     role: 'student',
     progress: labsData.map((lab, i) => ({
       labSlug: lab.slug,

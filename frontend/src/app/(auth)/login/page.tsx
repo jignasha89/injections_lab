@@ -88,7 +88,7 @@ export default function LoginPage() {
             <input
               type="email"
               required
-              placeholder="e.g., jignasha89@gmail.com"
+              placeholder="e.g., student@injectionlab.local"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl text-xs bg-[#050508] border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-cyan-500/50"
@@ -128,10 +128,10 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => { setEmail('jignasha89@gmail.com'); setPassword('jignasha@893'); }}
+              onClick={() => { setEmail('admin@injectionlab.local'); setPassword('admin12345'); }}
               className="flex-1 py-1.5 px-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition"
             >
-              🔒 Admin / Personal
+              🔒 Admin (admin@injectionlab.local)
             </button>
           </div>
 

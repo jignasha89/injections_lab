@@ -17,8 +17,7 @@ import {
   HelpCircle, 
   Bookmark, 
   Award,
-  Terminal,
-  User
+  Terminal
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -190,10 +189,6 @@ export default function LabDetailPage() {
                   Threat Classification
                 </h4>
                 <div className="space-y-3 font-mono text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Assigned Member:</span>
-                    <span className="text-cyan-400 font-bold">{lab.teamMember}</span>
-                  </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500">CWE Reference:</span>
                     <span className="text-cyan-400 font-bold">{lab.cwe}</span>
