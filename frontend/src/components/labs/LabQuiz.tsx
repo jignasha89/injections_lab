@@ -72,7 +72,6 @@ export default function LabQuiz({ slug, quiz }: LabQuizProps) {
   const handleReset = () => {
     setSelectedAnswers({});
     setSubmitted(false);
-    setResults({});
     setScore(0);
   };
 
