@@ -1,4 +1,4 @@
-﻿import request from 'supertest';
+import request from 'supertest';
 import app from '../index';
 import { analyzeUrl } from '../services/scannerService';
 
@@ -201,3 +201,28 @@ describe('New Injection Modules (IDs 56-78) - Scanner Detection', () => {
     }).not.toThrow();
   });
 });
+
+describe('Precision & False Positive Regression Tests', () => {
+  it('should accurately handle benign clean URL without false critical errors', () => {
+    const result = analyzeUrl('https://example.com/about?company=AcmeCorp&year=2024');
+    expect(result.summary.parameters).toBe(2);
+    // Should not falsely trigger SQLi or Command Injection on plain text
+    const criticalFindings = result.findings.filter(f => f.severity === 'Critical' && !f.type.includes('Universal'));
+    expect(criticalFindings.length).toBe(0);
+  });
+
+  it('should detect actual SQLi payload in id parameter with high accuracy', () => {
+    const result = analyzeUrl('https://example.com/products?id=1%27+OR+%271%27%3D%271');
+    const sqliFinding = result.findings.find(f => f.injectionFamily === 'SQL/NoSQL Injection');
+    expect(sqliFinding).toBeDefined();
+    expect(sqliFinding?.severity).toBe('Critical');
+  });
+
+  it('should detect actual XSS payload in search query with high accuracy', () => {
+    const result = analyzeUrl('https://example.com/search?q=%3Cscript%3Ealert(1)%3C%2Fscript%3E');
+    const xssFinding = result.findings.find(f => f.injectionFamily === 'Client-Side / XSS');
+    expect(xssFinding).toBeDefined();
+    expect(xssFinding?.cwe).toBe('CWE-79');
+  });
+});
+

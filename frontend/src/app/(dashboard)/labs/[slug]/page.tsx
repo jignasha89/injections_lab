@@ -234,7 +234,7 @@ export default function LabDetailPage() {
         )}
 
         {activeTab === 'sandbox' && (
-          <LabDemoSandbox slug={lab.slug} title={lab.title} />
+          <LabDemoSandbox slug={lab.slug} title={lab.title} category={lab.category} />
         )}
 
         {activeTab === 'code' && (
