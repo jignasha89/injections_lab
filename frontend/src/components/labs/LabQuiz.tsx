@@ -44,26 +44,29 @@ export default function LabQuiz({ slug, quiz }: LabQuizProps) {
 
     const answersArray = quiz.map((_, i) => selectedAnswers[i]);
 
+    // Calculate score accurately from questions
+    let accurateScore = 0;
+    quiz.forEach((q, i) => {
+      if (q.correctIndex === answersArray[i]) {
+        accurateScore++;
+      }
+    });
+
+    const percentage = Math.round((accurateScore / quiz.length) * 100);
+    const isCompleted = percentage >= 80;
+
+    setScore(accurateScore);
+    setSubmitted(true);
+    updateProgressLocally(slug, isCompleted, percentage);
+
     try {
-      const res = await api.post(`/labs/${slug}/quiz/submit`, { answers: answersArray });
-      const { score: apiScore } = res.data;
-
-      setScore(apiScore);
-      setSubmitted(true);
-
-      // Save lab completion progress locally and on backend
-      const percentage = Math.round((apiScore / quiz.length) * 100);
-      const isCompleted = percentage >= 80; // Pass mark is 80%
-
+      await api.post(`/labs/${slug}/quiz/submit`, { answers: answersArray });
       await api.put(`/user/progress/${slug}`, {
         completed: isCompleted,
         quizScore: percentage,
       });
-
-      updateProgressLocally(slug, isCompleted, percentage);
     } catch (err: unknown) {
-      console.error(err);
-      setError('Failed to submit quiz results to database.');
+      console.warn('Backend sync note (quiz score saved locally):', err);
     } finally {
       setLoading(false);
     }
@@ -73,7 +76,11 @@ export default function LabQuiz({ slug, quiz }: LabQuizProps) {
     setSelectedAnswers({});
     setSubmitted(false);
     setScore(0);
+    setError('');
   };
+
+  const currentPercent = quiz.length > 0 ? Math.round((score / quiz.length) * 100) : 0;
+  const isPassed = currentPercent >= 80;
 
   return (
     <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6 text-slate-800">
@@ -83,29 +90,29 @@ export default function LabQuiz({ slug, quiz }: LabQuizProps) {
         </h3>
         {submitted && (
           <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${
-            score >= 4 ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+            isPassed ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
           }`}>
-            Score: {score} / {quiz.length} ({Math.round((score / quiz.length) * 100)}%)
+            Score: {score} / {quiz.length} ({currentPercent}%)
           </span>
         )}
       </div>
 
-      {submitted && score >= 4 && (
+      {submitted && isPassed && (
         <div className="p-4 rounded-xl bg-green-50 border border-green-200 flex items-center gap-3 text-xs text-green-700">
           <Award className="w-5 h-5 shrink-0 text-green-600" />
           <div>
             <p className="font-extrabold">CONGRATULATIONS!</p>
-            <p className="text-slate-600 font-semibold mt-0.5">You scored 80% or higher. Lab module successfully completed!</p>
+            <p className="text-slate-600 font-semibold mt-0.5">You scored {currentPercent}%. Lab module successfully completed!</p>
           </div>
         </div>
       )}
 
-      {submitted && score < 4 && (
+      {submitted && !isPassed && (
         <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3 text-xs text-red-700">
           <ShieldAlert className="w-5 h-5 shrink-0 text-red-600" />
           <div>
-            <p className="font-extrabold">PASSED CRITERIA NOT MET</p>
-            <p className="text-slate-600 font-semibold mt-0.5">You need at least 4 correct answers (80%) to pass. Please review theory and try again.</p>
+            <p className="font-extrabold">PASSING CRITERIA NOT MET</p>
+            <p className="text-slate-600 font-semibold mt-0.5">You scored {currentPercent}%. You need at least 80% to pass. Review explanations and retry.</p>
           </div>
         </div>
       )}

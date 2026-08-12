@@ -1630,33 +1630,41 @@ export function analyzeUrl(rawUrl: string): ScanResult {
       }
     }
 
-    // If no param match, try path/domain-only matching
-    if (!matched && !rule.paramNamePattern) {
-      let pathOk = !rule.pathPattern || rule.pathPattern.test(url.pathname);
-      let domainOk = !rule.domainPattern || rule.domainPattern.test(domain);
+    // If no param match, try path/domain/tech-only matching (only if rule defines them)
+    if (!matched && !rule.paramNamePattern && !rule.paramValuePattern) {
+      const hasPath = Boolean(rule.pathPattern);
+      const hasDomain = Boolean(rule.domainPattern);
+      const hasTech = Boolean(rule.techPattern);
 
-      if (pathOk && domainOk) {
-        matched = true;
-        matchedParam = 'path';
-        evidence = `URL path "${url.pathname}" matches injection pattern for ${rule.type}`;
+      if (hasPath || hasDomain || hasTech) {
+        const pathMatches = hasPath ? rule.pathPattern!.test(url.pathname) : true;
+        const domainMatches = hasDomain ? rule.domainPattern!.test(domain) : true;
+        const techMatches = hasTech ? techStackClues.some(t => rule.techPattern!.test(t)) : true;
+
+        const atLeastOneSpecificMatch =
+          (hasPath && rule.pathPattern!.test(url.pathname)) ||
+          (hasDomain && rule.domainPattern!.test(domain)) ||
+          (hasTech && techStackClues.some(t => rule.techPattern!.test(t)));
+
+        if (pathMatches && domainMatches && techMatches && atLeastOneSpecificMatch) {
+          matched = true;
+          matchedParam = 'path';
+          evidence = `URL structure/path "${url.pathname}" matches injection indicator for ${rule.type}`;
+        }
       }
     }
 
-    // Path-pattern check for rules that also have paramName
+    // Path-pattern check for rules that require both path and paramName
     if (!matched && rule.pathPattern && rule.paramNamePattern) {
       if (rule.pathPattern.test(url.pathname)) {
         for (const param of parameters) {
           if (rule.paramNamePattern.test(param)) {
             matched = true;
             matchedParam = param;
+            matchedValue = paramValues[param] || '';
             evidence = `Path "${url.pathname}" + param "${param}" matches ${rule.type} pattern`;
             break;
           }
-        }
-        // Or path-only match if pathPattern without param match needed
-        if (!matched && parameters.length === 0) {
-          matched = true;
-          evidence = `Path "${url.pathname}" matches ${rule.type} pattern`;
         }
       }
     }
