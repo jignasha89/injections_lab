@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useStore } from '@/lib/store';
-import { labsData, LabData } from '@/data/labsData';
+import { labsData } from '@/data/labsData';
 import LabDemoSandbox from '@/components/labs/LabDemoSandbox';
 import LabCodeComparison from '@/components/labs/LabCodeComparison';
 import LabQuiz from '@/components/labs/LabQuiz';
@@ -27,30 +27,29 @@ export default function LabDetailPage() {
   const { progress, toggleBookmark } = useStore();
   const slug = params.slug as string;
 
-  const [lab, setLab] = useState<LabData | null>(null);
+  const lab = labsData.find((l) => l.slug === slug) || null;
   const [activeTab, setActiveTab] = useState<'theory' | 'sandbox' | 'code' | 'quiz' | 'interview'>('theory');
   const [localNote, setLocalNote] = useState('');
   const [savingNote, setSavingNote] = useState(false);
 
   useEffect(() => {
-    const foundLab = labsData.find((l) => l.slug === slug);
-    if (!foundLab) {
+    if (!lab) {
       router.push('/labs');
       return;
     }
-    setLab(foundLab);
 
     const fetchNote = async () => {
       try {
         const res = await api.get('/user/notes');
-        const noteObj = res.data.notes?.find((n: any) => n.labSlug === slug);
+        const notes = res.data.notes as Array<{ labSlug: string; content: string }> | undefined;
+        const noteObj = notes?.find((n) => n.labSlug === slug);
         if (noteObj) setLocalNote(noteObj.content);
       } catch (err) {
         console.error('Failed to load notes:', err);
       }
     };
     fetchNote();
-  }, [slug, router]);
+  }, [slug, lab, router]);
 
   if (!lab) {
     return (
@@ -75,7 +74,7 @@ export default function LabDetailPage() {
     }
   };
 
-  const tabs = [
+  const tabs: { id: 'theory' | 'sandbox' | 'code' | 'quiz' | 'interview'; name: string; icon: typeof BookOpen }[] = [
     { id: 'theory', name: 'Theory & Architecture', icon: BookOpen },
     { id: 'sandbox', name: 'Interactive Demo', icon: FlaskConical },
     { id: 'code', name: 'Vulnerable vs Secure Code', icon: Code2 },
@@ -136,7 +135,7 @@ export default function LabDetailPage() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-2.5 rounded-t-xl text-xs font-mono font-bold transition-all flex items-center gap-2 border-b-2 shrink-0 ${
                 isActive
                   ? 'border-cyan-400 text-cyan-400 bg-cyan-500/10'

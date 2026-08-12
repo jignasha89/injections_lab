@@ -85,31 +85,33 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ error: 'Internal server error' });
 });
 
-if (process.env.USE_MEMORY_DB === 'true') {
-  console.log('ℹ️ Starting in-memory database mode directly.');
-  app.listen(PORT, () => {
-    console.log(`🚀 InjectionLab API running on port ${PORT} [IN-MEMORY MODE]`);
-    console.log(`⚠️  For authorized educational use only.`);
-  });
-} else {
-  // Connect to MongoDB and start server
-  mongoose
-    .connect(MONGODB_URI, { serverSelectionTimeoutMS: 5000 })
-    .then(() => {
-      console.log('✅ Connected to MongoDB');
-      app.listen(PORT, () => {
-        console.log(`🚀 InjectionLab API running on port ${PORT}`);
-        console.log(`⚠️  For authorized educational use only.`);
-      });
-    })
-    .catch((err) => {
-      console.warn('⚠️ MongoDB connection error. Falling back to IN-MEMORY DATABASE mode.');
-      process.env.USE_MEMORY_DB = 'true';
-      app.listen(PORT, () => {
-        console.log(`🚀 InjectionLab API running on port ${PORT} [IN-MEMORY FALLBACK]`);
-        console.log(`⚠️  For authorized educational use only.`);
-      });
+if (process.env.NODE_ENV !== 'test') {
+  if (process.env.USE_MEMORY_DB === 'true') {
+    console.log('ℹ️ Starting in-memory database mode directly.');
+    app.listen(PORT, () => {
+      console.log(`🚀 InjectionLab API running on port ${PORT} [IN-MEMORY MODE]`);
+      console.log(`⚠️  For authorized educational use only.`);
     });
+  } else {
+    // Connect to MongoDB and start server
+    mongoose
+      .connect(MONGODB_URI, { serverSelectionTimeoutMS: 5000 })
+      .then(() => {
+        console.log('✅ Connected to MongoDB');
+        app.listen(PORT, () => {
+          console.log(`🚀 InjectionLab API running on port ${PORT}`);
+          console.log(`⚠️  For authorized educational use only.`);
+        });
+      })
+      .catch((err) => {
+        console.warn('⚠️ MongoDB connection error. Falling back to IN-MEMORY DATABASE mode.');
+        process.env.USE_MEMORY_DB = 'true';
+        app.listen(PORT, () => {
+          console.log(`🚀 InjectionLab API running on port ${PORT} [IN-MEMORY FALLBACK]`);
+          console.log(`⚠️  For authorized educational use only.`);
+        });
+      });
+  }
 }
 
 export default app;

@@ -6,17 +6,10 @@ import { labsData } from '@/data/labsData';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
-  FlaskConical, 
   CheckCircle, 
   Bookmark, 
   Search, 
-  Play,
-  User,
-  ShieldCheck,
-  Cpu,
-  Code2,
-  Terminal,
-  Bot
+  Play
 } from 'lucide-react';
 
 export default function LabsIndexPage() {
@@ -43,10 +36,10 @@ export default function LabsIndexPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-3">
-            Vulnerability Labs <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold">55 Interactive Sandboxes</span>
+            Vulnerability Labs <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold">78 Interactive Sandboxes</span>
           </h2>
           <p className="text-zinc-400 text-sm mt-1.5 font-mono">
-            Explore 55 injection attack simulation modules categorized across 4 core vulnerability domains.
+            Explore 78 injection attack simulation modules categorized across 7 core vulnerability domains.
           </p>
         </div>
       </div>
@@ -75,7 +68,7 @@ export default function LabsIndexPage() {
           <div className="relative w-full md:w-80">
             <input
               type="text"
-              placeholder="Filter 55 lab titles, CWEs..."
+              placeholder="Filter 78 lab titles, CWEs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 rounded-xl text-xs font-mono bg-[#050508] border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:bg-[#0a0b12] focus:border-cyan-500/50 focus:outline-none"
@@ -85,7 +78,7 @@ export default function LabsIndexPage() {
         </div>
       </div>
 
-      {/* Grid of 55 Labs */}
+      {/* Grid of 78 Labs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredLabs.map((lab, idx) => {
           const userProg = progress.find((p) => p.labSlug === lab.slug);

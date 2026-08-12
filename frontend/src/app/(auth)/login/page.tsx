@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useStore } from '@/lib/store';
 import { api } from '@/lib/api';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,9 +33,10 @@ export default function LoginPage() {
       const res = await api.post('/auth/login', { email, password });
       setAuth(res.data.accessToken, res.data.user);
       router.push('/dashboard');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.response?.data?.error || 'Invalid credentials or connection error');
+      const errorObj = err as { response?: { data?: { error?: string } } };
+      setError(errorObj.response?.data?.error || 'Invalid credentials or connection error');
     } finally {
       setLoading(false);
     }
@@ -55,9 +57,11 @@ export default function LoginPage() {
         {/* Header */}
         <div className="flex flex-col items-center gap-2">
           <div className="p-1 rounded-3xl bg-black/40 border border-cyan-500/40 shadow-[0_0_35px_rgba(0,240,255,0.3)]">
-            <img 
+            <Image 
               src="/logo.png" 
               alt="InjectionLab Logo" 
+              width={80}
+              height={80}
               className="w-20 h-20 object-contain dark-logo scale-105"
             />
           </div>
@@ -68,7 +72,7 @@ export default function LoginPage() {
             Learn • Test • Secure
           </p>
           <span className="text-[10px] font-mono text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded-full mt-1">
-            55 Attack Vectors • Interactive Security Platform
+            78 Attack Vectors • Interactive Security Platform
           </span>
         </div>
 

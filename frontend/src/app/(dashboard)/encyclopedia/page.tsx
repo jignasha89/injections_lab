@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { labsData } from '@/data/labsData';
 import { useStore } from '@/lib/store';
-import { BookOpen, Search, Bookmark, ChevronRight, User } from 'lucide-react';
+import { BookOpen, Search, Bookmark, ChevronRight } from 'lucide-react';
 
 export default function EncyclopediaPage() {
   const router = useRouter();
@@ -14,10 +14,6 @@ export default function EncyclopediaPage() {
   const { progress, toggleBookmark } = useStore();
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [filterSeverity, setFilterSeverity] = useState('All');
-
-  useEffect(() => {
-    setSearchQuery(searchParams.get('search') || '');
-  }, [searchParams]);
 
   const severities = ['All', 'Critical', 'High', 'Medium', 'Low'];
 
@@ -38,7 +34,7 @@ export default function EncyclopediaPage() {
       {/* Title */}
       <div>
         <h2 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-3">
-          Injection Encyclopedia <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold">55 Types</span>
+          Injection Encyclopedia <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold">78 Types</span>
         </h2>
         <p className="text-zinc-400 text-sm mt-1.5 font-mono">
           Comprehensive threat catalog containing classifications, CWE mappings, and CVSS scores.
@@ -69,7 +65,7 @@ export default function EncyclopediaPage() {
           <div className="relative w-full md:w-80">
             <input
               type="text"
-              placeholder="Search 55 injection types..."
+              placeholder="Search 78 injection types..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 rounded-xl text-xs font-mono bg-[#050508] border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:bg-[#0a0b12] focus:border-cyan-500/50 focus:outline-none"

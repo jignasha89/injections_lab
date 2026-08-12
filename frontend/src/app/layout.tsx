@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "InjectionLab — Learn • Test • Secure",
-  description: "Interactive 55-Vector Injection Security Educational Platform",
+  description: "Interactive 78-Vector Injection Security Educational Platform",
   icons: {
     icon: "/favicon.png",
   },

@@ -1,6 +1,7 @@
 'use client';
 
-import { ShieldCheck, Flame, BookOpen, User, ExternalLink, Cpu, Code2, Terminal, Bot } from 'lucide-react';
+import { ShieldCheck, Flame, BookOpen, ExternalLink, Cpu, Code2, Terminal, Bot } from 'lucide-react';
+import Image from 'next/image';
 
 export default function AboutPage() {
   const domains = [
@@ -40,9 +41,11 @@ export default function AboutPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-5">
         <div className="flex items-center gap-4">
           <div className="p-1 rounded-2xl bg-black/40 border border-cyan-500/40 shadow-[0_0_30px_rgba(0,240,255,0.3)] shrink-0">
-            <img 
+            <Image 
               src="/logo.png" 
               alt="InjectionLab Logo" 
+              width={72}
+              height={72}
               className="w-18 h-18 object-contain dark-logo scale-105"
             />
           </div>
@@ -70,13 +73,13 @@ export default function AboutPage() {
             </div>
           </div>
           <div className="px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono text-xs font-bold">
-            55 Attack Vectors Cataloged
+            78 Attack Vectors Cataloged
           </div>
         </div>
 
         <div className="space-y-4 text-xs md:text-sm text-zinc-300 leading-relaxed font-sans">
           <p>
-            <strong className="text-white">InjectionLab</strong> is an interactive web security demonstration tool that cataloged <span className="text-cyan-400 font-mono font-bold">55 distinct injection attack vectors</span> across 4 core technical domains. Designed for execution on both <span className="text-emerald-400 font-mono">Windows</span> and <span className="text-purple-400 font-mono font-bold">Kali Linux</span>.
+            <strong className="text-white">InjectionLab</strong> is an interactive web security demonstration tool that cataloged <span className="text-cyan-400 font-mono font-bold">78 distinct injection attack vectors</span> across 7 core technical domains. Designed for execution on both <span className="text-emerald-400 font-mono">Windows</span> and <span className="text-purple-400 font-mono font-bold">Kali Linux</span>.
           </p>
           <p>
             Every vulnerability entry features a complete 5-question viva/defense breakdown (Definition Q1, Attack Mechanics Q2, Live Demo Q3, Secure Remediation Q4, and Real-world CVE Q5) paired with side-by-side vulnerable vs secure code implementations.
@@ -99,7 +102,7 @@ export default function AboutPage() {
               <Flame className="w-4 h-4 text-rose-400" /> Lab Mode (Docker Sandboxed)
             </h4>
             <p className="text-xs text-zinc-400 leading-relaxed">
-              Self-contained simulation sandboxes for all 55 injection types including high-risk vectors (Log4Shell, OS CMDi, SSTI, Prompt Injection) safely isolated from host networks.
+              Self-contained simulation sandboxes for all 78 injection types including high-risk vectors (Log4Shell, OS CMDi, SSTI, Prompt Injection, Java Deserialization, YAML/Pickle RCE) safely isolated from host networks.
             </p>
           </div>
         </div>
@@ -113,11 +116,11 @@ export default function AboutPage() {
               Technical Domains & Attack Classifications
             </h3>
             <p className="text-xs text-zinc-400 mt-1">
-              All 55 injection attack types categorized across 4 domain areas
+              All 78 injection attack types categorized across 7 domain areas
             </p>
           </div>
           <span className="px-3 py-1 rounded-full bg-zinc-800 text-xs font-mono font-bold text-cyan-400 border border-zinc-700">
-            4 Domains • 55 Types Total
+            7 Domains • 78 Types Total
           </span>
         </div>
 

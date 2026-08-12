@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import { useStore } from '@/lib/store';
-import { HelpCircle, Check, X, ShieldAlert, Award } from 'lucide-react';
+import { Check, X, ShieldAlert, Award } from 'lucide-react';
 
 interface QuizQuestion {
   question: string;
@@ -21,7 +21,6 @@ export default function LabQuiz({ slug, quiz }: LabQuizProps) {
   const { updateProgressLocally } = useStore();
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
   const [submitted, setSubmitted] = useState(false);
-  const [results, setResults] = useState<{ [key: number]: boolean }>({});
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -47,16 +46,9 @@ export default function LabQuiz({ slug, quiz }: LabQuizProps) {
 
     try {
       const res = await api.post(`/labs/${slug}/quiz/submit`, { answers: answersArray });
-      const { score: apiScore, results: apiResults } = res.data;
-
-      // Update local state
-      const mappedResults: { [key: number]: boolean } = {};
-      apiResults.forEach((r: any) => {
-        mappedResults[r.questionIndex] = r.correct;
-      });
+      const { score: apiScore } = res.data;
 
       setScore(apiScore);
-      setResults(mappedResults);
       setSubmitted(true);
 
       // Save lab completion progress locally and on backend
@@ -69,7 +61,7 @@ export default function LabQuiz({ slug, quiz }: LabQuizProps) {
       });
 
       updateProgressLocally(slug, isCompleted, percentage);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError('Failed to submit quiz results to database.');
     } finally {

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, ShieldAlert, ShieldCheck, Terminal, HelpCircle, Send } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Terminal, Send } from 'lucide-react';
 
 interface SandboxProps {
   slug: string;
@@ -13,7 +13,6 @@ export default function LabDemoSandbox({ slug, title }: SandboxProps) {
   const [isSecureMode, setIsSecureMode] = useState(false);
   const [inputVal, setInputVal] = useState('');
   const [consoleLogs, setConsoleLogs] = useState<string[]>(['Sandbox ready. Enter inputs to trace flow.']);
-  const [demoOutput, setDemoOutput] = useState<any>(null);
 
   // Set default placeholder payloads depending on the lab slug
   const getPayloadTemplate = () => {
@@ -52,7 +51,7 @@ export default function LabDemoSandbox({ slug, title }: SandboxProps) {
   const handleSimulate = () => {
     const val = inputVal.trim() || getPayloadTemplate();
     const logs: string[] = [];
-    let output: any = null;
+    let output: Record<string, unknown> | null = null;
 
     logs.push(`[INIT] Starting execution trace for: ${title}`);
     logs.push(`[INFO] Current Environment: ${isSecureMode ? 'SECURE MODE' : 'VULNERABLE MODE'}`);
@@ -222,8 +221,8 @@ export default function LabDemoSandbox({ slug, title }: SandboxProps) {
       }
     }
 
+    void output;
     setConsoleLogs(logs);
-    setDemoOutput(output);
   };
 
   return (

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { 
@@ -14,7 +15,6 @@ import {
   User as UserIcon, 
   Info,
   LogOut,
-  ShieldCheck,
   X
 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -55,9 +55,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       <div className="p-5 border-b border-zinc-800/80 flex items-center justify-between gap-3">
         <Link href="/dashboard" className="flex items-center gap-3 group">
           <div className="relative overflow-hidden rounded-2xl bg-black/40 border border-cyan-500/40 p-0.5 shadow-[0_0_20px_rgba(0,240,255,0.3)] shrink-0">
-            <img 
+            <Image 
               src="/logo.png" 
               alt="InjectionLab Logo" 
+              width={48}
+              height={48}
               className="w-12 h-12 object-contain dark-logo scale-105"
             />
           </div>

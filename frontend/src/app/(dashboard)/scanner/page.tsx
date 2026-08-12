@@ -6,15 +6,12 @@ import {
   Scan,
   ShieldAlert,
   CheckCircle,
-  AlertTriangle,
   Server,
   Save,
   ChevronDown,
   ChevronUp,
   Globe,
   Code2,
-  Target,
-  Zap,
   Shield,
   Eye,
   BookOpen,
@@ -147,9 +144,10 @@ export default function ScannerPage() {
     try {
       const res = await api.post('/scanner/analyze', { url, authorized });
       setResult(res.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.response?.data?.error || 'Target analysis failed. Verify URL structure.');
+      const errorObj = err as { response?: { data?: { error?: string } } };
+      setError(errorObj.response?.data?.error || 'Target analysis failed. Verify URL structure.');
     } finally {
       setLoading(false);
     }
@@ -192,7 +190,7 @@ export default function ScannerPage() {
         <h2 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-3">
           Injection Scanner{' '}
           <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold">
-            55 Injection Modules
+            78 Injection Modules
           </span>
         </h2>
         <p className="text-zinc-400 text-sm mt-1.5 font-mono">
@@ -305,7 +303,7 @@ export default function ScannerPage() {
               </div>
               <h3 className="font-mono font-bold text-base text-white">No Scan Running</h3>
               <p className="text-xs text-zinc-400 mt-2 max-w-sm leading-relaxed">
-                Enter a URL with query parameters (e.g. <span className="text-cyan-400 font-mono">?id=1&user=admin</span>) to detect injection vulnerabilities across 55 attack categories.
+                Enter a URL with query parameters (e.g. <span className="text-cyan-400 font-mono">?id=1&user=admin</span>) to detect injection vulnerabilities across 78 attack categories.
               </p>
               <div className="mt-6 grid grid-cols-2 gap-2 text-[11px] font-mono text-zinc-500 max-w-xs">
                 {['SQL Injection', 'XSS Variants', 'Command Injection', 'SSRF', 'SSTI', 'Prompt Injection', 'Path Traversal', 'Log4Shell'].map(t => (
@@ -318,7 +316,7 @@ export default function ScannerPage() {
           {loading && (
             <div className="bg-[#0c0d14] rounded-2xl p-12 text-center border border-zinc-800/80 flex flex-col items-center justify-center min-h-[420px]">
               <div className="w-12 h-12 border-4 border-t-cyan-400 border-r-transparent border-l-transparent border-b-rose-500 rounded-full animate-spin mb-4" />
-              <h3 className="font-mono font-bold text-base text-white">Running 55-Module Scan...</h3>
+              <h3 className="font-mono font-bold text-base text-white">Running 78-Module Scan...</h3>
               <p className="text-xs text-zinc-400 mt-2 font-mono">
                 Mapping parameters → Running injection pattern rules → Building report
               </p>

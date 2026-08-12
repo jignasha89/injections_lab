@@ -64,48 +64,65 @@ export default function ReportsPage() {
   const pdfRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchReports();
+    let ignore = false;
+    async function loadReports() {
+      try {
+        const res = await api.get('/reports');
+        if (!ignore) {
+          setReports(res.data.reports || []);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+    loadReports();
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   useEffect(() => {
-    if (reportId) {
-      fetchReportDetail(reportId);
-    } else {
-      setSelectedReport(null);
+    if (!reportId) return;
+    let ignore = false;
+    async function loadDetail() {
+      try {
+        const res = await api.get(`/reports/${reportId}`);
+        if (!ignore) {
+          setSelectedReport(res.data.report);
+        }
+      } catch (err) {
+        console.error(err);
+        if (!ignore) router.push('/reports');
+      } finally {
+        if (!ignore) setLoadingDetail(false);
+      }
     }
-  }, [reportId]);
+    loadDetail();
+    return () => {
+      ignore = true;
+    };
+  }, [reportId, router]);
 
-  const fetchReports = async () => {
+  const refreshReports = async () => {
     try {
       const res = await api.get('/reports');
       setReports(res.data.reports || []);
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const fetchReportDetail = async (id: string) => {
-    setLoadingDetail(true);
-    try {
-      const res = await api.get(`/reports/${id}`);
-      setSelectedReport(res.data.report);
-    } catch (err) {
-      console.error(err);
-      router.push('/reports');
-    } finally {
-      setLoadingDetail(false);
-    }
-  };
+  const displayedReport = reportId ? selectedReport : null;
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!confirm('Are you sure you want to delete this report?')) return;
     try {
       await api.delete(`/reports/${id}`);
-      fetchReports();
-      if (selectedReport?._id === id) {
+      refreshReports();
+      if (displayedReport?._id === id) {
         router.push('/reports');
       }
     } catch (err) {
@@ -114,7 +131,7 @@ export default function ReportsPage() {
   };
 
   const exportPDF = async () => {
-    if (!pdfRef.current || !selectedReport) return;
+    if (!pdfRef.current || !displayedReport) return;
     setExporting(true);
 
     try {
@@ -142,7 +159,7 @@ export default function ReportsPage() {
         heightLeft -= pageHeight;
       }
 
-      pdf.save(`InjectionLab-Audit-${selectedReport._id.slice(-8)}.pdf`);
+      pdf.save(`InjectionLab-Audit-${displayedReport._id.slice(-8)}.pdf`);
     } catch (err) {
       console.error('Failed to export PDF:', err);
     } finally {
@@ -163,7 +180,7 @@ export default function ReportsPage() {
           </p>
         </div>
 
-        {selectedReport && (
+        {displayedReport && (
           <button
             onClick={() => router.push('/reports')}
             className="px-3.5 py-2 rounded-xl text-xs font-mono font-bold bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-all flex items-center gap-1.5 self-start sm:self-auto"
@@ -174,7 +191,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Detail View Mode */}
-      {selectedReport ? (
+      {displayedReport ? (
         <div className="space-y-6">
           {/* Action Bar */}
           <div className="flex justify-end gap-3">
@@ -196,15 +213,15 @@ export default function ReportsPage() {
               <div className="border-b border-zinc-800 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                   <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest">InjectionLab Audit Report</span>
-                  <h3 className="text-2xl font-extrabold text-white font-mono mt-1">{selectedReport.title}</h3>
+                  <h3 className="text-2xl font-extrabold text-white font-mono mt-1">{displayedReport.title}</h3>
                   <p className="text-xs text-zinc-400 font-mono mt-1 flex items-center gap-1">
-                    <Globe className="w-3.5 h-3.5 text-cyan-400" /> {selectedReport.targetUrl}
+                    <Globe className="w-3.5 h-3.5 text-cyan-400" /> {displayedReport.targetUrl}
                   </p>
                 </div>
                 <div className="text-left md:text-right font-mono text-xs text-zinc-400">
-                  <p>REPORT ID: #{selectedReport._id.slice(-8)}</p>
+                  <p>REPORT ID: #{displayedReport._id.slice(-8)}</p>
                   <p className="mt-1 flex items-center gap-1 md:justify-end">
-                    <Calendar className="w-3.5 h-3.5 text-zinc-500" /> {new Date(selectedReport.createdAt).toLocaleDateString()}
+                    <Calendar className="w-3.5 h-3.5 text-zinc-500" /> {new Date(displayedReport.createdAt).toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -213,29 +230,29 @@ export default function ReportsPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono">
                 <div className="p-4 bg-[#050508] rounded-xl border border-zinc-800">
                   <p className="text-[10px] text-zinc-500 uppercase">Risk Score</p>
-                  <p className="text-xl font-bold text-rose-400 mt-1">{selectedReport.summary.riskScore} / 10</p>
+                  <p className="text-xl font-bold text-rose-400 mt-1">{displayedReport.summary.riskScore} / 10</p>
                 </div>
                 <div className="p-4 bg-[#050508] rounded-xl border border-zinc-800">
                   <p className="text-[10px] text-zinc-500 uppercase">Vulnerability Flags</p>
-                  <p className="text-xl font-bold text-cyan-400 mt-1">{selectedReport.summary.injectionPoints}</p>
+                  <p className="text-xl font-bold text-cyan-400 mt-1">{displayedReport.summary.injectionPoints}</p>
                 </div>
                 <div className="p-4 bg-[#050508] rounded-xl border border-zinc-800">
                   <p className="text-[10px] text-zinc-500 uppercase">Parameters</p>
-                  <p className="text-xl font-bold text-white mt-1">{selectedReport.summary.parameters}</p>
+                  <p className="text-xl font-bold text-white mt-1">{displayedReport.summary.parameters}</p>
                 </div>
                 <div className="p-4 bg-[#050508] rounded-xl border border-zinc-800">
                   <p className="text-[10px] text-zinc-500 uppercase">OWASP Categories</p>
-                  <p className="text-xl font-bold text-purple-400 mt-1">{selectedReport.summary.owaspCoverage.length}</p>
+                  <p className="text-xl font-bold text-purple-400 mt-1">{displayedReport.summary.owaspCoverage.length}</p>
                 </div>
               </div>
 
               {/* Detailed Findings */}
               <div className="space-y-4 pt-4 border-t border-zinc-800">
                 <h4 className="text-xs font-mono font-bold tracking-wider text-zinc-300 uppercase">
-                  Cataloged Vulnerabilities ({selectedReport.findings.length})
+                  Cataloged Vulnerabilities ({displayedReport.findings.length})
                 </h4>
 
-                {selectedReport.findings.map((f, i) => (
+                {displayedReport.findings.map((f, i) => (
                   <div key={i} className="p-4 rounded-xl bg-[#050508] border border-zinc-800 space-y-3 font-sans">
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex items-center gap-2 font-mono">
@@ -259,13 +276,13 @@ export default function ReportsPage() {
               </div>
 
               {/* Tech Stack */}
-              {selectedReport.techStack.length > 0 && (
+              {displayedReport.techStack.length > 0 && (
                 <div className="pt-4 border-t border-zinc-800 space-y-2">
                   <h4 className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
                     Detected Tech Stack Clues
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {selectedReport.techStack.map((tech) => (
+                    {displayedReport.techStack.map((tech) => (
                       <span key={tech} className="px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800 text-xs font-mono text-cyan-300">
                         {tech}
                       </span>

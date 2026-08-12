@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Search, Bookmark, Trophy, AlertTriangle, X, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface NavbarProps {
   onToggleSidebar?: () => void;
@@ -15,8 +16,8 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showBookmarks, setShowBookmarks] = useState(false);
 
-  // Calculate learning progress across 55 total labs
-  const totalLabs = 55;
+  // Calculate learning progress across 78 total labs
+  const totalLabs = 78;
   const completedLabs = progress.filter((p) => p.completed).length;
   const percentage = Math.round((completedLabs / totalLabs) * 100);
 
@@ -36,7 +37,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
       <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5 text-xs text-amber-300">
         <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
         <span className="font-bold tracking-wide font-mono">AUTHORIZATION ONLY:</span>
-        <span className="truncate text-zinc-300">This platform runs 55 injection demos strictly for institute educational audits & research.</span>
+        <span className="truncate text-zinc-300">This platform runs 78 injection demos strictly for institute educational audits & research.</span>
       </div>
 
       <div className="flex items-center justify-between gap-4">
@@ -52,9 +53,11 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
 
           {/* Mobile Brand Logo */}
           <div className="flex lg:hidden items-center gap-2">
-            <img 
+            <Image 
               src="/logo.png" 
               alt="InjectionLab Logo" 
+              width={40}
+              height={40}
               className="w-10 h-10 object-contain dark-logo scale-105"
             />
             <span className="font-extrabold text-sm font-mono text-white hidden sm:inline">
@@ -66,7 +69,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
           <form onSubmit={handleSearch} className="relative w-full max-w-xs md:max-w-md">
             <input
               type="text"
-              placeholder="Search 55 injection types, CWEs..."
+              placeholder="Search 78 injection types, CWEs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 rounded-xl text-xs font-mono bg-[#0e1017] border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:bg-[#121520] focus:border-cyan-500/50 focus:outline-none transition-colors"
@@ -86,7 +89,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                 style={{ width: `${percentage}%` }}
               />
             </div>
-            <span className="text-xs font-mono font-bold text-cyan-400">{completedLabs}/55 ({percentage}%)</span>
+            <span className="text-xs font-mono font-bold text-cyan-400">{completedLabs}/78 ({percentage}%)</span>
           </div>
 
           {/* Bookmarks Toggle */}

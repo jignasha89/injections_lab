@@ -3,9 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { api } from '@/lib/api';
-import DashboardCharts from '@/components/dashboard/DashboardCharts';
 import {
-  FileText,
   AlertTriangle,
   ListCollapse,
   Hash,
@@ -17,6 +15,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { labsData } from '@/data/labsData';
 
 interface ReportSummary {
@@ -106,9 +105,11 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-5">
         <div className="flex items-center gap-4">
           <div className="p-1 rounded-2xl bg-black/40 border border-cyan-500/40 shadow-[0_0_30px_rgba(0,240,255,0.3)] shrink-0">
-            <img
+            <Image
               src="/logo.png"
               alt="InjectionLab Logo"
+              width={72}
+              height={72}
               className="w-18 h-18 object-contain dark-logo scale-105"
             />
           </div>
@@ -123,7 +124,7 @@ export default function DashboardPage() {
           </div>
         </div>
         <p className="text-xs text-zinc-400 font-mono text-left sm:text-right max-w-xs leading-relaxed">
-          Real-time vulnerability monitor &amp; 55-vector attack catalog
+          Real-time vulnerability monitor &amp; 78-vector attack catalog
         </p>
       </div>
 
@@ -160,8 +161,8 @@ export default function DashboardPage() {
             <ShieldCheck className="w-4.5 h-4.5 text-cyan-400" />
           </div>
           <div className="mt-3">
-            <h4 className="text-2xl font-bold font-mono text-cyan-400">55</h4>
-            <p className="text-[10px] text-zinc-400 font-mono mt-1">4 Attack Families</p>
+            <h4 className="text-2xl font-bold font-mono text-cyan-400">78</h4>
+            <p className="text-[10px] text-zinc-400 font-mono mt-1">7 Attack Families</p>
           </div>
         </div>
 

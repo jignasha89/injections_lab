@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { Settings, ShieldAlert, CheckCircle, RefreshCcw, Database } from 'lucide-react';
+import { ShieldAlert, CheckCircle, RefreshCcw, Database } from 'lucide-react';
 import { api } from '@/lib/api';
 
 export default function SettingsPage() {
-  const { progress, setProgress, setAchievements, setNotes } = useStore();
+  const { setProgress, setAchievements, setNotes } = useStore();
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [resetting, setResetting] = useState(false);

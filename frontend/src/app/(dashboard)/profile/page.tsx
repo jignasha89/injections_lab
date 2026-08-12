@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useStore } from '@/lib/store';
-import { Trophy, ShieldCheck, Mail, User as UserIcon, Calendar, Download, Award } from 'lucide-react';
+import { Mail, Calendar, Download, Award } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 

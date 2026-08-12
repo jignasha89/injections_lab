@@ -10,7 +10,7 @@ export default function FixGuidePage() {
 
   const selectedLab = labsData.find((l) => l.slug === selectedLabSlug) || labsData[0];
 
-  const languages = [
+  const languages: { id: 'nodejs' | 'python' | 'java' | 'php'; name: string }[] = [
     { id: 'nodejs', name: 'Node.js (Express)' },
     { id: 'python', name: 'Python (Flask/Django)' },
     { id: 'java', name: 'Java (Spring Boot)' },
@@ -50,7 +50,7 @@ export default function FixGuidePage() {
       {/* Title */}
       <div>
         <h2 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-3">
-          Remediation Guide <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold">55 Attack Fixes</span>
+          Remediation Guide <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold">78 Attack Fixes</span>
         </h2>
         <p className="text-zinc-400 text-sm mt-1.5 font-mono">
           Review secure coding standards, framework-specific code fixes, and developer defense manuals.
@@ -112,7 +112,7 @@ export default function FixGuidePage() {
               {languages.map((lang) => (
                 <button
                   key={lang.id}
-                  onClick={() => setActiveLang(lang.id as any)}
+                  onClick={() => setActiveLang(lang.id)}
                   className={`px-4 py-2 text-xs font-mono font-bold shrink-0 border-b-2 transition-all ${
                     activeLang === lang.id
                       ? 'border-cyan-400 text-cyan-400 bg-cyan-500/10'

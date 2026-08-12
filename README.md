@@ -1,6 +1,6 @@
 # 🛡️ InjectionLab — Full-Stack Educational Security Platform
 
-**InjectionLab** is a full-stack web security education platform built for cybersecurity academic institutions. It demonstrates **55 distinct injection attack types** mapped across 4 core vulnerability domains, providing interactive payload sandboxes, structural target URL inspections, framework remediation guides, quiz assessments, and official PDF audit reports.
+**InjectionLab** is a full-stack web security education platform built for cybersecurity academic institutions. It demonstrates **78 distinct injection attack types** mapped across 7 core vulnerability domains, providing interactive payload sandboxes, structural target URL inspections, framework remediation guides, quiz assessments, and official PDF audit reports.
 
 ---
 

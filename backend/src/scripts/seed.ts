@@ -58,11 +58,37 @@ async function seed() {
       ]
     });
 
+    const demoUser = new User({
+      username: 'InjectionLab Demo',
+      email: 'open@gmail.com',
+      passwordHash: 'open@123', // pre-save hook hashes this
+      role: 'student',
+      progress: labsData.map((lab, i) => ({
+        labSlug: lab.slug,
+        completed: i < 5,
+        quizScore: i < 5 ? 70 + i * 5 : 0,
+        completedAt: i < 5 ? new Date(Date.now() - (5 - i) * 24 * 60 * 60 * 1000) : undefined,
+        bookmarked: i === 1 || i === 7,
+      })),
+      achievements: [
+        { id: 'first_lab', earnedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) }
+      ],
+      notes: [
+        {
+          labSlug: 'error-based-sqli',
+          content: 'Error-based SQLi: Force the DB to leak versions or tables inside error output.',
+          updatedAt: new Date(),
+        },
+      ],
+    });
+
     await admin.save();
     await student.save();
+    await demoUser.save();
     console.log('Users created:');
     console.log('- admin@injectionlab.local / admin12345 (Admin)');
     console.log('- student@injectionlab.local / student@123 (Student)');
+    console.log('- open@gmail.com / open@123 (Demo Public)');
 
     // 3. Create Sample Scan Reports
     console.log('Creating sample scan reports...');
