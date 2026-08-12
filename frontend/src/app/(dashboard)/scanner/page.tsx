@@ -85,6 +85,7 @@ const FAMILY_COLORS: Record<string, string> = {
 
 export default function ScannerPage() {
   const [url, setUrl] = useState('');
+  const [scanMode, setScanMode] = useState<'heuristic' | 'active'>('heuristic');
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
@@ -95,6 +96,11 @@ export default function ScannerPage() {
   const [filterFamily, setFilterFamily] = useState<string>('All');
 
   const presets = [
+    {
+      name: 'Local Sandbox / DVWA',
+      url: 'http://localhost:3000/api/users?id=1&name=admin',
+      tag: 'Localhost Target',
+    },
     {
       name: 'PHP Admin Portal',
       url: 'http://vuln-app.test/admin/login.php?username=admin&password=test&redirect=/dashboard',
@@ -120,11 +126,6 @@ export default function ScannerPage() {
       url: 'https://ai-app.test/api/chat?prompt=hello&model=gpt4&url=https://source.com',
       tag: 'Prompt Injection',
     },
-    {
-      name: 'Email & Log System',
-      url: 'http://app.test/contact?to=admin@site.com&subject=test&log=event&ua=Mozilla',
-      tag: 'SMTP + Log',
-    },
   ];
 
   const handleScan = async (e: React.FormEvent) => {
@@ -142,7 +143,8 @@ export default function ScannerPage() {
 
     setLoading(true);
     try {
-      const res = await api.post('/scanner/analyze', { url, authorized });
+      const endpoint = scanMode === 'active' ? '/scanner/active' : '/scanner/analyze';
+      const res = await api.post(endpoint, { url, authorized });
       setResult(res.data);
     } catch (err: unknown) {
       console.error(err);
@@ -159,7 +161,7 @@ export default function ScannerPage() {
     setSaveSuccess(false);
     try {
       await api.post('/reports/generate', {
-        title: `Heuristic Scan — ${result.domain}`,
+        title: `${scanMode === 'active' ? 'Active Differential' : 'Heuristic'} Scan — ${result.domain}`,
         targetUrl: result.targetUrl,
         scanType: 'url',
         summary: result.summary,
@@ -194,7 +196,7 @@ export default function ScannerPage() {
           </span>
         </h2>
         <p className="text-zinc-400 text-sm mt-1.5 font-mono">
-          Heuristic URL parser detecting SQL/NoSQL, XSS, Command Injection, SSRF, Prompt Injection &amp; more — no real exploit payloads sent.
+          Comprehensive analyzer supporting Heuristic URL parsing and Active Differential Probing against local educational targets.
         </p>
       </div>
 
@@ -203,9 +205,46 @@ export default function ScannerPage() {
         <div className="lg:col-span-1 space-y-5">
           {/* Scan Form */}
           <div className="bg-[#0c0d14] p-6 rounded-2xl border border-zinc-800/80 shadow-2xl space-y-5">
-            <h3 className="text-xs font-mono font-bold tracking-wider text-cyan-400 uppercase border-b border-zinc-800/80 pb-2">
-              Configure Target
-            </h3>
+            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2">
+              <h3 className="text-xs font-mono font-bold tracking-wider text-cyan-400 uppercase">
+                Configure Target
+              </h3>
+              <span className="text-[10px] font-mono text-zinc-400">
+                Mode: {scanMode === 'active' ? 'Active Probe' : 'Heuristic'}
+              </span>
+            </div>
+
+            {/* Mode Switcher */}
+            <div className="grid grid-cols-2 gap-2 bg-[#050508] p-1 rounded-xl border border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setScanMode('heuristic')}
+                className={`py-2 px-3 rounded-lg text-xs font-mono font-bold transition-all ${
+                  scanMode === 'heuristic'
+                    ? 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-300'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                Heuristic Mode
+              </button>
+              <button
+                type="button"
+                onClick={() => setScanMode('active')}
+                className={`py-2 px-3 rounded-lg text-xs font-mono font-bold transition-all ${
+                  scanMode === 'active'
+                    ? 'bg-amber-500/20 border border-amber-500/50 text-amber-300'
+                    : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+              >
+                Active Probe (Local)
+              </button>
+            </div>
+
+            {scanMode === 'active' && (
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-300/90 font-mono leading-relaxed">
+                Active Differential Mode extracts HTML forms, sends baseline vs probe comparisons, and evaluates confidence. Restricted to localhost/private targets.
+              </div>
+            )}
 
             <form onSubmit={handleScan} className="space-y-4">
               <div>
@@ -216,7 +255,7 @@ export default function ScannerPage() {
                   <input
                     type="url"
                     required
-                    placeholder="https://target.com/page?id=1&user=admin"
+                    placeholder={scanMode === 'active' ? 'http://localhost:3000/app?id=1' : 'https://target.com/page?id=1&user=admin'}
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     className="w-full pl-9 pr-4 py-2.5 rounded-xl text-xs font-mono bg-[#050508] border border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:bg-[#0a0b12] focus:border-cyan-500/50 focus:outline-none transition"
@@ -243,17 +282,21 @@ export default function ScannerPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl text-xs font-mono font-bold bg-cyan-500 hover:bg-cyan-400 text-black shadow-[0_0_20px_rgba(0,240,255,0.25)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className={`w-full py-3 rounded-xl text-xs font-mono font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2 ${
+                  scanMode === 'active'
+                    ? 'bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_20px_rgba(245,158,11,0.25)]'
+                    : 'bg-cyan-500 hover:bg-cyan-400 text-black shadow-[0_0_20px_rgba(0,240,255,0.25)]'
+                }`}
               >
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-t-black border-r-transparent border-l-transparent border-b-black rounded-full animate-spin" />
-                    Analyzing Parameters...
+                    {scanMode === 'active' ? 'Extracting & Probing Forms...' : 'Analyzing Parameters...'}
                   </>
                 ) : (
                   <>
                     <Scan className="w-4 h-4" />
-                    Run Injection Scan
+                    {scanMode === 'active' ? 'Run Active Differential Probe' : 'Run Heuristic Scan'}
                   </>
                 )}
               </button>

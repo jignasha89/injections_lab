@@ -246,4 +246,23 @@ describe('Target Scope and Safety Controls', () => {
   });
 });
 
+describe('Active Differential Scanner & Safety Boundaries', () => {
+  it('should reject active scan against external third-party domain', async () => {
+    const res = await request(app)
+      .post('/api/scanner/active')
+      .send({ url: 'https://google.com', authorized: true });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('Safety Boundary Enforcement');
+  });
+
+  it('should require authorization before running active scan', async () => {
+    const res = await request(app)
+      .post('/api/scanner/active')
+      .send({ url: 'http://localhost:3000', authorized: false });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('Authorization');
+  });
+});
+
+
 

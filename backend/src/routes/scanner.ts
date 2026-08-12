@@ -2,11 +2,12 @@ import { Router, Response } from 'express';
 import { optionalAuthenticate, AuthRequest } from '../middleware/auth';
 import { analyzeUrl } from '../services/scannerService';
 import { validateAndInitTarget, ScanScopeConfig } from '../services/targetScopeService';
+import { runActiveScan, ActiveScanConfig } from '../services/activeScannerService';
 
 const router = Router();
 
 // POST /api/scanner/analyze
-// Performs structured analysis within authorized scope
+// Performs structured heuristic analysis within authorized scope (safe for all URLs)
 router.post('/analyze', optionalAuthenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   const { url, authorized, scope } = req.body as { url: string; authorized: boolean; scope?: Partial<ScanScopeConfig> };
 
@@ -26,6 +27,7 @@ router.post('/analyze', optionalAuthenticate, async (req: AuthRequest, res: Resp
       disclaimer: 'This is a heuristic/structural analysis for educational purposes only.',
       targetScope: targetValidation.scope,
       normalizedTarget: targetValidation.normalizedUrl,
+      scanMode: 'Heuristic',
       ...result,
     });
   } catch (err) {
@@ -34,4 +36,40 @@ router.post('/analyze', optionalAuthenticate, async (req: AuthRequest, res: Resp
   }
 });
 
+// POST /api/scanner/active
+// Performs active differential testing against localhost / self-hosted educational targets (DVWA, Juice Shop, etc.)
+router.post('/active', optionalAuthenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  const { url, authorized, config } = req.body as {
+    url: string;
+    authorized: boolean;
+    config?: ActiveScanConfig;
+  };
+
+  if (!authorized) {
+    res.status(400).json({
+      error: 'Authorization confirmation required.',
+      message: 'You must confirm authorized ownership or permission before scanning.',
+    });
+    return;
+  }
+
+  if (!url || typeof url !== 'string') {
+    res.status(400).json({ error: 'Valid URL required' });
+    return;
+  }
+
+  try {
+    const result = await runActiveScan(url, config);
+    res.json({
+      disclaimer: 'Active differential test completed on authorized local sandbox target.',
+      scanMode: 'Active Differential Probe',
+      ...result,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Active scan execution failed';
+    res.status(400).json({ error: message });
+  }
+});
+
 export default router;
+
