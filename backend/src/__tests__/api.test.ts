@@ -226,3 +226,24 @@ describe('Precision & False Positive Regression Tests', () => {
   });
 });
 
+describe('Target Scope and Safety Controls', () => {
+  it('should block unconfirmed authorization requests with 400 status', async () => {
+    const res = await request(app)
+      .post('/api/scanner/analyze')
+      .send({ url: 'https://example.com', authorized: false });
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  it('should allow authorized requests with normalized target scope metadata', async () => {
+    const res = await request(app)
+      .post('/api/scanner/analyze')
+      .send({ url: 'https://EXAMPLE.com/search?q=test#section', authorized: true });
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('targetScope');
+    expect(res.body.normalizedTarget).toBe('https://example.com/search?q=test');
+    expect(res.body.targetScope.maxDepth).toBe(2);
+  });
+});
+
+

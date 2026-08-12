@@ -1,38 +1,31 @@
 import { Router, Response } from 'express';
 import { optionalAuthenticate, AuthRequest } from '../middleware/auth';
 import { analyzeUrl } from '../services/scannerService';
+import { validateAndInitTarget, ScanScopeConfig } from '../services/targetScopeService';
 
 const router = Router();
 
 // POST /api/scanner/analyze
-// Performs HEURISTIC analysis only - no real HTTP requests to user targets
+// Performs structured analysis within authorized scope
 router.post('/analyze', optionalAuthenticate, async (req: AuthRequest, res: Response): Promise<void> => {
-  const { url, authorized } = req.body;
+  const { url, authorized, scope } = req.body as { url: string; authorized: boolean; scope?: Partial<ScanScopeConfig> };
 
-  if (!authorized) {
-    res.status(403).json({
-      error: 'Authorization confirmation required.',
-      message: 'You must confirm you are authorized to test this target.',
+  const targetValidation = validateAndInitTarget(url, authorized, scope);
+
+  if (!targetValidation.isAllowed) {
+    res.status(400).json({
+      error: targetValidation.validationError || 'Invalid target configuration.',
+      message: targetValidation.validationError,
     });
     return;
   }
 
-  if (!url || typeof url !== 'string') {
-    res.status(400).json({ error: 'Valid URL required' });
-    return;
-  }
-
   try {
-    new URL(url); // Validate URL format
-  } catch {
-    res.status(400).json({ error: 'Invalid URL format' });
-    return;
-  }
-
-  try {
-    const result = analyzeUrl(url);
+    const result = analyzeUrl(targetValidation.normalizedUrl);
     res.json({
-      disclaimer: 'This is a heuristic/structural analysis for educational purposes only. No real requests were made to the target.',
+      disclaimer: 'This is a heuristic/structural analysis for educational purposes only.',
+      targetScope: targetValidation.scope,
+      normalizedTarget: targetValidation.normalizedUrl,
       ...result,
     });
   } catch (err) {
