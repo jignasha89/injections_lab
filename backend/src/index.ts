@@ -85,7 +85,7 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ error: 'Internal server error' });
 });
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   if (process.env.USE_MEMORY_DB === 'true') {
     console.log('ℹ️ Starting in-memory database mode directly.');
     app.listen(PORT, () => {
