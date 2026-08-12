@@ -1,22 +1,29 @@
 import { Router, Response } from 'express';
-import { authenticate, AuthRequest } from '../middleware/auth';
+import { authenticate, optionalAuthenticate, AuthRequest } from '../middleware/auth';
 import Report from '../models/Report';
+import User from '../models/User';
 import { reportsStore } from '../utils/memoryDb';
 
 const router = Router();
 
 // GET /api/reports
-router.get('/', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.get('/', optionalAuthenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // In-memory Database Fallback
     if (process.env.USE_MEMORY_DB === 'true') {
-      const userReports = reportsStore.filter((r) => r.userId === req.userId);
+      const userReports = req.userId 
+        ? reportsStore.filter((r) => r.userId === req.userId)
+        : reportsStore;
       const safeReports = userReports.map(({ findings, ...rest }) => rest);
       res.json({ reports: safeReports });
       return;
     }
 
-    const reports = await Report.find({ userId: req.userId })
+    let query: any = {};
+    if (req.userId) {
+      query = { userId: req.userId };
+    }
+    const reports = await Report.find(query)
       .select('-findings')
       .sort({ createdAt: -1 })
       .limit(50);
@@ -27,7 +34,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response): Promise<v
 });
 
 // POST /api/reports/generate
-router.post('/generate', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/generate', optionalAuthenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { title, targetUrl, scanType, labSlug, summary, findings, techStack } = req.body;
 
@@ -35,7 +42,7 @@ router.post('/generate', authenticate, async (req: AuthRequest, res: Response): 
     if (process.env.USE_MEMORY_DB === 'true') {
       const report = {
         _id: 'report_mem_' + Math.random().toString(36).substring(2, 9),
-        userId: req.userId || 'student_mem_id',
+        userId: req.userId || 'public_demo_id',
         title,
         targetUrl,
         scanType,
@@ -50,8 +57,16 @@ router.post('/generate', authenticate, async (req: AuthRequest, res: Response): 
       return;
     }
 
+    let userId = req.userId;
+    if (!userId) {
+      const fallbackUser = (await User.findOne({ email: 'open@gmail.com' })) || (await User.findOne());
+      if (fallbackUser) {
+        userId = fallbackUser._id.toString();
+      }
+    }
+
     const report = new Report({
-      userId: req.userId,
+      userId,
       title,
       targetUrl,
       scanType,

@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { authenticate, AuthRequest } from '../middleware/auth';
+import { optionalAuthenticate, AuthRequest } from '../middleware/auth';
 import { labsData } from '../data/labsData';
 
 const router = Router();
@@ -23,7 +23,7 @@ router.get('/:slug', (req: Request, res: Response): void => {
 });
 
 // POST /api/labs/:slug/quiz/submit
-router.post('/:slug/quiz/submit', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/:slug/quiz/submit', optionalAuthenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   const { answers } = req.body;
   const lab = labsData.find((l) => l.slug === req.params.slug);
   if (!lab) {

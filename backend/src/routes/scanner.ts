@@ -1,12 +1,12 @@
-import { Router, Request, Response } from 'express';
-import { authenticate, AuthRequest } from '../middleware/auth';
+import { Router, Response } from 'express';
+import { optionalAuthenticate, AuthRequest } from '../middleware/auth';
 import { analyzeUrl } from '../services/scannerService';
 
 const router = Router();
 
 // POST /api/scanner/analyze
 // Performs HEURISTIC analysis only - no real HTTP requests to user targets
-router.post('/analyze', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/analyze', optionalAuthenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   const { url, authorized } = req.body;
 
   if (!authorized) {

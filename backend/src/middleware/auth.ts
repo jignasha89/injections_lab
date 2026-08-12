@@ -37,6 +37,24 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
   }
 };
 
+export const optionalAuthenticate = (req: AuthRequest, _res: Response, next: NextFunction): void => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as {
+        userId: string;
+        role: string;
+      };
+      req.userId = decoded.userId;
+      req.userRole = decoded.role;
+    } catch {
+      // Ignored for optional auth
+    }
+  }
+  next();
+};
+
 export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
   if (req.userRole !== 'admin') {
     res.status(403).json({ error: 'Admin access required' });
