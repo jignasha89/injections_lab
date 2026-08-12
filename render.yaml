@@ -9,7 +9,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: FRONTEND_URL
-        sync: false
+        value: https://frontend-mu-umber-85.vercel.app
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
