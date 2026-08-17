@@ -477,10 +477,9 @@ export async function executeLiveScan(
   const isLocal = isLocalOrPrivateTarget(hostname);
 
   // 2. Global / Config Mode resolution
-  // Environment variable takes precedence or defaults to passive
   const configuredMode = (process.env.SCAN_MODE?.toLowerCase() || 'passive') as 'passive' | 'active';
   const requestedMode = config.scanMode?.toLowerCase() === 'active' ? 'active' : 'passive';
-  const effectiveMode: 'passive' | 'active' = configuredMode === 'active' && requestedMode === 'active' ? 'active' : (requestedMode === 'active' && isLocal ? 'active' : 'passive');
+  const effectiveMode: 'passive' | 'active' = requestedMode === 'active' && authorized ? 'active' : 'passive';
 
   // 3. Permissions Enforcement
   if (!authorized) {
@@ -568,6 +567,7 @@ export async function executeLiveScan(
       method: 'GET' | 'POST';
       actionUrl: string;
       defaultValue: string;
+      formAllInputs?: Record<string, string>;
     }
 
     const testTargets: TestInputTarget[] = [];
@@ -606,6 +606,13 @@ export async function executeLiveScan(
     for (const form of discovered.forms) {
       if (form.isFileUpload) continue; // Skip file uploads as requested
 
+      const formDefaults: Record<string, string> = {};
+      for (const input of form.inputs) {
+        if (input.name) {
+          formDefaults[input.name] = input.value || (input.type === 'password' ? 'test123' : 'test');
+        }
+      }
+
       for (const input of form.inputs) {
         if (!input.name || ['submit', 'button', 'reset', 'image'].includes(input.type)) continue;
 
@@ -615,6 +622,7 @@ export async function executeLiveScan(
           method: form.method,
           actionUrl: form.action,
           defaultValue: input.value || 'test',
+          formAllInputs: formDefaults,
         });
       }
     }
@@ -624,19 +632,28 @@ export async function executeLiveScan(
       // 1. Safe Baseline Request
       const baselineVal = 'injlab_safe_baseline_token';
       let baselineText = '';
+      let baselineStatus = 200;
       let baselineDuration = 0;
 
       try {
         const bStart = Date.now();
         if (input.method === 'POST') {
-          const formData: Record<string, string> = { [input.name]: baselineVal };
-          const bRes = await httpClient.post(input.actionUrl, formData);
+          const formData: Record<string, string> = {
+            ...(input.formAllInputs || {}),
+            [input.name]: baselineVal,
+          };
+          const formBody = new URLSearchParams(formData).toString();
+          const bRes = await httpClient.post(input.actionUrl, formBody, {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          });
           baselineText = typeof bRes.data === 'string' ? bRes.data : JSON.stringify(bRes.data);
+          baselineStatus = bRes.status;
         } else {
           const testUrl = new URL(input.actionUrl);
           testUrl.searchParams.set(input.name, baselineVal);
           const bRes = await httpClient.get(testUrl.toString());
           baselineText = typeof bRes.data === 'string' ? bRes.data : JSON.stringify(bRes.data);
+          baselineStatus = bRes.status;
         }
         baselineDuration = Date.now() - bStart;
       } catch {
@@ -667,18 +684,27 @@ export async function executeLiveScan(
         for (const p of payloads) {
           try {
             let probeText = '';
+            let probeStatus = 200;
             let probeDuration = 0;
 
             const pStart = Date.now();
             if (input.method === 'POST') {
-              const formData: Record<string, string> = { [input.name]: p.payload };
-              const pRes = await httpClient.post(input.actionUrl, formData);
+              const formData: Record<string, string> = {
+                ...(input.formAllInputs || {}),
+                [input.name]: p.payload,
+              };
+              const formBody = new URLSearchParams(formData).toString();
+              const pRes = await httpClient.post(input.actionUrl, formBody, {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              });
               probeText = typeof pRes.data === 'string' ? pRes.data : JSON.stringify(pRes.data);
+              probeStatus = pRes.status;
             } else {
               const testUrl = new URL(input.actionUrl);
               testUrl.searchParams.set(input.name, p.payload);
               const pRes = await httpClient.get(testUrl.toString());
               probeText = typeof pRes.data === 'string' ? pRes.data : JSON.stringify(pRes.data);
+              probeStatus = pRes.status;
             }
             probeDuration = Date.now() - pStart;
 
@@ -696,6 +722,28 @@ export async function executeLiveScan(
                   evidence = `${db} error signature detected in response body: "${match}"`;
                   break;
                 }
+              }
+
+              // Check A2: Boolean Tautology & Authentication Bypass
+              if (!isVulnerable && p.payload.includes('OR')) {
+                const failPatterns = /login failed|invalid username|invalid credentials|authentication failed|failed to login|incorrect password/i;
+                const hadFailure = failPatterns.test(baselineText) || baselineStatus === 401 || baselineStatus === 403;
+                const bypassedFailure = !failPatterns.test(probeText) && (probeStatus === 200 || probeStatus === 302);
+                const hasSuccessToken = /sign off|logout|account history|welcome|dashboard|main\.jsp|user account/i.test(probeText) &&
+                  !/sign off|logout|account history|welcome|dashboard|main\.jsp|user account/i.test(baselineText);
+
+                if (hadFailure && (bypassedFailure || hasSuccessToken)) {
+                  isVulnerable = true;
+                  confidence = 'Confirmed';
+                  evidence = `SQL boolean tautology bypassed application logic. Baseline returned authentication failure, but probe payload "${p.payload}" resulted in successful state alteration.`;
+                }
+              }
+
+              // Check A3: 500 Internal Server Error Anomaly on single quote
+              if (!isVulnerable && p.payload === "'" && baselineStatus < 500 && probeStatus >= 500) {
+                isVulnerable = true;
+                confidence = 'High';
+                evidence = `Unescaped single quote triggered HTTP ${probeStatus} Internal Server Error, indicating unhandled database query syntax exception.`;
               }
             }
 

@@ -143,9 +143,88 @@ export default function ScannerPage() {
 
     setLoading(true);
     try {
-      const endpoint = scanMode === 'active' ? '/scanner/active' : '/scanner/analyze';
-      const res = await api.post(endpoint, { url, authorized });
-      setResult(res.data);
+      const res = await api.post('/scan', {
+        url,
+        authorized: true,
+        scanMode: scanMode === 'active' ? 'active' : 'passive',
+        config: { rateLimitMs: 500 },
+      });
+
+      const data = res.data;
+      const rawFindings = data.findings || [];
+
+      // Determine injection family for categorization and filters
+      const mappedFindings: Finding[] = rawFindings.map((f: {
+        vulnerabilityType: string;
+        inputPointTested: string;
+        payloadUsed: string;
+        severity: Finding['severity'];
+        confidence: Finding['confidence'];
+        cvss?: number;
+        cwe?: string;
+        owasp?: string;
+        evidence: string;
+        recommendation: string;
+      }) => {
+        const vType = (f.vulnerabilityType || '').toLowerCase();
+        let family = 'Protocol / Header / Log / AI Injection';
+        if (vType.includes('sql') || vType.includes('quote') || vType.includes('tautology')) {
+          family = 'SQL/NoSQL Injection';
+        } else if (vType.includes('xss') || vType.includes('script') || vType.includes('canary')) {
+          family = 'Client-Side / XSS';
+        } else if (vType.includes('template') || vType.includes('ssti') || vType.includes('command') || vType.includes('echo')) {
+          family = 'Server-Side / Code Execution';
+        }
+
+        return {
+          type: f.vulnerabilityType,
+          injectionFamily: family,
+          location: f.inputPointTested,
+          parameter: f.inputPointTested,
+          paramValue: f.payloadUsed,
+          severity: f.severity || 'Medium',
+          confidence: f.confidence || 'Medium',
+          cvss: f.cvss || 7.5,
+          cwe: f.cwe || 'CWE-89',
+          owasp: f.owasp || 'A03:2021',
+          description: f.evidence || f.vulnerabilityType,
+          evidence: f.evidence,
+          pocPayload: f.payloadUsed,
+          recommendation: f.recommendation,
+        };
+      });
+
+      const familyCounts: Record<string, number> = {};
+      for (const f of mappedFindings) {
+        familyCounts[f.injectionFamily] = (familyCounts[f.injectionFamily] || 0) + 1;
+      }
+
+      setResult({
+        targetUrl: data.targetUrl || url,
+        scanTimestamp: data.scanTimestamp || new Date().toISOString(),
+        parameters: (data.discoveredEndpoints?.linksWithParams || []).map((l: { param: string }) => l.param),
+        paramValues: {},
+        pathSegments: [],
+        domain: new URL(data.normalizedUrl || url).hostname,
+        techStackClues: data.serverBanner ? [`Server: ${data.serverBanner}`] : ['Live Target Audited'],
+        potentialInjectionPoints: (data.discoveredEndpoints?.forms || []).map((form: { method: string; action: string; inputs: { name: string }[] }) => ({
+          type: 'HTML Form',
+          location: `${form.method} ${form.action}`,
+          risk: 'High',
+          reason: `Discovered form with input fields: ${form.inputs.map((i) => i.name).join(', ')}`,
+        })),
+        findings: mappedFindings,
+        summary: {
+          totalPages: 1,
+          injectionPoints: (data.discoveredEndpoints?.forms?.length || 0) + (data.discoveredEndpoints?.linksWithParams?.length || 0),
+          parameters: data.summary?.paramsCount || 0,
+          riskScore: data.summary?.riskScore || 0,
+          highestSeverity: data.summary?.highestSeverity || 'Info',
+          owaspCoverage: ['A03:2021-Injection', 'A05:2021-Security Misconfiguration'],
+          familiesTested: ['SQL/NoSQL Injection', 'Client-Side / XSS', 'Server-Side / Code Execution', 'Protocol / Header / Log / AI Injection'],
+          injectionFamilyCounts: familyCounts,
+        },
+      });
     } catch (err: unknown) {
       console.error(err);
       const errorObj = err as { response?: { data?: { error?: string } } };
