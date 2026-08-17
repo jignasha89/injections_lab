@@ -1,0 +1,99 @@
+{
+  "sqli": [
+    {
+      "id": "sqli-err-quote",
+      "name": "Single Quote Error Probe",
+      "payload": "'",
+      "detectionType": "error_match",
+      "cwe": "CWE-89",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Tests if unescaped single quotes produce database syntax errors in SQL query execution.",
+      "recommendation": "Use parameterized queries / prepared statements for all database operations."
+    },
+    {
+      "id": "sqli-err-tautology",
+      "name": "Boolean Tautology Probe",
+      "payload": "' OR '1'='1",
+      "detectionType": "error_match",
+      "cwe": "CWE-89",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Tests whether logical OR clauses alter backend database query logic or trigger error signatures.",
+      "recommendation": "Ensure user input is strictly parameterized rather than interpolated into SQL statements."
+    },
+    {
+      "id": "sqli-time-delay",
+      "name": "Time-Based Blind Delay Probe",
+      "payload": "'; WAITFOR DELAY '0:0:3'--",
+      "detectionType": "time_delay",
+      "expectedDelayMs": 3000,
+      "cwe": "CWE-89",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Tests if server response time is delayed by database sleep/delay functions, indicating time-based blind SQLi.",
+      "recommendation": "Never concatenate user input into database queries. Use parameterized queries with strict ORM mapping."
+    }
+  ],
+  "xss": [
+    {
+      "id": "xss-ref-canary",
+      "name": "Reflected HTML Canary Tag Probe",
+      "payload": "<injlab_xss_canary_probe>",
+      "detectionType": "reflection",
+      "expectedMatch": "<injlab_xss_canary_probe>",
+      "cwe": "CWE-79",
+      "owasp": "A03:2021-Injection",
+      "cvss": 8.2,
+      "severity": "High",
+      "description": "Checks if unescaped HTML tags are reflected verbatim into the response body.",
+      "recommendation": "Apply context-sensitive HTML entity encoding before rendering untrusted input in HTML documents."
+    },
+    {
+      "id": "xss-attr-breakout",
+      "name": "HTML Attribute Breakout Canary",
+      "payload": "\" injlab-probe-attr=\"1",
+      "detectionType": "reflection",
+      "expectedMatch": "injlab-probe-attr=\"1",
+      "cwe": "CWE-79",
+      "owasp": "A03:2021-Injection",
+      "cvss": 7.5,
+      "severity": "High",
+      "description": "Tests if double quotes escape HTML attribute contexts unencoded.",
+      "recommendation": "Escape attribute values and implement a strict Content-Security-Policy (CSP)."
+    }
+  ],
+  "command_injection": [
+    {
+      "id": "cmd-echo-canary",
+      "name": "Safe Shell Echo Canary",
+      "payload": "; echo injlab_cmd_probe_success",
+      "detectionType": "reflection",
+      "expectedMatch": "injlab_cmd_probe_success",
+      "cwe": "CWE-78",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Checks if OS command chaining operators (; | &) execute secondary shell commands.",
+      "recommendation": "Avoid using shell execution functions. Use execFile with predefined argument arrays and strict regex validation."
+    }
+  ],
+  "ssti": [
+    {
+      "id": "ssti-math-eval",
+      "name": "Server-Side Template Math Probe",
+      "payload": "{{77*77}}",
+      "detectionType": "eval_match",
+      "expectedMatch": "5929",
+      "cwe": "CWE-1336",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Tests if template expressions like {{77*77}} are dynamically computed into 5929 by the server-side template engine.",
+      "recommendation": "Do not pass user-supplied input directly into template compilation functions; use static templates with parameter binding."
+    }
+  ]
+}

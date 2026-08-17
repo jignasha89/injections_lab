@@ -71,5 +71,31 @@ router.post('/active', optionalAuthenticate, async (req: AuthRequest, res: Respo
   }
 });
 
+// POST /api/scanner/scan
+// Performs live website crawl, HTML form/script parsing, header audit, and safe differential testing
+router.post('/scan', optionalAuthenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  const { url, authorized, scanMode, config } = req.body;
+  if (!url || typeof url !== 'string') {
+    res.status(400).json({ error: 'Target URL is required.' });
+    return;
+  }
+  if (!authorized) {
+    res.status(400).json({ error: 'Authorization confirmation required.' });
+    return;
+  }
+  const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
+  try {
+    const { executeLiveScan } = await import('../services/liveScannerService');
+    const result = await executeLiveScan(url, authorized, { ...(config || {}), scanMode }, clientIp);
+    res.json({
+      disclaimer: 'Live scan completed for authorized educational testing.',
+      ...result,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Scan failed';
+    res.status(400).json({ error: message });
+  }
+});
+
 export default router;
 

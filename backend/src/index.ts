@@ -9,6 +9,7 @@ import mongoose from 'mongoose';
 import authRoutes from './routes/auth';
 import labRoutes from './routes/labs';
 import scannerRoutes from './routes/scanner';
+import scanRoutes from './routes/scan';
 import reportRoutes from './routes/reports';
 import userRoutes from './routes/user';
 
@@ -61,6 +62,7 @@ app.use(morgan('dev'));
 app.use('/api/auth', authRoutes);
 app.use('/api/labs', labRoutes);
 app.use('/api/scanner', scannerRoutes);
+app.use('/api/scan', scanRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/user', userRoutes);
 

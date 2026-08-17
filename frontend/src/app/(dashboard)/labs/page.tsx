@@ -11,6 +11,7 @@ import {
   Search, 
   Play
 } from 'lucide-react';
+import DeepWebsiteScanner from '@/components/labs/DeepWebsiteScanner';
 
 export default function LabsIndexPage() {
   const { progress, toggleBookmark } = useStore();
@@ -43,6 +44,9 @@ export default function LabsIndexPage() {
           </p>
         </div>
       </div>
+
+      {/* Deep Website Scanner Live Testing Sandbox */}
+      <DeepWebsiteScanner />
 
       {/* Filter and Search Section */}
       <div className="space-y-4 bg-[#0c0d14] p-5 rounded-2xl border border-zinc-800/80 shadow-2xl">
