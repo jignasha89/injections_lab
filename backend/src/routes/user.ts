@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import User from '../models/User';
 import { usersStore } from '../utils/memoryDb';
+import { isMemoryDb } from '../utils/dbMode';
 
 const router = Router();
 
@@ -9,7 +10,7 @@ const router = Router();
 router.get('/progress', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // In-memory Database Fallback
-    if (process.env.USE_MEMORY_DB === 'true') {
+    if (isMemoryDb()) {
       const user = usersStore.find((u) => u._id === req.userId);
       res.json({ progress: user?.progress || [], achievements: user?.achievements || [] });
       return;
@@ -27,7 +28,7 @@ router.put('/progress/:labSlug', authenticate, async (req: AuthRequest, res: Res
   const { completed, quizScore, bookmarked } = req.body;
   try {
     // In-memory Database Fallback
-    if (process.env.USE_MEMORY_DB === 'true') {
+    if (isMemoryDb()) {
       const user = usersStore.find((u) => u._id === req.userId);
       if (!user) {
         res.status(404).json({ error: 'User not found' });
@@ -111,7 +112,7 @@ router.put('/progress/:labSlug', authenticate, async (req: AuthRequest, res: Res
 router.get('/notes', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // In-memory Database Fallback
-    if (process.env.USE_MEMORY_DB === 'true') {
+    if (isMemoryDb()) {
       const user = usersStore.find((u) => u._id === req.userId);
       res.json({ notes: user?.notes || [] });
       return;
@@ -129,7 +130,7 @@ router.post('/notes', authenticate, async (req: AuthRequest, res: Response): Pro
   const { labSlug, content } = req.body;
   try {
     // In-memory Database Fallback
-    if (process.env.USE_MEMORY_DB === 'true') {
+    if (isMemoryDb()) {
       const user = usersStore.find((u) => u._id === req.userId);
       if (!user) {
         res.status(404).json({ error: 'User not found' });

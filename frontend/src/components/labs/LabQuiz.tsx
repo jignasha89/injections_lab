@@ -83,14 +83,14 @@ export default function LabQuiz({ slug, quiz }: LabQuizProps) {
   const isPassed = currentPercent >= 80;
 
   return (
-    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6 text-slate-800">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-        <h3 className="text-sm font-bold tracking-wider text-slate-800 uppercase flex items-center gap-1.5">
-          Knowledge Validation Quiz
+    <div className="bg-[#0c0d14] p-6 md:p-8 rounded-2xl border border-zinc-800/80 shadow-2xl space-y-6 text-zinc-100 font-sans">
+      <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+        <h3 className="text-xs font-mono font-bold tracking-wider text-cyan-400 uppercase flex items-center gap-2">
+          <Award className="w-4 h-4 text-cyan-400" /> Knowledge Validation Quiz
         </h3>
         {submitted && (
-          <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${
-            isPassed ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+          <span className={`text-xs font-mono font-bold px-3 py-1 rounded-full border ${
+            isPassed ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
           }`}>
             Score: {score} / {quiz.length} ({currentPercent}%)
           </span>
@@ -98,21 +98,21 @@ export default function LabQuiz({ slug, quiz }: LabQuizProps) {
       </div>
 
       {submitted && isPassed && (
-        <div className="p-4 rounded-xl bg-green-50 border border-green-200 flex items-center gap-3 text-xs text-green-700">
-          <Award className="w-5 h-5 shrink-0 text-green-600" />
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3 text-xs text-emerald-300 font-mono">
+          <Award className="w-5 h-5 shrink-0 text-emerald-400" />
           <div>
-            <p className="font-extrabold">CONGRATULATIONS!</p>
-            <p className="text-slate-600 font-semibold mt-0.5">You scored {currentPercent}%. Lab module successfully completed!</p>
+            <p className="font-extrabold text-emerald-400">CONGRATULATIONS!</p>
+            <p className="text-zinc-300 text-[11px] mt-0.5">You scored {currentPercent}%. Lab module successfully completed!</p>
           </div>
         </div>
       )}
 
       {submitted && !isPassed && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3 text-xs text-red-700">
-          <ShieldAlert className="w-5 h-5 shrink-0 text-red-600" />
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-3 text-xs text-rose-300 font-mono">
+          <ShieldAlert className="w-5 h-5 shrink-0 text-rose-400" />
           <div>
-            <p className="font-extrabold">PASSING CRITERIA NOT MET</p>
-            <p className="text-slate-600 font-semibold mt-0.5">You scored {currentPercent}%. You need at least 80% to pass. Review explanations and retry.</p>
+            <p className="font-extrabold text-rose-400">PASSING CRITERIA NOT MET</p>
+            <p className="text-zinc-300 text-[11px] mt-0.5">You scored {currentPercent}%. You need at least 80% to pass. Review explanations and retry.</p>
           </div>
         </div>
       )}
@@ -120,12 +120,12 @@ export default function LabQuiz({ slug, quiz }: LabQuizProps) {
       <div className="space-y-6">
         {quiz.map((q, qIdx) => (
           <div key={qIdx} className="space-y-3">
-            <h4 className="text-sm font-bold text-slate-900 flex items-start gap-2">
-              <span className="text-blue-600 text-xs font-mono">Q{qIdx + 1}.</span>
-              {q.question}
+            <h4 className="text-xs md:text-sm font-mono font-bold text-white flex items-start gap-2">
+              <span className="text-cyan-400 font-mono text-xs">Q{qIdx + 1}.</span>
+              <span>{q.question}</span>
             </h4>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-4">
               {q.options.map((opt, oIdx) => {
                 const isSelected = selectedAnswers[qIdx] === oIdx;
                 const isCorrectOption = q.correctIndex === oIdx;
@@ -137,48 +137,48 @@ export default function LabQuiz({ slug, quiz }: LabQuizProps) {
                     key={oIdx}
                     onClick={() => handleSelect(qIdx, oIdx)}
                     disabled={submitted}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-between gap-3 ${
+                    className={`w-full text-left px-4 py-3 rounded-xl text-xs font-mono border transition-all flex items-center justify-between gap-3 ${
                       showSuccess 
-                        ? 'bg-green-50 border-green-600 text-green-700' 
+                        ? 'bg-emerald-500/15 border-emerald-500/60 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.2)]' 
                         : showDanger 
-                          ? 'bg-red-50 border-red-600 text-red-700' 
+                          ? 'bg-rose-500/15 border-rose-500/60 text-rose-300' 
                           : isSelected 
-                            ? 'bg-blue-50 border-blue-600 text-blue-600' 
-                            : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                            ? 'bg-cyan-500/15 border-cyan-500/60 text-cyan-300 shadow-[0_0_12px_rgba(0,240,255,0.15)]' 
+                            : 'bg-[#050508] border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:text-white'
                     }`}
                   >
                     <span>{opt}</span>
-                    {showSuccess && <Check className="w-4 h-4 shrink-0 text-green-600 font-extrabold" />}
-                    {showDanger && <X className="w-4 h-4 shrink-0 text-red-600 font-extrabold" />}
+                    {showSuccess && <Check className="w-4 h-4 shrink-0 text-emerald-400 font-bold" />}
+                    {showDanger && <X className="w-4 h-4 shrink-0 text-rose-400 font-bold" />}
                   </button>
                 );
               })}
             </div>
 
             {submitted && (
-              <div className="pl-5 pt-1.5 text-xs text-slate-600 leading-relaxed border-l-2 border-slate-300 mt-2 font-semibold">
-                <span className="font-extrabold text-blue-600">Explanation:</span> {q.explanation}
+              <div className="pl-4 pt-2 text-xs text-zinc-400 leading-relaxed border-l-2 border-zinc-700 mt-2 font-mono">
+                <span className="font-bold text-cyan-400">Explanation:</span> {q.explanation}
               </div>
             )}
           </div>
         ))}
       </div>
 
-      {error && <p className="text-xs font-bold text-red-600">{error}</p>}
+      {error && <p className="text-xs font-mono font-bold text-rose-400">{error}</p>}
 
-      <div className="flex gap-4 border-t border-slate-200 pt-4">
+      <div className="flex gap-4 border-t border-zinc-800 pt-4">
         {!submitted ? (
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-6 py-3 rounded-xl text-xs font-bold bg-slate-950 text-white hover:bg-slate-900 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
+            className="px-6 py-3 rounded-xl text-xs font-mono font-bold bg-cyan-500 hover:bg-cyan-400 text-black shadow-[0_0_15px_rgba(0,240,255,0.25)] active:scale-95 transition-all disabled:opacity-50"
           >
             {loading ? 'Submitting Answers...' : 'Submit Answers'}
           </button>
         ) : (
           <button
             onClick={handleReset}
-            className="px-6 py-3 rounded-xl text-xs font-bold bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all shadow-sm"
+            className="px-6 py-3 rounded-xl text-xs font-mono font-bold bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-all shadow-sm"
           >
             Retry Quiz
           </button>

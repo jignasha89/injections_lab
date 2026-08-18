@@ -3,6 +3,7 @@ import { authenticate, optionalAuthenticate, AuthRequest } from '../middleware/a
 import Report from '../models/Report';
 import User from '../models/User';
 import { reportsStore } from '../utils/memoryDb';
+import { isMemoryDb } from '../utils/dbMode';
 
 const router = Router();
 
@@ -10,7 +11,7 @@ const router = Router();
 router.get('/', optionalAuthenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // In-memory Database Fallback
-    if (process.env.USE_MEMORY_DB === 'true') {
+    if (isMemoryDb()) {
       const userReports = req.userId 
         ? reportsStore.filter((r) => r.userId === req.userId)
         : reportsStore;
@@ -39,7 +40,7 @@ router.post('/generate', optionalAuthenticate, async (req: AuthRequest, res: Res
     const { title, targetUrl, scanType, labSlug, summary, findings, techStack } = req.body;
 
     // In-memory Database Fallback
-    if (process.env.USE_MEMORY_DB === 'true') {
+    if (isMemoryDb()) {
       const report = {
         _id: 'report_mem_' + Math.random().toString(36).substring(2, 9),
         userId: req.userId || 'public_demo_id',
@@ -87,7 +88,7 @@ router.post('/generate', optionalAuthenticate, async (req: AuthRequest, res: Res
 router.get('/:id', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // In-memory Database Fallback
-    if (process.env.USE_MEMORY_DB === 'true') {
+    if (isMemoryDb()) {
       const report = reportsStore.find((r) => r._id === req.params.id && r.userId === req.userId);
       if (!report) {
         res.status(404).json({ error: 'Report not found' });
@@ -112,7 +113,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res: Response): Promis
 router.delete('/:id', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // In-memory Database Fallback
-    if (process.env.USE_MEMORY_DB === 'true') {
+    if (isMemoryDb()) {
       const index = reportsStore.findIndex((r) => r._id === req.params.id && r.userId === req.userId);
       if (index === -1) {
         res.status(404).json({ error: 'Report not found' });

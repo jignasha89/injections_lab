@@ -4,6 +4,7 @@ import { body, validationResult } from 'express-validator';
 import User from '../models/User';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { usersStore } from '../utils/memoryDb';
+import { isMemoryDb } from '../utils/dbMode';
 import bcrypt from 'bcryptjs';
 
 const router = Router();
@@ -40,7 +41,7 @@ router.post(
     const { username, email, password } = req.body;
 
     // In-memory Database Fallback
-    if (process.env.USE_MEMORY_DB === 'true') {
+    if (isMemoryDb()) {
       const existing = usersStore.find((u) => u.email === email || u.username === username);
       if (existing) {
         res.status(409).json({ error: 'Username or email already in use' });
@@ -113,7 +114,7 @@ router.post(
     const { email, password } = req.body;
 
     // In-memory Database Fallback
-    if (process.env.USE_MEMORY_DB === 'true') {
+    if (isMemoryDb()) {
       const user = usersStore.find((u) => u.email === email || u.username === email);
       if (!user || !bcrypt.compareSync(password, user.passwordHash)) {
         res.status(401).json({ error: 'Invalid credentials' });
@@ -175,7 +176,7 @@ router.post('/refresh', async (req: Request, res: Response): Promise<void> => {
 router.get('/me', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     // In-memory Database Fallback
-    if (process.env.USE_MEMORY_DB === 'true') {
+    if (isMemoryDb()) {
       const user = usersStore.find((u) => u._id === req.userId);
       if (!user) {
         res.status(404).json({ error: 'User not found' });

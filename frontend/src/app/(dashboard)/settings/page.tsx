@@ -34,64 +34,66 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto text-slate-800">
+    <div className="space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto text-zinc-100 font-sans">
       {/* Title */}
       <div>
-        <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">System Settings</h2>
-        <p className="text-slate-600 text-sm mt-1">
+        <h2 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-3 font-mono">
+          System Settings <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold">Node / Serverless</span>
+        </h2>
+        <p className="text-zinc-400 text-sm mt-1.5 font-mono">
           Manage system configurations, backend service connections, and educational databases.
         </p>
       </div>
 
       <div className="space-y-6">
         {/* Connection status card */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
-            <Database className="w-5 h-5 text-blue-600" /> Sandbox Workspace DB
+        <div className="bg-[#0c0d14] p-6 rounded-2xl border border-zinc-800/80 shadow-2xl space-y-4">
+          <h3 className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+            <Database className="w-4 h-4 text-cyan-400" /> Sandbox Workspace Database Engine
           </h3>
-          <div className="space-y-3 font-mono text-xs font-semibold">
-            <div className="flex justify-between border-b border-slate-50 pb-2">
-              <span className="text-slate-500">Database Driver:</span>
-              <span className="text-slate-800">MongoDB Mongoose</span>
+          <div className="space-y-3 font-mono text-xs">
+            <div className="flex justify-between border-b border-zinc-800/80 pb-2">
+              <span className="text-zinc-500">Database Driver:</span>
+              <span className="text-zinc-200">MongoDB Mongoose / In-Memory Dual Engine</span>
             </div>
-            <div className="flex justify-between border-b border-slate-50 pb-2">
-              <span className="text-slate-500">Database URL:</span>
-              <span className="text-slate-800">mongodb://localhost:27017/injectionlab</span>
+            <div className="flex justify-between border-b border-zinc-800/80 pb-2">
+              <span className="text-zinc-500">Active State Store:</span>
+              <span className="text-cyan-300">Fast Memory DB + Atlas Cluster Synced</span>
             </div>
             <div className="flex justify-between pb-1">
-              <span className="text-slate-500">Service Status:</span>
-              <span className="text-green-600 font-bold flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" /> CONNECTED
+              <span className="text-zinc-500">Service Status:</span>
+              <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> OPERATIONAL
               </span>
             </div>
           </div>
         </div>
 
         {/* Clear/Reset progress data */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-red-700 uppercase tracking-wide flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-red-600" /> Dangerous Settings
+        <div className="bg-[#0c0d14] p-6 rounded-2xl border border-zinc-800/80 shadow-2xl space-y-4">
+          <h3 className="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-rose-400" /> Danger Zone Settings
           </h3>
 
-          <p className="text-xs md:text-sm text-slate-600 leading-relaxed font-semibold">
+          <p className="text-xs text-zinc-300 leading-relaxed font-sans">
             Resetting your workspace will delete all logged quiz answers, earned achievements/badges, and text notes. This will reset the course progression meter back to 0%.
           </p>
 
           {successMsg && (
-            <div className="p-3.5 rounded-xl bg-green-50 border border-green-200 text-xs text-green-700 flex items-center gap-2 font-bold animate-in fade-in duration-300">
-              <CheckCircle className="w-4 h-4 text-green-600" />
+            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2 font-mono font-bold animate-in fade-in duration-300">
+              <CheckCircle className="w-4 h-4 text-emerald-400" />
               <span>{successMsg}</span>
             </div>
           )}
 
           {errorMsg && (
-            <p className="text-xs font-bold text-red-600">{errorMsg}</p>
+            <p className="text-xs font-mono font-bold text-rose-400">{errorMsg}</p>
           )}
 
           <button
             onClick={handleResetProgress}
             disabled={resetting}
-            className="px-5 py-3 rounded-xl text-xs font-bold bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm"
+            className="px-5 py-2.5 rounded-xl text-xs font-mono font-bold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/30 hover:border-rose-500/50 transition-all flex items-center gap-2 disabled:opacity-50 shadow-sm"
           >
             <RefreshCcw className="w-4 h-4" />
             {resetting ? 'Resetting State...' : 'Reset Sandbox Progress'}
