@@ -85,7 +85,7 @@ const FAMILY_COLORS: Record<string, string> = {
 
 export default function ScannerPage() {
   const [url, setUrl] = useState('');
-  const [scanMode, setScanMode] = useState<'heuristic' | 'active'>('heuristic');
+  const [scanMode, setScanMode] = useState<'heuristic' | 'active'>('active');
   const [authorized, setAuthorized] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
@@ -147,7 +147,7 @@ export default function ScannerPage() {
         url,
         authorized: true,
         scanMode: scanMode === 'active' ? 'active' : 'passive',
-        config: { rateLimitMs: 500 },
+        config: { rateLimitMs: 250, timeoutMs: 10000 },
       });
 
       const data = res.data;
@@ -199,25 +199,48 @@ export default function ScannerPage() {
         familyCounts[f.injectionFamily] = (familyCounts[f.injectionFamily] || 0) + 1;
       }
 
+      // Extract target URL parameters and link parameters
+      const targetParams: string[] = [];
+      const targetParamValues: Record<string, string> = {};
+      try {
+        const u = new URL(data.normalizedUrl || url);
+        u.searchParams.forEach((v, k) => {
+          targetParams.push(k);
+          targetParamValues[k] = v;
+        });
+      } catch {}
+
+      const linkParams = (data.discoveredEndpoints?.linksWithParams || []).map((l: { param: string }) => l.param);
+      const combinedParams = Array.from(new Set([...targetParams, ...linkParams]));
+
+      const urlPoints = targetParams.map((p) => ({
+        type: 'URL Query Parameter',
+        location: `GET ${data.normalizedUrl || url} [${p}]`,
+        risk: 'High',
+        reason: `Target query parameter "${p}" exposed in URL string.`,
+      }));
+
+      const formPoints = (data.discoveredEndpoints?.forms || []).map((form: { method: string; action: string; inputs: { name: string }[] }) => ({
+        type: 'HTML Form',
+        location: `${form.method} ${form.action}`,
+        risk: 'High',
+        reason: `Discovered form with input fields: ${form.inputs.map((i) => i.name).join(', ')}`,
+      }));
+
       setResult({
         targetUrl: data.targetUrl || url,
         scanTimestamp: data.scanTimestamp || new Date().toISOString(),
-        parameters: (data.discoveredEndpoints?.linksWithParams || []).map((l: { param: string }) => l.param),
-        paramValues: {},
+        parameters: combinedParams,
+        paramValues: targetParamValues,
         pathSegments: [],
         domain: new URL(data.normalizedUrl || url).hostname,
         techStackClues: data.serverBanner ? [`Server: ${data.serverBanner}`] : ['Live Target Audited'],
-        potentialInjectionPoints: (data.discoveredEndpoints?.forms || []).map((form: { method: string; action: string; inputs: { name: string }[] }) => ({
-          type: 'HTML Form',
-          location: `${form.method} ${form.action}`,
-          risk: 'High',
-          reason: `Discovered form with input fields: ${form.inputs.map((i) => i.name).join(', ')}`,
-        })),
+        potentialInjectionPoints: [...urlPoints, ...formPoints],
         findings: mappedFindings,
         summary: {
           totalPages: 1,
-          injectionPoints: (data.discoveredEndpoints?.forms?.length || 0) + (data.discoveredEndpoints?.linksWithParams?.length || 0),
-          parameters: data.summary?.paramsCount || 0,
+          injectionPoints: urlPoints.length + (data.discoveredEndpoints?.forms?.length || 0) + (data.discoveredEndpoints?.linksWithParams?.length || 0),
+          parameters: data.summary?.paramsCount || combinedParams.length,
           riskScore: data.summary?.riskScore || 0,
           highestSeverity: data.summary?.highestSeverity || 'Info',
           owaspCoverage: ['A03:2021-Injection', 'A05:2021-Security Misconfiguration'],
@@ -289,7 +312,7 @@ export default function ScannerPage() {
                 Configure Target
               </h3>
               <span className="text-[10px] font-mono text-zinc-400">
-                Mode: {scanMode === 'active' ? 'Active Probe' : 'Heuristic'}
+                Mode: {scanMode === 'active' ? 'Active Deep Scan' : 'Heuristic Scan'}
               </span>
             </div>
 
@@ -297,31 +320,35 @@ export default function ScannerPage() {
             <div className="grid grid-cols-2 gap-2 bg-[#050508] p-1 rounded-xl border border-zinc-800">
               <button
                 type="button"
-                onClick={() => setScanMode('heuristic')}
+                onClick={() => setScanMode('active')}
                 className={`py-2 px-3 rounded-lg text-xs font-mono font-bold transition-all ${
-                  scanMode === 'heuristic'
+                  scanMode === 'active'
                     ? 'bg-cyan-500/20 border border-cyan-500/50 text-cyan-300'
                     : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
-                Heuristic Mode
+                Deep Active Scan
               </button>
               <button
                 type="button"
-                onClick={() => setScanMode('active')}
+                onClick={() => setScanMode('heuristic')}
                 className={`py-2 px-3 rounded-lg text-xs font-mono font-bold transition-all ${
-                  scanMode === 'active'
-                    ? 'bg-amber-500/20 border border-amber-500/50 text-amber-300'
+                  scanMode === 'heuristic'
+                    ? 'bg-purple-500/20 border border-purple-500/50 text-purple-300'
                     : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
-                Active Probe (Local)
+                Heuristic Scan
               </button>
             </div>
 
-            {scanMode === 'active' && (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-300/90 font-mono leading-relaxed">
-                Active Differential Mode extracts HTML forms, sends baseline vs probe comparisons, and evaluates confidence. Restricted to localhost/private targets.
+            {scanMode === 'active' ? (
+              <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-[11px] text-cyan-300/90 font-mono leading-relaxed">
+                Deep Active Scan fetches live HTML, parses forms and URL parameters, tests SQLi / XSS / SSTI / Command Injection vectors, and audits security headers.
+              </div>
+            ) : (
+              <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 text-[11px] text-purple-300/90 font-mono leading-relaxed">
+                Heuristic Mode analyzes target URL structure and response security headers passively without input fuzzing.
               </div>
             )}
 
@@ -334,7 +361,7 @@ export default function ScannerPage() {
                   <input
                     type="url"
                     required
-                    placeholder={scanMode === 'active' ? 'http://localhost:3000/app?id=1' : 'https://target.com/page?id=1&user=admin'}
+                    placeholder="https://example.com/search?q=test or http://testfire.net/login.jsp"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     className="w-full pl-9 pr-4 py-2.5 rounded-xl text-xs font-mono bg-[#050508] border border-zinc-800 text-zinc-100 placeholder-zinc-600 focus:bg-[#0a0b12] focus:border-cyan-500/50 focus:outline-none transition"

@@ -25,6 +25,30 @@
       "recommendation": "Ensure user input is strictly parameterized rather than interpolated into SQL statements."
     },
     {
+      "id": "sqli-err-tautology-comment",
+      "name": "SQL Comment Tautology Probe",
+      "payload": "' OR '1'='1'--",
+      "detectionType": "error_match",
+      "cwe": "CWE-89",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Tests if SQL comment characters (--) bypass query logic and trailing syntax constraints.",
+      "recommendation": "Use parameterized queries with strict type enforcement."
+    },
+    {
+      "id": "sqli-auth-bypass-probe",
+      "name": "SQL Auth Bypass Probe",
+      "payload": "admin'--",
+      "detectionType": "error_match",
+      "cwe": "CWE-89",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Tests if administrative accounts can be accessed by terminating SQL WHERE conditions.",
+      "recommendation": "Use prepared statements with strict parameter binding."
+    },
+    {
       "id": "sqli-time-delay",
       "name": "Time-Based Blind Delay Probe",
       "payload": "'; WAITFOR DELAY '0:0:3'--",

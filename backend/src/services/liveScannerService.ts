@@ -104,11 +104,15 @@ export interface DeepScanResult {
 const DB_ERROR_PATTERNS = [
   // MySQL / MariaDB
   { db: 'MySQL', pattern: /SQL syntax.*MySQL/i },
+  { db: 'MySQL', pattern: /you have an error in your sql syntax/i },
+  { db: 'MySQL', pattern: /check the manual that corresponds to your (mysql|mariadb)/i },
   { db: 'MySQL', pattern: /Warning.*mysql_/i },
   { db: 'MySQL', pattern: /valid MySQL result/i },
   { db: 'MySQL', pattern: /MySqlClient\./i },
   { db: 'MySQL', pattern: /com\.mysql\.jdbc/i },
   { db: 'MySQL', pattern: /mysqli_query/i },
+  { db: 'MySQL', pattern: /mysql_fetch_/i },
+  { db: 'MySQL', pattern: /mysql_num_rows/i },
   // PostgreSQL
   { db: 'PostgreSQL', pattern: /PostgreSQL.*ERROR/i },
   { db: 'PostgreSQL', pattern: /Warning.*\Wpg_/i },
@@ -116,6 +120,7 @@ const DB_ERROR_PATTERNS = [
   { db: 'PostgreSQL', pattern: /Npgsql\./i },
   { db: 'PostgreSQL', pattern: /org\.postgresql\.util\.PSQLException/i },
   { db: 'PostgreSQL', pattern: /ERROR:\s+syntax error at or near/i },
+  { db: 'PostgreSQL', pattern: /pg_query\(\)/i },
   // Microsoft SQL Server
   { db: 'MSSQL', pattern: /Driver.*SQL[\-\_\ ]*Server/i },
   { db: 'MSSQL', pattern: /OLE DB.*SQL Server/i },
@@ -137,6 +142,8 @@ const DB_ERROR_PATTERNS = [
   // Generic / Hibernate
   { db: 'Generic SQL', pattern: /org\.hibernate\.QueryException/i },
   { db: 'Generic SQL', pattern: /SQLSTATE\[\d+\]/i },
+  { db: 'Generic SQL', pattern: /syntax error in query/i },
+  { db: 'Generic SQL', pattern: /unhandled sql exception/i },
 ];
 
 /**
@@ -499,7 +506,7 @@ export async function executeLiveScan(
   });
 
   // 5. Fetch Target Webpage
-  const timeoutMs = Math.min(Math.max(config.timeoutMs || 5000, 1000), 5000); // 5s max timeout as requested
+  const timeoutMs = Math.min(Math.max(config.timeoutMs || 10000, 1000), 30000); // 10s default, max 30s
   const requestHeaders = {
     'User-Agent': config.userAgent || 'InjectionLab-DeepScanner/2.0 (Authorized Security Audit; Educational)',
     Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -512,6 +519,13 @@ export async function executeLiveScan(
     headers: requestHeaders,
     maxRedirects: config.maxRedirects || 5,
     validateStatus: () => true, // Capture all HTTP status codes (200, 401, 403, 500, etc.)
+  });
+
+  const probeHttpClient = axios.create({
+    timeout: timeoutMs,
+    headers: requestHeaders,
+    maxRedirects: 0,
+    validateStatus: () => true,
   });
 
   const startTime = Date.now();
@@ -634,6 +648,7 @@ export async function executeLiveScan(
       let baselineText = '';
       let baselineStatus = 200;
       let baselineDuration = 0;
+      let baselineHeaders: Record<string, unknown> = {};
 
       try {
         const bStart = Date.now();
@@ -643,17 +658,19 @@ export async function executeLiveScan(
             [input.name]: baselineVal,
           };
           const formBody = new URLSearchParams(formData).toString();
-          const bRes = await httpClient.post(input.actionUrl, formBody, {
+          const bRes = await probeHttpClient.post(input.actionUrl, formBody, {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           });
           baselineText = typeof bRes.data === 'string' ? bRes.data : JSON.stringify(bRes.data);
           baselineStatus = bRes.status;
+          baselineHeaders = bRes.headers || {};
         } else {
           const testUrl = new URL(input.actionUrl);
           testUrl.searchParams.set(input.name, baselineVal);
-          const bRes = await httpClient.get(testUrl.toString());
+          const bRes = await probeHttpClient.get(testUrl.toString());
           baselineText = typeof bRes.data === 'string' ? bRes.data : JSON.stringify(bRes.data);
           baselineStatus = bRes.status;
+          baselineHeaders = bRes.headers || {};
         }
         baselineDuration = Date.now() - bStart;
       } catch {
@@ -686,6 +703,7 @@ export async function executeLiveScan(
             let probeText = '';
             let probeStatus = 200;
             let probeDuration = 0;
+            let probeHeaders: Record<string, unknown> = {};
 
             const pStart = Date.now();
             if (input.method === 'POST') {
@@ -694,17 +712,19 @@ export async function executeLiveScan(
                 [input.name]: p.payload,
               };
               const formBody = new URLSearchParams(formData).toString();
-              const pRes = await httpClient.post(input.actionUrl, formBody, {
+              const pRes = await probeHttpClient.post(input.actionUrl, formBody, {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
               });
               probeText = typeof pRes.data === 'string' ? pRes.data : JSON.stringify(pRes.data);
               probeStatus = pRes.status;
+              probeHeaders = pRes.headers || {};
             } else {
               const testUrl = new URL(input.actionUrl);
               testUrl.searchParams.set(input.name, p.payload);
-              const pRes = await httpClient.get(testUrl.toString());
+              const pRes = await probeHttpClient.get(testUrl.toString());
               probeText = typeof pRes.data === 'string' ? pRes.data : JSON.stringify(pRes.data);
               probeStatus = pRes.status;
+              probeHeaders = pRes.headers || {};
             }
             probeDuration = Date.now() - pStart;
 
@@ -725,17 +745,25 @@ export async function executeLiveScan(
               }
 
               // Check A2: Boolean Tautology & Authentication Bypass
-              if (!isVulnerable && p.payload.includes('OR')) {
+              if (!isVulnerable && (p.payload.includes('OR') || p.payload.includes('--') || p.payload.includes("'"))) {
                 const failPatterns = /login failed|invalid username|invalid credentials|authentication failed|failed to login|incorrect password/i;
-                const hadFailure = failPatterns.test(baselineText) || baselineStatus === 401 || baselineStatus === 403;
-                const bypassedFailure = !failPatterns.test(probeText) && (probeStatus === 200 || probeStatus === 302);
-                const hasSuccessToken = /sign off|logout|account history|welcome|dashboard|main\.jsp|user account/i.test(probeText) &&
-                  !/sign off|logout|account history|welcome|dashboard|main\.jsp|user account/i.test(baselineText);
+                const successPatterns = /sign off|logout|account history|welcome|dashboard|main\.jsp|user account|my account|admin portal/i;
 
-                if (hadFailure && (bypassedFailure || hasSuccessToken)) {
+                const baselineLocation = String(baselineHeaders['location'] || '').toLowerCase();
+                const probeLocation = String(probeHeaders['location'] || '').toLowerCase();
+
+                const hadFailure = failPatterns.test(baselineText) || baselineStatus === 401 || baselineStatus === 403 || baselineLocation.includes('login') || baselineLocation.includes('fail');
+                const bypassedFailure = !failPatterns.test(probeText) && (probeStatus === 200 || probeStatus === 302);
+                const hasSuccessToken = successPatterns.test(probeText) && !successPatterns.test(baselineText);
+                const hasSuccessRedirect = probeLocation.length > 0 && !probeLocation.includes('login') && !probeLocation.includes('fail') &&
+                  (probeLocation.includes('main') || probeLocation.includes('account') || probeLocation.includes('dashboard') || probeLocation.includes('admin') || probeLocation.includes('home') || probeLocation.includes('bank'));
+
+                if (hasSuccessRedirect || (hadFailure && (bypassedFailure || hasSuccessToken))) {
                   isVulnerable = true;
                   confidence = 'Confirmed';
-                  evidence = `SQL boolean tautology bypassed application logic. Baseline returned authentication failure, but probe payload "${p.payload}" resulted in successful state alteration.`;
+                  evidence = hasSuccessRedirect
+                    ? `SQL injection authentication bypass detected: Probe payload "${p.payload}" triggered redirect to authenticated destination "${probeHeaders['location']}".`
+                    : `SQL boolean tautology bypassed application logic. Baseline returned authentication failure, but probe payload "${p.payload}" resulted in successful state alteration.`;
                 }
               }
 
