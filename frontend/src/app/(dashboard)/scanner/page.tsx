@@ -298,7 +298,7 @@ export default function ScannerPage() {
           </span>
         </h2>
         <p className="text-zinc-400 text-sm mt-1.5 font-mono">
-          Comprehensive analyzer supporting Heuristic URL parsing and Active Differential Probing against local educational targets.
+          Comprehensive analyzer supporting Heuristic URL parsing and Deep Active Differential Probing against authorized targets.
         </p>
       </div>
 
@@ -435,10 +435,12 @@ export default function ScannerPage() {
           <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300 space-y-2">
             <div className="flex items-center gap-2 font-mono font-bold">
               <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>EDUCATIONAL USE ONLY</span>
+              <span>AUTHORIZED EDUCATIONAL AUDIT ONLY</span>
             </div>
             <p className="text-zinc-300 text-[11px] leading-relaxed">
-              This engine performs passive structural heuristic analysis. No exploit payloads or real HTTP requests are sent to target systems.
+              {scanMode === 'active'
+                ? 'Deep Active mode transmits safe, non-destructive test probes (SQLi, XSS, SSTI, Command Canaries) to discover parameter and form-level vulnerabilities on authorized targets.'
+                : 'Heuristic mode evaluates target URL parameters and HTTP response security headers passively without input probing.'}
             </p>
           </div>
         </div>
