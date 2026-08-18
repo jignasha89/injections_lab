@@ -208,12 +208,36 @@ export default function ScannerPage() {
       }) => {
         const vType = (f.vulnerabilityType || '').toLowerCase();
         let family = 'Protocol / Header / Log / AI Injection';
-        if (vType.includes('sql') || vType.includes('quote') || vType.includes('tautology')) {
-          family = 'SQL/NoSQL Injection';
-        } else if (vType.includes('xss') || vType.includes('script') || vType.includes('canary')) {
-          family = 'Client-Side / XSS';
-        } else if (vType.includes('template') || vType.includes('ssti') || vType.includes('command') || vType.includes('echo')) {
+
+        if (
+          vType.includes('command') ||
+          vType.includes('shell') ||
+          vType.includes('echo') ||
+          vType.includes('exec') ||
+          vType.includes('template') ||
+          vType.includes('ssti') ||
+          vType.includes('eval') ||
+          vType.includes('deserialization')
+        ) {
           family = 'Server-Side / Code Execution';
+        } else if (
+          vType.includes('sql') ||
+          vType.includes('quote') ||
+          vType.includes('tautology') ||
+          vType.includes('nosql') ||
+          vType.includes('cql') ||
+          vType.includes('auth bypass')
+        ) {
+          family = 'SQL/NoSQL Injection';
+        } else if (
+          vType.includes('xss') ||
+          vType.includes('script') ||
+          vType.includes('html') ||
+          vType.includes('breakout') ||
+          vType.includes('canary') ||
+          vType.includes('dom')
+        ) {
+          family = 'Client-Side / XSS';
         }
 
         return {
