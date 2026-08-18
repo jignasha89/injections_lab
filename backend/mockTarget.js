@@ -156,6 +156,39 @@ const server = http.createServer((req, res) => {
       return;
     }
 
+    // 4b. listproducts.php endpoint (Vulnweb simulation for cat parameter SQLi)
+    if (pathname === '/listproducts.php') {
+      const cat = query.cat || '1';
+
+      if (cat.includes("'") || cat.includes("OR")) {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(`
+          <html>
+          <head><title>Product List</title></head>
+          <body>
+            <h2>Category Products</h2>
+            <p><b>Warning</b>: mysql_fetch_array() expects parameter 1 to be resource, boolean given in <b>/hj/var/www/listproducts.php</b> on line <b>62</b></p>
+            <p>Error: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '${cat}' at line 1</p>
+          </body>
+          </html>
+        `);
+        return;
+      }
+
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(`
+        <html>
+        <head><title>Product List</title></head>
+        <body>
+          <h2>Category ${cat} Products</h2>
+          <p>Product #1: Security Scanner Demo</p>
+          <a href="/listproducts.php?cat=1">Cat 1</a>
+        </body>
+        </html>
+      `);
+      return;
+    }
+
     // 5. Feedback / Template endpoint (SSTI Demo)
     if (pathname === '/feedback') {
       const comment = postParams.comment || query.comment || '';

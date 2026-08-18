@@ -639,7 +639,7 @@ async function renderPageWithBrowser(
         '--single-process',
         '--no-zygote',
       ],
-      timeout: Math.min(timeoutMs, 15000),
+      timeout: Math.min(timeoutMs, 25000),
     });
 
     const page = await browser.newPage();
@@ -651,12 +651,12 @@ async function renderPageWithBrowser(
     // Navigate with reasonable timeout and wait for DOM content
     await page.goto(targetUrl, {
       waitUntil: 'domcontentloaded',
-      timeout: Math.min(timeoutMs, 15000),
+      timeout: Math.min(timeoutMs, 25000),
     });
 
     // Brief wait for client-side JavaScript / React / Vue mounting
     try {
-      await page.waitForNetworkIdle({ idleTime: 300, timeout: 2500 });
+      await page.waitForNetworkIdle({ idleTime: 300, timeout: 3000 });
     } catch {
       // Continue if network idle threshold is not strictly met
     }
@@ -732,7 +732,7 @@ export async function executeLiveScan(
   });
 
   // 5. Fetch Target Webpage
-  const timeoutMs = Math.min(Math.max(config.timeoutMs || 20000, 1000), 45000); // 20s default, max 45s
+  const timeoutMs = Math.min(Math.max(config.timeoutMs || 25000, 1000), 60000); // 25s default, max 60s
   const requestHeaders = {
     'User-Agent': config.userAgent || 'InjectionLab-DeepScanner/2.0 (Authorized Security Audit; Educational)',
     Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',

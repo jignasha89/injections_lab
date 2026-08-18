@@ -103,33 +103,67 @@ export default function ScannerPage() {
   const presets = [
     {
       name: 'Local Sandbox / DVWA',
+      label: 'Localhost Target',
+      description: 'Local parameter & form injection testing sandbox',
       url: 'http://localhost:3000/api/users?id=1&name=admin',
-      tag: 'Localhost Target',
+      tag: 'Localhost',
     },
     {
       name: 'PHP Admin Portal',
+      label: 'SQLi + Auth Bypass',
+      description: 'Simulated PHP admin authentication portal',
       url: 'http://vuln-app.test/admin/login.php?username=admin&password=test&redirect=/dashboard',
       tag: 'SQLi + Auth',
     },
     {
-      name: 'Search + Redirect',
-      url: 'https://example.com/search?q=test&redirect=https://safe.com&id=1&page=home',
-      tag: 'XSS + Redirect',
+      name: 'Acunetix Acuart (PHP/MySQL)',
+      label: 'Product Category SQLi',
+      description: 'Product Category SQLi',
+      url: 'http://testphp.vulnweb.com/listproducts.php?cat=1',
+      tag: 'SQLi',
     },
     {
-      name: 'File Include Portal',
-      url: 'http://vuln.test/index.php?file=contact&template=home&page=about&lang=en',
-      tag: 'LFI + SSTI',
+      name: 'Acunetix Acuart — Artist Search',
+      label: 'Artist ID SQLi',
+      description: 'Artist ID SQLi',
+      url: 'http://testphp.vulnweb.com/artists.php?artist=1',
+      tag: 'SQLi',
     },
     {
-      name: 'REST API Endpoint',
-      url: 'https://api.target.com/api/v1/users?id=5&sort=name&filter=active&token=abc123',
-      tag: 'NoSQL + HPP',
+      name: 'Acunetix Acuart — Login',
+      label: 'Auth Bypass SQLi',
+      description: 'Auth Bypass SQLi',
+      url: 'http://testphp.vulnweb.com/login.php',
+      tag: 'SQLi + Auth',
     },
     {
-      name: 'AI Chat Interface',
-      url: 'https://ai-app.test/api/chat?prompt=hello&model=gpt4&url=https://source.com',
-      tag: 'Prompt Injection',
+      name: 'Acunetix Acublog (ASP/MSSQL)',
+      label: 'ASP/MSSQL Target',
+      description: 'ASP/MSSQL Target',
+      url: 'http://testasp.vulnweb.com/',
+      tag: 'SQLi (MSSQL)',
+    },
+    {
+      name: 'Acunetix SecurityTweets (ASP.NET)',
+      label: 'ASP.NET Login',
+      description: 'ASP.NET Login',
+      url: 'http://testaspnet.vulnweb.com/login.aspx',
+      tag: 'SQLi + Auth',
+    },
+    {
+      name: 'Acunetix HTML5 Test (Flask/CouchDB)',
+      label: 'NoSQL Target, creds admin:admin:1234',
+      description: 'NoSQL Target, creds admin:admin:1234',
+      url: 'http://testhtml5.vulnweb.com/',
+      tag: 'NoSQL',
+    },
+    {
+      name: 'PortSwigger Web Security Academy',
+      label: 'Free Labs (XSS, SQLi, SSRF, etc.)',
+      description: 'Free Labs (XSS, SQLi, SSRF, etc.) — Interactive vulnerability lab environment',
+      url: 'https://portswigger.net/web-security/all-labs',
+      tag: 'Multiple',
+      external: true,
     },
   ];
 
@@ -152,7 +186,7 @@ export default function ScannerPage() {
         url,
         authorized: true,
         scanMode: scanMode === 'active' ? 'active' : 'passive',
-        config: { rateLimitMs: 250, timeoutMs: 10000 },
+        config: { rateLimitMs: 250, timeoutMs: 25000 },
       });
 
       const data = res.data;
@@ -419,24 +453,64 @@ export default function ScannerPage() {
               </button>
             </form>
 
-            {/* Presets */}
-            <div className="border-t border-zinc-800/80 pt-4">
-              <h4 className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider mb-2.5">
-                Demo Targets
-              </h4>
-              <div className="space-y-2">
+            {/* Presets / Demo Targets */}
+            <div className="border-t border-zinc-800/80 pt-4 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <h4 className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
+                  Demo Targets
+                </h4>
+                <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20">
+                  Authorized Labs
+                </span>
+              </div>
+
+              <p className="text-[10px] text-zinc-500 font-mono leading-relaxed bg-[#050508] p-2.5 rounded-xl border border-zinc-800/60">
+                ℹ️ These are third-party sites maintained by Acunetix/PortSwigger specifically for authorized security testing practice. Always verify a target&apos;s authorization status before running active scans against anything not on this list.
+              </p>
+
+              <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
                 {presets.map((preset) => (
-                  <button
+                  <div
                     key={preset.name}
-                    onClick={() => { setUrl(preset.url); setAuthorized(true); }}
-                    className="w-full text-left px-3 py-2.5 rounded-xl bg-[#050508] hover:bg-zinc-900/60 border border-zinc-800 transition-all"
+                    className="w-full text-left p-3 rounded-xl bg-[#050508] hover:bg-zinc-900/60 border border-zinc-800 transition-all flex flex-col gap-1 group"
                   >
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className="font-mono font-bold text-xs text-zinc-200">{preset.name}</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">{preset.tag}</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono font-bold text-xs text-zinc-200 group-hover:text-cyan-300 transition-colors">
+                        {preset.name}
+                      </span>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
+                        {preset.tag}
+                      </span>
                     </div>
-                    <p className="text-[10px] font-mono text-zinc-600 truncate">{preset.url}</p>
-                  </button>
+                    {preset.label && (
+                      <p className="text-[10px] font-mono text-amber-400/90">
+                        ↳ {preset.label}
+                      </p>
+                    )}
+                    <div className="flex items-center justify-between pt-1 mt-0.5 border-t border-zinc-900">
+                      <p className="text-[10px] font-mono text-zinc-600 truncate max-w-[170px]">
+                        {preset.url}
+                      </p>
+                      {preset.external ? (
+                        <a
+                          href={preset.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 px-2 py-0.5 rounded bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 flex items-center gap-1 transition"
+                        >
+                          Browse Labs ↗
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => { setUrl(preset.url); setAuthorized(true); }}
+                          className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 px-2 py-0.5 rounded bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition"
+                        >
+                          Load Target →
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

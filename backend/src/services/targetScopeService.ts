@@ -30,7 +30,7 @@ export interface ValidatedTarget {
 export const DEFAULT_SCAN_SCOPE: ScanScopeConfig = {
   maxDepth: 2,
   maxPages: 10,
-  requestTimeoutMs: 5000,
+  requestTimeoutMs: 25000,
   rateLimitMs: 200,
   allowSubdomains: false,
   allowedDomains: [],
@@ -125,7 +125,7 @@ export function validateAndInitTarget(
       // Clamp bounds to prevent runaway crawling
       maxDepth: Math.min(Math.max(1, customScope?.maxDepth ?? DEFAULT_SCAN_SCOPE.maxDepth), 5),
       maxPages: Math.min(Math.max(1, customScope?.maxPages ?? DEFAULT_SCAN_SCOPE.maxPages), 50),
-      requestTimeoutMs: Math.min(Math.max(1000, customScope?.requestTimeoutMs ?? DEFAULT_SCAN_SCOPE.requestTimeoutMs), 15000),
+      requestTimeoutMs: Math.min(Math.max(1000, customScope?.requestTimeoutMs ?? DEFAULT_SCAN_SCOPE.requestTimeoutMs), 60000),
       rateLimitMs: Math.min(Math.max(50, customScope?.rateLimitMs ?? DEFAULT_SCAN_SCOPE.rateLimitMs), 5000),
       allowedDomains: customScope?.allowedDomains?.length
         ? customScope.allowedDomains.map((d) => d.toLowerCase())
