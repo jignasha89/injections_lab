@@ -30,6 +30,7 @@ interface Finding {
   owasp: string;
   description: string;
   evidence: string;
+  evidenceSignals?: string[];
   pocPayload: string;
   recommendation: string;
 }
@@ -42,6 +43,10 @@ interface ScanResult {
   pathSegments: string[];
   domain: string;
   techStackClues: string[];
+  wafDetected?: boolean;
+  wafVendor?: string | null;
+  wafEvidence?: string | null;
+  wafNotice?: string | null;
   potentialInjectionPoints: {
     type: string;
     location: string;
@@ -164,6 +169,7 @@ export default function ScannerPage() {
         cwe?: string;
         owasp?: string;
         evidence: string;
+        evidenceSignals?: string[];
         recommendation: string;
       }) => {
         const vType = (f.vulnerabilityType || '').toLowerCase();
@@ -189,6 +195,7 @@ export default function ScannerPage() {
           owasp: f.owasp || 'A03:2021',
           description: f.evidence || f.vulnerabilityType,
           evidence: f.evidence,
+          evidenceSignals: f.evidenceSignals || [],
           pocPayload: f.payloadUsed,
           recommendation: f.recommendation,
         };
@@ -235,6 +242,10 @@ export default function ScannerPage() {
         pathSegments: [],
         domain: new URL(data.normalizedUrl || url).hostname,
         techStackClues: data.serverBanner ? [`Server: ${data.serverBanner}`] : ['Live Target Audited'],
+        wafDetected: data.wafDetected,
+        wafVendor: data.wafVendor,
+        wafEvidence: data.wafEvidence,
+        wafNotice: data.wafNotice,
         potentialInjectionPoints: [...urlPoints, ...formPoints],
         findings: mappedFindings,
         summary: {
@@ -476,6 +487,29 @@ export default function ScannerPage() {
 
           {result && (
             <div className="space-y-5">
+              {/* WAF Detection Alert Banner */}
+              {result.wafDetected && (
+                <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-300 space-y-1.5 font-mono shadow-[0_0_25px_rgba(245,158,11,0.15)]">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 font-bold text-xs">
+                      <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span>WEB APPLICATION FIREWALL (WAF) DETECTED: {result.wafVendor || 'Active WAF'}</span>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-200">
+                      WAF Active
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-300 leading-relaxed font-sans">
+                    {result.wafNotice || 'A Web Application Firewall was detected. Results may under-report real vulnerabilities, as the WAF may be blocking or altering probe payloads.'}
+                  </p>
+                  {result.wafEvidence && (
+                    <p className="text-[10px] text-zinc-400 font-mono">
+                      Signature: {result.wafEvidence}
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Summary Bar */}
               <div className="bg-[#0c0d14] p-5 rounded-2xl border border-zinc-800/80 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-zinc-800 pb-4">
@@ -631,6 +665,25 @@ export default function ScannerPage() {
                             </span>
                             <p className="text-zinc-300 font-mono text-[11px] leading-relaxed">{finding.evidence}</p>
                           </div>
+
+                          {/* Corroborating Signals */}
+                          {finding.evidenceSignals && finding.evidenceSignals.length > 0 && (
+                            <div className="p-3 bg-zinc-900/40 rounded-xl border border-zinc-800 space-y-1.5">
+                              <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <CheckCircle className="w-3 h-3" /> Corroborating Signals ({finding.evidenceSignals.length})
+                              </span>
+                              <div className="flex flex-wrap gap-1.5 mt-1">
+                                {finding.evidenceSignals.map((sig, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="px-2 py-0.5 rounded-md bg-cyan-500/10 border border-cyan-500/30 text-[10px] font-mono text-cyan-300"
+                                  >
+                                    ✓ {sig}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
 
                           {/* PoC Payload */}
                           <div>

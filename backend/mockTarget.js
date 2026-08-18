@@ -184,6 +184,88 @@ const server = http.createServer((req, res) => {
       return;
     }
 
+    // 7. SPA / React-like client-rendered dynamic form route
+    if (pathname === '/spa') {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>SPA Client-Rendered Portal</title>
+          <style>
+            body { font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem; }
+            .card { background: #1e293b; padding: 1.5rem; border-radius: 8px; border: 1px solid #334155; }
+            input, button { padding: 0.5rem; border-radius: 4px; border: 1px solid #475569; background: #0f172a; color: white; margin-right: 0.5rem; }
+            button { background: #0ea5e9; cursor: pointer; font-weight: bold; border: none; }
+          </style>
+        </head>
+        <body>
+          <h1>⚡ Single Page App (Client Rendered)</h1>
+          <div id="root">
+            <p id="loading">Loading interactive React components...</p>
+          </div>
+          <script>
+            // Simulate client-side React / Vue DOM mounting after brief script execution
+            setTimeout(() => {
+              const root = document.getElementById('root');
+              root.innerHTML = \`
+                <div class="card">
+                  <h3>📬 Dynamic Contact Form (Rendered via JavaScript)</h3>
+                  <form id="spa-contact-form" action="/api/contact" method="POST">
+                    <input type="text" name="email" placeholder="Your Email" value="student@injectionlab.local" />
+                    <input type="text" name="message" placeholder="Message" value="Hello security auditor" />
+                    <button type="submit">Submit Message</button>
+                  </form>
+                </div>
+              \`;
+            }, 100);
+          </script>
+        </body>
+        </html>
+      `);
+      return;
+    }
+
+    if (pathname === '/api/contact') {
+      const email = postParams.email || query.email || '';
+      const message = postParams.message || query.message || '';
+
+      // If single quote error probe is submitted
+      if (email.includes("'")) {
+        res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(`<html><body><p>Database Error: You have an error in your SQL syntax near '${email}'</p></body></html>`);
+        return;
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ status: 'success', email, message }));
+      return;
+    }
+
+    // 8. WAF Demo Endpoint (Simulates Cloudflare / Security Gateway)
+    if (pathname === '/waf-demo') {
+      res.setHeader('Server', 'cloudflare');
+      res.setHeader('cf-ray', '8901234567abcdef-SJC');
+      res.setHeader('cf-cache-status', 'DYNAMIC');
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>WAF Protected Service</title></head>
+        <body>
+          <h1>🔒 Secure Banking Portal</h1>
+          <p>Protected by Cloudflare Edge Security Engine.</p>
+          <form action="/login" method="POST">
+            <input type="text" name="user" placeholder="Username" />
+            <input type="password" name="pin" placeholder="PIN" />
+            <button type="submit">Access Account</button>
+          </form>
+        </body>
+        </html>
+      `);
+      return;
+    }
+
     // Default 404
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('Not Found');
@@ -196,4 +278,6 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`   - Search: http://localhost:${PORT}/search?q=test`);
   console.log(`   - Products: http://localhost:${PORT}/products?id=101`);
   console.log(`   - Login: POST http://localhost:${PORT}/login`);
+  console.log(`   - Dynamic SPA: http://localhost:${PORT}/spa`);
+  console.log(`   - WAF Protected: http://localhost:${PORT}/waf-demo`);
 });

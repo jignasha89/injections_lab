@@ -5,6 +5,7 @@ import {
   analyzeSecurityHeaders,
   isLocalOrPrivateTarget,
   executeLiveScan,
+  detectWaf,
 } from '../services/liveScannerService';
 import axios from 'axios';
 
@@ -132,6 +133,48 @@ describe('Live Scanner Service - Unit Tests', () => {
       };
       const audit = analyzeSecurityHeaders(headers, true);
       expect(audit['Content-Security-Policy'].status).toBe('warn');
+    });
+  });
+
+  describe('detectWaf', () => {
+    it('should detect Cloudflare WAF via headers and cookies', () => {
+      const headers = {
+        'server': 'cloudflare',
+        'cf-ray': '8901234567-SJC',
+        'set-cookie': '__cf_bm=xyz123',
+      };
+      const result = detectWaf(headers, '<html><body>Cloudflare protected</body></html>', 200);
+      expect(result.detected).toBe(true);
+      expect(result.vendor).toBe('Cloudflare');
+    });
+
+    it('should detect AWS WAF via request headers', () => {
+      const headers = {
+        'x-amzn-requestid': 'abc-123-def',
+        'server': 'awswaf',
+      };
+      const result = detectWaf(headers, '', 200);
+      expect(result.detected).toBe(true);
+      expect(result.vendor).toBe('AWS WAF');
+    });
+
+    it('should detect Imperva / Incapsula via x-iinfo', () => {
+      const headers = {
+        'x-iinfo': '14-123456-123456 NNNN 0 0 0 - - - -',
+      };
+      const result = detectWaf(headers, '', 200);
+      expect(result.detected).toBe(true);
+      expect(result.vendor).toBe('Imperva / Incapsula');
+    });
+
+    it('should return detected: false for standard unprotected websites', () => {
+      const headers = {
+        'server': 'Apache/2.4.41 (Ubuntu)',
+        'content-type': 'text/html',
+      };
+      const result = detectWaf(headers, '<html><body>Normal website</body></html>', 200);
+      expect(result.detected).toBe(false);
+      expect(result.vendor).toBeNull();
     });
   });
 });
