@@ -44,6 +44,7 @@ export interface DiscoveredLinkParam {
   href: string;
   param: string;
   value: string;
+  allParams?: Record<string, string>;
 }
 
 export interface ScanFindingResult {
@@ -104,7 +105,7 @@ export interface DeepScanResult {
 }
 
 // ─────────────────────────────────────────────────────────────
-// DATABASE ERROR SIGNATURES
+// COMPREHENSIVE MULTI-DATABASE ERROR SIGNATURES
 // ─────────────────────────────────────────────────────────────
 const DB_ERROR_PATTERNS = [
   // MySQL / MariaDB
@@ -112,12 +113,17 @@ const DB_ERROR_PATTERNS = [
   { db: 'MySQL', pattern: /you have an error in your sql syntax/i },
   { db: 'MySQL', pattern: /check the manual that corresponds to your (mysql|mariadb)/i },
   { db: 'MySQL', pattern: /Warning.*mysql_/i },
+  { db: 'MySQL', pattern: /Warning.*mysqli_/i },
   { db: 'MySQL', pattern: /valid MySQL result/i },
   { db: 'MySQL', pattern: /MySqlClient\./i },
   { db: 'MySQL', pattern: /com\.mysql\.jdbc/i },
   { db: 'MySQL', pattern: /mysqli_query/i },
   { db: 'MySQL', pattern: /mysql_fetch_/i },
   { db: 'MySQL', pattern: /mysql_num_rows/i },
+  { db: 'MariaDB', pattern: /MariaDB server version for the right syntax/i },
+  { db: 'MySQL', pattern: /SQLSTATE\[42000\]: Syntax error/i },
+  { db: 'MySQL', pattern: /SQLSTATE\[HY000\]/i },
+
   // PostgreSQL
   { db: 'PostgreSQL', pattern: /PostgreSQL.*ERROR/i },
   { db: 'PostgreSQL', pattern: /Warning.*\Wpg_/i },
@@ -126,6 +132,11 @@ const DB_ERROR_PATTERNS = [
   { db: 'PostgreSQL', pattern: /org\.postgresql\.util\.PSQLException/i },
   { db: 'PostgreSQL', pattern: /ERROR:\s+syntax error at or near/i },
   { db: 'PostgreSQL', pattern: /pg_query\(\)/i },
+  { db: 'PostgreSQL', pattern: /pg_exec\(\)/i },
+  { db: 'PostgreSQL', pattern: /PG::SyntaxError/i },
+  { db: 'PostgreSQL', pattern: /unterminated quoted string at or near/i },
+  { db: 'PostgreSQL', pattern: /psycopg2\.errors\./i },
+
   // Microsoft SQL Server
   { db: 'MSSQL', pattern: /Driver.*SQL[\-\_\ ]*Server/i },
   { db: 'MSSQL', pattern: /OLE DB.*SQL Server/i },
@@ -133,22 +144,49 @@ const DB_ERROR_PATTERNS = [
   { db: 'MSSQL', pattern: /Unclosed quotation mark after the character string/i },
   { db: 'MSSQL', pattern: /Microsoft OLE DB Provider for ODBC Drivers/i },
   { db: 'MSSQL', pattern: /System\.Data\.SqlClient\.SqlException/i },
+  { db: 'MSSQL', pattern: /\[Microsoft\]\[ODBC SQL Server Driver\]/i },
+  { db: 'MSSQL', pattern: /\[Microsoft\]\[ODBC Driver \d+ for SQL Server\]/i },
+  { db: 'MSSQL', pattern: /Line \d+: Incorrect syntax near/i },
+  { db: 'MSSQL', pattern: /Msg \d+, Level \d+, State \d+/i },
+
   // SQLite
   { db: 'SQLite', pattern: /SQLite\/JDBCDriver/i },
   { db: 'SQLite', pattern: /SQLite\.Exception/i },
   { db: 'SQLite', pattern: /System\.Data\.SQLite\.SQLiteException/i },
   { db: 'SQLite', pattern: /unrecognized token:/i },
   { db: 'SQLite', pattern: /operational error: near/i },
+  { db: 'SQLite', pattern: /near ".*": syntax error/i },
+  { db: 'SQLite', pattern: /incomplete input/i },
+  { db: 'SQLite', pattern: /SQLite3::query\(\)/i },
+
   // Oracle
-  { db: 'Oracle', pattern: /ORA-[0-9]{5}/i },
+  { db: 'Oracle', pattern: /\bORA-[0-9]{5}\b/i },
   { db: 'Oracle', pattern: /Oracle error/i },
   { db: 'Oracle', pattern: /Oracle.*Driver/i },
   { db: 'Oracle', pattern: /SQL command not properly ended/i },
-  // Generic / Hibernate
+  { db: 'Oracle', pattern: /quoted string not properly terminated/i },
+  { db: 'Oracle', pattern: /PL\/SQL: ORA-/i },
+  { db: 'Oracle', pattern: /oracle\.jdbc\./i },
+
+  // IBM DB2
+  { db: 'IBM DB2', pattern: /CLI0150E/i },
+  { db: 'IBM DB2', pattern: /DB2 SQL error:/i },
+  { db: 'IBM DB2', pattern: /\[IBM\]\[CLI Driver\]\[DB2\//i },
+  { db: 'IBM DB2', pattern: /SQLSTATE=42601/i },
+
+  // Microsoft Access
+  { db: 'MS Access', pattern: /Syntax error in query expression/i },
+  { db: 'MS Access', pattern: /Data type mismatch in criteria expression/i },
+  { db: 'MS Access', pattern: /\[Microsoft\]\[ODBC Microsoft Access Driver\]/i },
+
+  // Generic / Hibernate / ORMs
   { db: 'Generic SQL', pattern: /org\.hibernate\.QueryException/i },
-  { db: 'Generic SQL', pattern: /SQLSTATE\[\d+\]/i },
+  { db: 'Generic SQL', pattern: /org\.hibernate\.exception\.SQLGrammarException/i },
+  { db: 'Generic SQL', pattern: /SQLSTATE\[[0-9A-Z]{5}\]/i },
   { db: 'Generic SQL', pattern: /syntax error in query/i },
   { db: 'Generic SQL', pattern: /unhandled sql exception/i },
+  { db: 'Generic SQL', pattern: /SequelizeDatabaseError/i },
+  { db: 'Generic SQL', pattern: /TypeORMError/i },
 ];
 
 /**
@@ -573,12 +611,18 @@ export function parseHtmlContent(
 
     try {
       const resolved = new URL(href, targetUrl);
+      const allParams: Record<string, string> = {};
+      resolved.searchParams.forEach((v, k) => {
+        allParams[k] = v;
+      });
+
       resolved.searchParams.forEach((val, key) => {
         if (!linksWithParams.some((l) => l.href === resolved.pathname && l.param === key)) {
           linksWithParams.push({
             href: resolved.pathname,
             param: key,
             value: val,
+            allParams,
           });
         }
       });
@@ -838,12 +882,18 @@ export async function executeLiveScan(
       });
     });
 
-    // B. URL parameters from discovered page links
+    // B. URL parameters from discovered page links (preserving complete query parameter context)
     for (const link of discovered.linksWithParams) {
       if (!testTargets.some((t) => t.name === link.param && t.location === 'URL Parameter')) {
         let actionUrl = normalizedUrl;
         try {
-          actionUrl = new URL(link.href, normalizedUrl).toString();
+          const resolved = new URL(link.href, normalizedUrl);
+          if (link.allParams) {
+            for (const [k, v] of Object.entries(link.allParams)) {
+              resolved.searchParams.set(k, v);
+            }
+          }
+          actionUrl = resolved.toString();
         } catch {
           actionUrl = normalizedUrl;
         }
@@ -859,7 +909,7 @@ export async function executeLiveScan(
 
     // C. Form Fields (Only GET & POST, skipping file uploads)
     for (const form of discovered.forms) {
-      if (form.isFileUpload) continue; // Skip file uploads as requested
+      if (form.isFileUpload) continue; // Skip file uploads
 
       const formDefaults: Record<string, string> = {};
       for (const input of form.inputs) {
@@ -882,6 +932,40 @@ export async function executeLiveScan(
       }
     }
 
+    // Helper: Execute a test probe request against current target input
+    const executeProbe = async (
+      targetInput: TestInputTarget,
+      payloadStr: string
+    ): Promise<{ text: string; status: number; headers: Record<string, unknown>; duration: number }> => {
+      const pStart = Date.now();
+      let resText = '';
+      let resStatus = 200;
+      let resHeaders: Record<string, unknown> = {};
+
+      if (targetInput.method === 'POST') {
+        const formData: Record<string, string> = {
+          ...(targetInput.formAllInputs || {}),
+          [targetInput.name]: payloadStr,
+        };
+        const formBody = new URLSearchParams(formData).toString();
+        const pRes = await probeHttpClient.post(targetInput.actionUrl, formBody, {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        });
+        resText = typeof pRes.data === 'string' ? pRes.data : JSON.stringify(pRes.data);
+        resStatus = pRes.status;
+        resHeaders = pRes.headers || {};
+      } else {
+        const testUrl = new URL(targetInput.actionUrl);
+        testUrl.searchParams.set(targetInput.name, payloadStr);
+        const pRes = await probeHttpClient.get(testUrl.toString());
+        resText = typeof pRes.data === 'string' ? pRes.data : JSON.stringify(pRes.data);
+        resStatus = pRes.status;
+        resHeaders = pRes.headers || {};
+      }
+      const duration = Date.now() - pStart;
+      return { text: resText, status: resStatus, headers: resHeaders, duration };
+    };
+
     // Iterate through input targets
     for (const input of testTargets) {
       // 1. Safe Baseline Request
@@ -892,28 +976,11 @@ export async function executeLiveScan(
       let baselineHeaders: Record<string, unknown> = {};
 
       try {
-        const bStart = Date.now();
-        if (input.method === 'POST') {
-          const formData: Record<string, string> = {
-            ...(input.formAllInputs || {}),
-            [input.name]: baselineVal,
-          };
-          const formBody = new URLSearchParams(formData).toString();
-          const bRes = await probeHttpClient.post(input.actionUrl, formBody, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          });
-          baselineText = typeof bRes.data === 'string' ? bRes.data : JSON.stringify(bRes.data);
-          baselineStatus = bRes.status;
-          baselineHeaders = bRes.headers || {};
-        } else {
-          const testUrl = new URL(input.actionUrl);
-          testUrl.searchParams.set(input.name, baselineVal);
-          const bRes = await probeHttpClient.get(testUrl.toString());
-          baselineText = typeof bRes.data === 'string' ? bRes.data : JSON.stringify(bRes.data);
-          baselineStatus = bRes.status;
-          baselineHeaders = bRes.headers || {};
-        }
-        baselineDuration = Date.now() - bStart;
+        const baseRes = await executeProbe(input, baselineVal);
+        baselineText = baseRes.text;
+        baselineStatus = baseRes.status;
+        baselineHeaders = baseRes.headers;
+        baselineDuration = baseRes.duration;
       } catch {
         continue;
       }
@@ -928,6 +995,7 @@ export async function executeLiveScan(
           id: string;
           name: string;
           payload: string;
+          falsePayload?: string;
           detectionType: string;
           expectedMatch?: string;
           expectedDelayMs?: number;
@@ -941,110 +1009,153 @@ export async function executeLiveScan(
 
         for (const p of payloads) {
           try {
-            let probeText = '';
-            let probeStatus = 200;
-            let probeDuration = 0;
-            let probeHeaders: Record<string, unknown> = {};
-
-            const pStart = Date.now();
-            if (input.method === 'POST') {
-              const formData: Record<string, string> = {
-                ...(input.formAllInputs || {}),
-                [input.name]: p.payload,
-              };
-              const formBody = new URLSearchParams(formData).toString();
-              const pRes = await probeHttpClient.post(input.actionUrl, formBody, {
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-              });
-              probeText = typeof pRes.data === 'string' ? pRes.data : JSON.stringify(pRes.data);
-              probeStatus = pRes.status;
-              probeHeaders = pRes.headers || {};
-            } else {
-              const testUrl = new URL(input.actionUrl);
-              testUrl.searchParams.set(input.name, p.payload);
-              const pRes = await probeHttpClient.get(testUrl.toString());
-              probeText = typeof pRes.data === 'string' ? pRes.data : JSON.stringify(pRes.data);
-              probeStatus = pRes.status;
-              probeHeaders = pRes.headers || {};
-            }
-            probeDuration = Date.now() - pStart;
-
             let isVulnerable = false;
             let evidence = '';
             let evidenceSignals: string[] = [];
             let confidence: 'Low' | 'Medium' | 'High' | 'Confirmed' = 'Medium';
 
-            const probeContentType = String(probeHeaders['content-type'] || '').toLowerCase();
-            const isHtmlContext = probeContentType.includes('text/html') || probeContentType.includes('application/xhtml+xml');
-
-            // Check A: Database Error Signatures (SQLi)
+            // ── A. Error-Based SQLi Detection ──
             if (p.detectionType === 'error_match') {
+              const probeRes = await executeProbe(input, p.payload);
+
               let matchedDb = '';
               let matchedSignature = '';
 
               for (const { db, pattern } of DB_ERROR_PATTERNS) {
-                if (pattern.test(probeText) && !pattern.test(baselineText)) {
+                if (pattern.test(probeRes.text) && !pattern.test(baselineText)) {
                   matchedDb = db;
-                  matchedSignature = probeText.match(pattern)?.[0] || 'Database syntax error';
+                  matchedSignature = probeRes.text.match(pattern)?.[0] || 'Database syntax error';
                   evidenceSignals.push(`db_error_signature_detected (${db})`);
                   break;
                 }
               }
 
-              const failPatterns = /login failed|invalid username|invalid credentials|authentication failed|failed to login|incorrect password/i;
-              const successPatterns = /sign off|logout|account history|welcome|dashboard|main\.jsp|user account|my account|admin portal/i;
-
-              const baselineLocation = String(baselineHeaders['location'] || '').toLowerCase();
-              const probeLocation = String(probeHeaders['location'] || '').toLowerCase();
-
-              const hadFailure = failPatterns.test(baselineText) || baselineStatus === 401 || baselineStatus === 403 || baselineLocation.includes('login') || baselineLocation.includes('fail');
-              const bypassedFailure = !failPatterns.test(probeText) && (probeStatus === 200 || probeStatus === 302);
-              const hasSuccessToken = successPatterns.test(probeText) && !successPatterns.test(baselineText);
-              const hasSuccessRedirect = probeLocation.length > 0 && !probeLocation.includes('login') && !probeLocation.includes('fail') &&
-                (probeLocation.includes('main') || probeLocation.includes('account') || probeLocation.includes('dashboard') || probeLocation.includes('admin') || probeLocation.includes('home') || probeLocation.includes('bank'));
-
-              if (hasSuccessRedirect) {
-                evidenceSignals.push('auth_redirect_detected');
+              if (matchedDb) {
+                isVulnerable = true;
+                evidence = `${matchedDb} syntax error signature detected in response body: "${matchedSignature}"`;
+                confidence = 'Confirmed';
+              } else if ((p.payload === "'" || p.payload === '"') && baselineStatus < 500 && probeRes.status >= 500) {
+                isVulnerable = true;
+                evidenceSignals.push(`server_error_anomaly (HTTP ${probeRes.status})`);
+                evidence = `Unescaped quote probe (${p.payload}) triggered HTTP ${probeRes.status} Internal Server Error, indicating unhandled database query exception.`;
+                confidence = 'High';
               }
-              if (hadFailure && (bypassedFailure || hasSuccessToken)) {
-                evidenceSignals.push('boolean_state_divergence');
-              }
-              if (p.payload === "'" && baselineStatus < 500 && probeStatus >= 500) {
-                evidenceSignals.push(`server_error_anomaly (HTTP ${probeStatus})`);
+            }
+
+            // ── B. Generic Boolean-Based Differential SQLi Detection ──
+            if (p.detectionType === 'boolean_diff' && p.falsePayload) {
+              // 1. Send TRUE condition probe
+              const trueRes = await executeProbe(input, p.payload);
+              await sleep(rateLimitDelay);
+              // 2. Send FALSE condition probe
+              const falseRes = await executeProbe(input, p.falsePayload);
+
+              const trueLen = trueRes.text.length;
+              const falseLen = falseRes.text.length;
+              const baseLen = baselineText.length;
+
+              // Check if either probe generated a DB error
+              let matchedDb = '';
+              let matchedSig = '';
+              for (const { db, pattern } of DB_ERROR_PATTERNS) {
+                if ((pattern.test(trueRes.text) || pattern.test(falseRes.text)) && !pattern.test(baselineText)) {
+                  matchedDb = db;
+                  matchedSig = (trueRes.text.match(pattern) || falseRes.text.match(pattern))?.[0] || 'Syntax error';
+                  break;
+                }
               }
 
               if (matchedDb) {
                 isVulnerable = true;
-                evidence = `${matchedDb} error signature detected in response body: "${matchedSignature}"`;
-              } else if (hasSuccessRedirect) {
-                isVulnerable = true;
-                evidence = `SQL injection authentication bypass detected: Probe payload "${p.payload}" triggered redirect to authenticated destination "${probeHeaders['location']}".`;
-              } else if (hadFailure && (bypassedFailure || hasSuccessToken)) {
-                isVulnerable = true;
-                evidence = `SQL boolean tautology bypassed application logic. Baseline returned authentication failure, but probe payload "${p.payload}" resulted in successful state alteration.`;
-              } else if (p.payload === "'" && baselineStatus < 500 && probeStatus >= 500) {
-                isVulnerable = true;
-                evidence = `Unescaped single quote triggered HTTP ${probeStatus} Internal Server Error, indicating unhandled database query syntax exception.`;
-              }
+                evidenceSignals.push(`db_error_detected (${matchedDb})`);
+                evidence = `${matchedDb} error signature detected during boolean probe testing: "${matchedSig}"`;
+                confidence = 'Confirmed';
+              } else {
+                // Genuine behavioral difference between TRUE condition and FALSE condition
+                const statusDivergence = (trueRes.status === 200 || trueRes.status === baselineStatus) && (falseRes.status !== trueRes.status);
+                const trueMatchesBaseline = Math.abs(trueLen - baseLen) <= Math.max(100, baseLen * 0.15) || trueRes.status === baselineStatus;
+                const lengthDivergence = Math.abs(trueLen - falseLen) >= Math.max(30, Math.min(trueLen, falseLen) * 0.10);
+                const falseCollapsed = falseLen < trueLen * 0.75;
+                const contentDiffers = trueRes.text !== falseRes.text;
 
-              if (isVulnerable) {
-                confidence = evidenceSignals.length >= 2 ? 'Confirmed' : 'High';
+                if (contentDiffers && (statusDivergence || (trueMatchesBaseline && (lengthDivergence || falseCollapsed)))) {
+                  isVulnerable = true;
+                  evidenceSignals.push('boolean_true_matched_baseline');
+                  evidenceSignals.push('boolean_false_diverged_from_true');
+                  if (statusDivergence) evidenceSignals.push(`status_code_divergence (${trueRes.status} vs ${falseRes.status})`);
+                  if (lengthDivergence) evidenceSignals.push(`response_length_divergence (TRUE: ${trueLen}B vs FALSE: ${falseLen}B)`);
+
+                  confidence = (statusDivergence || Math.abs(trueLen - falseLen) > 80) ? 'Confirmed' : 'High';
+                  evidence = `Boolean-based SQL injection detected: TRUE condition payload ("${p.payload}") produced baseline-consistent behavior (${trueLen} bytes, HTTP ${trueRes.status}), while FALSE condition payload ("${p.falsePayload}") caused behavioral divergence (${falseLen} bytes, HTTP ${falseRes.status}).`;
+                }
               }
             }
 
-            // Check B: Reflected Payload (XSS, Command Injection Canary)
+            // ── C. Generic SQL Authentication Bypass Detection ──
+            if (p.detectionType === 'auth_bypass') {
+              const bypassRes = await executeProbe(input, p.payload);
+              const baselineLoc = String(baselineHeaders['location'] || '').toLowerCase();
+              const bypassLoc = String(bypassRes.headers['location'] || '').toLowerCase();
+              const baseSetCookie = String(baselineHeaders['set-cookie'] || '');
+              const bypassSetCookie = String(bypassRes.headers['set-cookie'] || '');
+
+              // Check DB error first
+              for (const { db, pattern } of DB_ERROR_PATTERNS) {
+                if (pattern.test(bypassRes.text) && !pattern.test(baselineText)) {
+                  isVulnerable = true;
+                  evidenceSignals.push(`db_error_signature_detected (${db})`);
+                  evidence = `${db} error signature triggered by authentication bypass payload: "${bypassRes.text.match(pattern)?.[0]}"`;
+                  confidence = 'Confirmed';
+                  break;
+                }
+              }
+
+              if (!isVulnerable) {
+                // Universal auth bypass behavioral signals:
+                // 1. Redirection away from login/auth
+                const redirectedToNewLocation = bypassLoc.length > 0 && !bypassLoc.includes('login') && !bypassLoc.includes('auth') && !bypassLoc.includes('fail') && !bypassLoc.includes('signin') && bypassLoc !== baselineLoc;
+                // 2. Issuance of new session cookie not present in baseline
+                const issuedAuthCookie = bypassSetCookie.length > 0 && !baseSetCookie.includes(bypassSetCookie.split(';')[0]) && /sess|auth|token|jwt|id|key/i.test(bypassSetCookie);
+                // 3. Status transition: 401/403 baseline -> 200/302 bypass
+                const statusElevated = (baselineStatus === 401 || baselineStatus === 403) && (bypassRes.status === 200 || bypassRes.status === 302);
+                // 4. Failure marker vanished
+                const genericFailPatterns = /invalid username|invalid password|invalid credentials|authentication failed|login failed|incorrect password|user not found|access denied/i;
+                const hadFailMarker = genericFailPatterns.test(baselineText) || baselineStatus === 401 || baselineStatus === 403;
+                const removedFailMarker = hadFailMarker && !genericFailPatterns.test(bypassRes.text) && (bypassRes.status === 200 || bypassRes.status === 302);
+
+                if (redirectedToNewLocation) evidenceSignals.push('authenticated_redirect_detected');
+                if (issuedAuthCookie) evidenceSignals.push('session_cookie_issued');
+                if (statusElevated) evidenceSignals.push(`status_elevated (${baselineStatus} -> ${bypassRes.status})`);
+                if (removedFailMarker) evidenceSignals.push('auth_failure_marker_eliminated');
+
+                if (redirectedToNewLocation || issuedAuthCookie || (statusElevated && removedFailMarker)) {
+                  isVulnerable = true;
+                  confidence = evidenceSignals.length >= 2 ? 'Confirmed' : 'High';
+                  evidence = `SQL injection authentication bypass detected: Probe payload "${p.payload}" altered authentication state (redirect: "${bypassRes.headers['location'] || 'none'}", status: HTTP ${bypassRes.status}).`;
+                }
+              }
+            }
+
+            // ── D. Reflected Payload (XSS, Command Injection Canary) ──
             if (p.detectionType === 'reflection' && p.expectedMatch) {
-              if (probeText.includes(p.expectedMatch) && !baselineText.includes(p.expectedMatch)) {
+              const probeRes = await executeProbe(input, p.payload);
+              const probeContentType = String(probeRes.headers['content-type'] || '').toLowerCase();
+              const isHtmlContext = probeContentType.includes('text/html') || probeContentType.includes('application/xhtml+xml');
+
+              if (probeRes.text.includes(p.expectedMatch) && !baselineText.includes(p.expectedMatch)) {
                 isVulnerable = true;
                 evidenceSignals.push('probe_string_reflected');
                 if (isHtmlContext) {
                   evidenceSignals.push('html_render_context_verified');
                 }
-                if (p.name.includes('Breakout') || p.name.includes('Attribute')) {
-                  evidenceSignals.push('attribute_breakout_syntax_valid');
+                if (p.payload.includes('<') && probeRes.text.includes(p.payload)) {
+                  evidenceSignals.push('unescaped_html_tags_confirmed');
                 }
-                if (p.name.includes('Shell') || p.name.includes('Command')) {
-                  evidenceSignals.push('command_separator_accepted');
+                if (p.payload.includes('"') && probeRes.text.includes(p.payload)) {
+                  evidenceSignals.push('attribute_quote_unescaped');
+                }
+                if (p.name.includes('Shell') || p.name.includes('Command') || p.name.includes('Echo')) {
+                  evidenceSignals.push('command_output_verified');
                 }
 
                 confidence = evidenceSignals.length >= 2 ? 'Confirmed' : 'High';
@@ -1052,30 +1163,32 @@ export async function executeLiveScan(
               }
             }
 
-            // Check C: Mathematical / Expression Evaluation (SSTI)
+            // ── E. Mathematical / Expression Evaluation (SSTI) ──
             if (p.detectionType === 'eval_match' && p.expectedMatch) {
+              const probeRes = await executeProbe(input, p.payload);
               if (
-                probeText.includes(p.expectedMatch) &&
+                probeRes.text.includes(p.expectedMatch) &&
                 !baselineText.includes(p.expectedMatch) &&
-                !probeText.includes(p.payload)
+                !probeRes.text.includes(p.payload)
               ) {
                 isVulnerable = true;
                 evidenceSignals.push('expression_evaluated_to_result');
                 evidenceSignals.push('literal_expression_suppressed');
-                confidence = evidenceSignals.length >= 2 ? 'Confirmed' : 'High';
-                evidence = `Dynamic template evaluation detected: expression "${p.payload}" resulted in computed string "${p.expectedMatch}"`;
+                confidence = 'Confirmed';
+                evidence = `Dynamic template evaluation detected: expression "${p.payload}" resulted in computed string "${p.expectedMatch}".`;
               }
             }
 
-            // Check D: Timing Anomaly (Time-based Blind SQLi)
+            // ── F. Timing Anomaly (Time-Based Blind SQLi) ──
             if (p.detectionType === 'time_delay' && p.expectedDelayMs) {
+              const probeRes = await executeProbe(input, p.payload);
               const expectedDelay = p.expectedDelayMs;
-              if (probeDuration >= expectedDelay * 0.8 && probeDuration > baselineDuration + 1500) {
+              if (probeRes.duration >= expectedDelay * 0.8 && probeRes.duration > baselineDuration + 1500) {
                 isVulnerable = true;
                 evidenceSignals.push('duration_exceeds_threshold');
-                evidenceSignals.push(`baseline_differential_confirmed (+${probeDuration - baselineDuration}ms)`);
-                confidence = evidenceSignals.length >= 2 ? 'Confirmed' : 'High';
-                evidence = `Response time anomaly: baseline response took ${baselineDuration}ms, probe took ${probeDuration}ms (~${expectedDelay}ms expected delay).`;
+                evidenceSignals.push(`baseline_differential_confirmed (+${probeRes.duration - baselineDuration}ms)`);
+                confidence = 'Confirmed';
+                evidence = `Response time anomaly: baseline response took ${baselineDuration}ms, probe took ${probeRes.duration}ms (~${expectedDelay}ms expected delay).`;
               }
             }
 

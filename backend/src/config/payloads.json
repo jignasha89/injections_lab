@@ -9,43 +9,71 @@
       "owasp": "A03:2021-Injection",
       "cvss": 9.8,
       "severity": "Critical",
-      "description": "Tests if unescaped single quotes produce database syntax errors in SQL query execution.",
+      "description": "Tests if unescaped single quotes produce database syntax errors or unhandled 500 exceptions during SQL query execution.",
       "recommendation": "Use parameterized queries / prepared statements for all database operations."
     },
     {
-      "id": "sqli-err-tautology",
-      "name": "Boolean Tautology Probe",
-      "payload": "' OR '1'='1",
+      "id": "sqli-err-doublequote",
+      "name": "Double Quote Error Probe",
+      "payload": "\"",
       "detectionType": "error_match",
       "cwe": "CWE-89",
       "owasp": "A03:2021-Injection",
       "cvss": 9.8,
       "severity": "Critical",
-      "description": "Tests whether logical OR clauses alter backend database query logic or trigger error signatures.",
+      "description": "Tests if unescaped double quotes produce database syntax errors during SQL query execution.",
+      "recommendation": "Use parameterized queries / prepared statements for all database operations."
+    },
+    {
+      "id": "sqli-boolean-numeric",
+      "name": "Boolean-Based Differential SQLi (Numeric)",
+      "payload": "1 AND 1=1",
+      "falsePayload": "1 AND 1=2",
+      "detectionType": "boolean_diff",
+      "cwe": "CWE-89",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Tests if numeric TRUE condition (1 AND 1=1) yields baseline response while FALSE condition (1 AND 1=2) causes response divergence (different status, length, or content).",
+      "recommendation": "Ensure user input is strictly parameterized with prepared statements."
+    },
+    {
+      "id": "sqli-boolean-string",
+      "name": "Boolean-Based Differential SQLi (String/Quote)",
+      "payload": "' AND '1'='1",
+      "falsePayload": "' AND '1'='2",
+      "detectionType": "boolean_diff",
+      "cwe": "CWE-89",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Tests if string-quoted TRUE condition (' AND '1'='1) matches baseline while FALSE condition (' AND '1'='2) alters response state.",
+      "recommendation": "Use parameterized queries with strict parameter binding."
+    },
+    {
+      "id": "sqli-boolean-tautology",
+      "name": "Boolean-Based Tautology SQLi",
+      "payload": "' OR '1'='1",
+      "falsePayload": "' OR '1'='2",
+      "detectionType": "boolean_diff",
+      "cwe": "CWE-89",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Tests if logical OR tautology expands query results while false condition restricts or alters output.",
       "recommendation": "Ensure user input is strictly parameterized rather than interpolated into SQL statements."
     },
     {
-      "id": "sqli-err-tautology-comment",
-      "name": "SQL Comment Tautology Probe",
-      "payload": "' OR '1'='1'--",
-      "detectionType": "error_match",
-      "cwe": "CWE-89",
-      "owasp": "A03:2021-Injection",
-      "cvss": 9.8,
-      "severity": "Critical",
-      "description": "Tests if SQL comment characters (--) bypass query logic and trailing syntax constraints.",
-      "recommendation": "Use parameterized queries with strict type enforcement."
-    },
-    {
-      "id": "sqli-auth-bypass-probe",
-      "name": "SQL Auth Bypass Probe",
+      "id": "sqli-auth-bypass",
+      "name": "SQL Authentication Bypass Probe",
       "payload": "admin'--",
-      "detectionType": "error_match",
+      "falsePayload": "admin' AND '1'='2'--",
+      "detectionType": "auth_bypass",
       "cwe": "CWE-89",
       "owasp": "A03:2021-Injection",
       "cvss": 9.8,
       "severity": "Critical",
-      "description": "Tests if administrative accounts can be accessed by terminating SQL WHERE conditions.",
+      "description": "Tests if authentication logic can be bypassed by terminating SQL WHERE conditions.",
       "recommendation": "Use prepared statements with strict parameter binding."
     },
     {
@@ -92,8 +120,8 @@
   ],
   "command_injection": [
     {
-      "id": "cmd-echo-canary",
-      "name": "Safe Shell Echo Canary",
+      "id": "cmd-echo-canary-semicolon",
+      "name": "Safe Shell Echo Canary (Semicolon)",
       "payload": "; echo injlab_cmd_probe_success",
       "detectionType": "reflection",
       "expectedMatch": "injlab_cmd_probe_success",
@@ -101,14 +129,27 @@
       "owasp": "A03:2021-Injection",
       "cvss": 9.8,
       "severity": "Critical",
-      "description": "Checks if OS command chaining operators (; | &) execute secondary shell commands.",
+      "description": "Checks if OS command chaining operator (;) executes secondary shell commands.",
+      "recommendation": "Avoid using shell execution functions. Use execFile with predefined argument arrays and strict regex validation."
+    },
+    {
+      "id": "cmd-echo-canary-pipe",
+      "name": "Safe Shell Echo Canary (Pipe)",
+      "payload": "| echo injlab_cmd_probe_success",
+      "detectionType": "reflection",
+      "expectedMatch": "injlab_cmd_probe_success",
+      "cwe": "CWE-78",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Checks if pipe operator (|) executes secondary shell commands.",
       "recommendation": "Avoid using shell execution functions. Use execFile with predefined argument arrays and strict regex validation."
     }
   ],
   "ssti": [
     {
-      "id": "ssti-math-eval",
-      "name": "Server-Side Template Math Probe",
+      "id": "ssti-math-eval-jinja",
+      "name": "Server-Side Template Math Probe (Double Curly)",
       "payload": "{{77*77}}",
       "detectionType": "eval_match",
       "expectedMatch": "5929",
@@ -117,6 +158,19 @@
       "cvss": 9.8,
       "severity": "Critical",
       "description": "Tests if template expressions like {{77*77}} are dynamically computed into 5929 by the server-side template engine.",
+      "recommendation": "Do not pass user-supplied input directly into template compilation functions; use static templates with parameter binding."
+    },
+    {
+      "id": "ssti-math-eval-el",
+      "name": "Server-Side Template Math Probe (Dollar Curly)",
+      "payload": "${77*77}",
+      "detectionType": "eval_match",
+      "expectedMatch": "5929",
+      "cwe": "CWE-1336",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Tests if template expressions like ${77*77} are dynamically computed into 5929 by the server-side template engine.",
       "recommendation": "Do not pass user-supplied input directly into template compilation functions; use static templates with parameter binding."
     }
   ]

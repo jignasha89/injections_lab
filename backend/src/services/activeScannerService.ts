@@ -81,25 +81,85 @@ interface DifferentialProbe {
 }
 
 const DB_ERROR_PATTERNS = [
+  // MySQL / MariaDB
   /SQL syntax.*MySQL/i,
+  /you have an error in your sql syntax/i,
+  /check the manual that corresponds to your (mysql|mariadb)/i,
   /Warning.*mysql_/i,
+  /Warning.*mysqli_/i,
   /valid MySQL result/i,
   /MySqlClient\./i,
+  /com\.mysql\.jdbc/i,
+  /mysqli_query/i,
+  /mysql_fetch_/i,
+  /mysql_num_rows/i,
+  /MariaDB server version for the right syntax/i,
+  /SQLSTATE\[42000\]: Syntax error/i,
+  /SQLSTATE\[HY000\]/i,
+
+  // PostgreSQL
   /PostgreSQL.*ERROR/i,
   /Warning.*\Wpg_/i,
   /valid PostgreSQL result/i,
+  /Npgsql\./i,
+  /org\.postgresql\.util\.PSQLException/i,
+  /ERROR:\s+syntax error at or near/i,
+  /pg_query\(\)/i,
+  /pg_exec\(\)/i,
+  /PG::SyntaxError/i,
+  /unterminated quoted string at or near/i,
+  /psycopg2\.errors\./i,
+
+  // Microsoft SQL Server
   /Driver.*SQL[\-\_\ ]*Server/i,
   /OLE DB.*SQL Server/i,
   /\bSQLServer JDBC Driver\b/i,
   /Unclosed quotation mark after the character string/i,
   /Microsoft OLE DB Provider for ODBC Drivers/i,
-  /Oracle error/i,
-  /ORA-[0-9]{5}/i,
+  /System\.Data\.SqlClient\.SqlException/i,
+  /\[Microsoft\]\[ODBC SQL Server Driver\]/i,
+  /\[Microsoft\]\[ODBC Driver \d+ for SQL Server\]/i,
+  /Line \d+: Incorrect syntax near/i,
+  /Msg \d+, Level \d+, State \d+/i,
+
+  // SQLite
   /SQLite\/JDBCDriver/i,
-  /SQLite.Exception/i,
+  /SQLite\.Exception/i,
   /System\.Data\.SQLite\.SQLiteException/i,
-  /org\.hibernate\.QueryException/i,
+  /unrecognized token:/i,
+  /operational error: near/i,
+  /near ".*": syntax error/i,
+  /incomplete input/i,
+  /SQLite3::query\(\)/i,
+
+  // Oracle
+  /\bORA-[0-9]{5}\b/i,
+  /Oracle error/i,
+  /Oracle.*Driver/i,
   /SQL command not properly ended/i,
+  /quoted string not properly terminated/i,
+  /PL\/SQL: ORA-/i,
+  /oracle\.jdbc\./i,
+
+  // IBM DB2
+  /CLI0150E/i,
+  /DB2 SQL error:/i,
+  /\[IBM\]\[CLI Driver\]\[DB2\//i,
+  /SQLSTATE=42601/i,
+
+  // Microsoft Access
+  /Syntax error in query expression/i,
+  /Data type mismatch in criteria expression/i,
+  /\[Microsoft\]\[ODBC Microsoft Access Driver\]/i,
+
+  // Generic / Hibernate / ORMs
+  /org\.hibernate\.QueryException/i,
+  /org\.hibernate\.exception\.SQLGrammarException/i,
+  /SQLSTATE\[[0-9A-Z]{5}\]/i,
+  /syntax error in query/i,
+  /unhandled sql exception/i,
+  /SequelizeDatabaseError/i,
+  /TypeORMError/i,
 ];
 
 const DIFFERENTIAL_PROBES: DifferentialProbe[] = [
@@ -311,7 +371,7 @@ export async function runActiveScan(
   const potentialInjectionPoints: ScanResult['potentialInjectionPoints'] = inputInventory.map((inp) => ({
     type: inp.location,
     location: inp.location === 'Form Field' ? `${inp.formMethod} ${inp.formAction} [${inp.name}]` : `?${inp.name}=${inp.defaultValue}`,
-    risk: inp.name.match(/id|user|search|cmd|file|query|url|token|cat/i) ? 'High' : 'Medium',
+    risk: /^(id|_id|[a-z]+_id|user(name)?|login|email|pass(word)?|search|q|query|cmd|exec|file|path|url|token|auth|key)$/i.test(inp.name) || /^\d+$/.test(inp.defaultValue) ? 'High' : 'Medium',
     reason: `Discovered user-controlled ${inp.location} (${inp.name}) on target page`,
   }));
 
