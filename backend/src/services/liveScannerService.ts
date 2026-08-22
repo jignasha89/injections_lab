@@ -8,6 +8,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as cheerio from 'cheerio';
 import payloadConfig from '../config/payloads.json';
 import { evaluateBooleanDifferential } from './detectors/booleanSqliDetector';
+import { evaluateUnionSqli } from './detectors/unionSqliDetector';
 
 export interface LiveScanConfig {
   scanMode?: 'passive' | 'active';
@@ -108,7 +109,7 @@ export interface DeepScanResult {
 // ─────────────────────────────────────────────────────────────
 // COMPREHENSIVE MULTI-DATABASE ERROR SIGNATURES
 // ─────────────────────────────────────────────────────────────
-const DB_ERROR_PATTERNS = [
+export const DB_ERROR_PATTERNS = [
   // MySQL / MariaDB
   { db: 'MySQL', pattern: /SQL syntax.*MySQL/i },
   { db: 'MySQL', pattern: /you have an error in your sql syntax/i },
@@ -1167,6 +1168,29 @@ export async function executeLiveScan(
                   confidence = evidenceSignals.length >= 2 ? 'Confirmed' : 'High';
                   evidence = `SQL injection authentication bypass detected: Probe payload "${p.payload}" altered authentication state (redirect: "${bypassRes.headers['location'] || 'none'}", status: HTTP ${bypassRes.status}).`;
                 }
+              }
+            }
+
+            // ── C2. Generic UNION-Based SQL Injection Detection ──
+            if (p.detectionType === 'union_match') {
+              console.log(`[PROBE_EXEC] Executing UNION SELECT Probe on input "${input.name}": Payload="${p.payload}"`);
+              const probeRes = await executeProbe(input, p.payload);
+              console.log(`[PROBE_DIFF] Input "${input.name}": Baseline=${baselineText.length}B (HTTP ${baselineStatus}), UNION=${probeRes.text.length}B (HTTP ${probeRes.status})`);
+
+              const evalResult = evaluateUnionSqli(
+                baselineText,
+                probeRes.text,
+                probeRes.status,
+                baselineStatus,
+                p.expectedMatch,
+                p.payload
+              );
+
+              if (evalResult.isVulnerable) {
+                isVulnerable = true;
+                evidenceSignals.push(...evalResult.evidenceSignals);
+                confidence = evalResult.confidence;
+                evidence = evalResult.evidence;
               }
             }
 

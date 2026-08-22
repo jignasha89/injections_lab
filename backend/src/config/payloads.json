@@ -88,6 +88,32 @@
       "severity": "Critical",
       "description": "Tests if server response time is delayed by database sleep/delay functions, indicating time-based blind SQLi.",
       "recommendation": "Never concatenate user input into database queries. Use parameterized queries with strict ORM mapping."
+    },
+    {
+      "id": "sqli-union-select-null",
+      "name": "UNION-Based Null Projection SQLi Probe",
+      "payload": "' UNION SELECT NULL,NULL,NULL,'injlab_union_canary_v1'--",
+      "detectionType": "union_match",
+      "expectedMatch": "injlab_union_canary_v1",
+      "cwe": "CWE-89",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Tests if UNION SELECT projection appends custom string literal ('injlab_union_canary_v1') into the HTTP response stream.",
+      "recommendation": "Use prepared statements with strict parameter binding for all column ordering and database queries."
+    },
+    {
+      "id": "sqli-union-select-numeric",
+      "name": "UNION-Based Numeric Projection SQLi Probe",
+      "payload": "1 UNION SELECT 1,2,3,'injlab_union_canary_v2'--",
+      "detectionType": "union_match",
+      "expectedMatch": "injlab_union_canary_v2",
+      "cwe": "CWE-89",
+      "owasp": "A03:2021-Injection",
+      "cvss": 9.8,
+      "severity": "Critical",
+      "description": "Tests if numeric UNION SELECT projection appends custom string literal ('injlab_union_canary_v2') into the response.",
+      "recommendation": "Use prepared statements with strict parameter binding for all column ordering and database queries."
     }
   ],
   "xss": [

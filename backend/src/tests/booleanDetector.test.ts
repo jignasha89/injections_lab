@@ -9,6 +9,7 @@
  */
 
 import { evaluateBooleanDifferential, normalizeHtmlForComparison } from '../services/detectors/booleanSqliDetector';
+import { evaluateUnionSqli } from '../services/detectors/unionSqliDetector';
 import assert from 'node:assert';
 
 function runUnitTests() {
@@ -69,9 +70,19 @@ function runUnitTests() {
     '1 AND 1=1', '1 AND 1=2'
   );
   assert.strictEqual(resSafe.isVulnerable, false);
-  console.log('  ✓ Correctly identified non-vulnerable input (0 false positives)\n');
+  // Test 5: UNION SELECT Projection Canary Reflection
+  console.log('Test 5: UNION SELECT Projection Canary Reflection');
+  const unionBase = '<html><body><h1>Products</h1><ul><li>Camera</li></ul></body></html>';
+  const unionProbe = '<html><body><h1>Products</h1><ul><li>Camera</li><li>injlab_union_canary_v1</li></ul></body></html>';
 
-  console.log('✅ ALL 4 BOOLEAN DIFFERENTIAL DETECTOR UNIT TESTS PASSED SUCCESSFULLY!');
+  const resUnion = evaluateUnionSqli(
+    unionBase, unionProbe, 200, 200, 'injlab_union_canary_v1', "' UNION SELECT NULL,'injlab_union_canary_v1'--"
+  );
+  assert.strictEqual(resUnion.isVulnerable, true);
+  assert.strictEqual(resUnion.confidence, 'Confirmed');
+  console.log(`  ✓ Detected: ${resUnion.evidence}\n`);
+
+  console.log('✅ ALL DETECTOR UNIT TESTS (BOOLEAN + UNION SQLI) PASSED SUCCESSFULLY!');
 }
 
 runUnitTests();
