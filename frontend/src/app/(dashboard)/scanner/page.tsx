@@ -417,9 +417,26 @@ export default function ScannerPage() {
     }
   };
 
-  const filteredFindings = result?.findings.filter(
+  const SEV_ORDER: Record<string, number> = { Critical: 5, High: 4, Medium: 3, Low: 2, Info: 1 };
+  const CONF_ORDER: Record<string, number> = { Confirmed: 4, Likely: 3, High: 3, Possible: 2, Low: 1 };
+
+  const rawFiltered = result?.findings.filter(
     (f) => filterFamily === 'All' || f.injectionFamily === filterFamily
   ) ?? [];
+
+  const filteredFindings = [...rawFiltered].sort((a, b) => {
+    const sevDiff = (SEV_ORDER[b.severity] || 0) - (SEV_ORDER[a.severity] || 0);
+    if (sevDiff !== 0) return sevDiff;
+    return (CONF_ORDER[b.confidence] || 0) - (CONF_ORDER[a.confidence] || 0);
+  });
+
+  const topFinding = result?.findings && result.findings.length > 0
+    ? [...result.findings].sort((a, b) => {
+        const sevDiff = (SEV_ORDER[b.severity] || 0) - (SEV_ORDER[a.severity] || 0);
+        if (sevDiff !== 0) return sevDiff;
+        return (CONF_ORDER[b.confidence] || 0) - (CONF_ORDER[a.confidence] || 0);
+      })[0]
+    : null;
 
   const families = result
     ? ['All', ...Object.keys(result.summary.injectionFamilyCounts)]
@@ -763,6 +780,41 @@ export default function ScannerPage() {
                   </div>
                 )}
               </div>
+
+              {/* Prominent Severity Summary Banner */}
+              {topFinding && (
+                <div
+                  className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                    topFinding.severity === 'Critical'
+                      ? 'bg-rose-500/10 border-rose-500/40 text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.15)]'
+                      : topFinding.severity === 'High'
+                      ? 'bg-orange-500/10 border-orange-500/40 text-orange-300 shadow-[0_0_20px_rgba(249,115,22,0.15)]'
+                      : topFinding.severity === 'Medium'
+                      ? 'bg-amber-500/10 border-amber-500/40 text-amber-300'
+                      : 'bg-cyan-500/10 border-cyan-500/40 text-cyan-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <ShieldAlert className="w-6 h-6 shrink-0 text-current" />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase font-bold bg-black/40 border border-current">
+                          {topFinding.severity} Priority
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 border border-current">
+                          {topFinding.confidence} Confidence
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-extrabold tracking-tight mt-1 text-white">
+                        {topFinding.type} detected on {topFinding.location || 'target endpoint'}
+                      </h4>
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono px-3 py-1.5 rounded-lg bg-black/40 border border-current text-white font-bold shrink-0">
+                    {topFinding.cwe} • {topFinding.owasp}
+                  </span>
+                </div>
+              )}
 
               {/* Findings Filter */}
               <div className="flex gap-2 flex-wrap">

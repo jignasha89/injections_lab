@@ -1251,6 +1251,15 @@ export async function executeLiveScan(
   const warnedHeaders = headerValues.filter((h) => h.status === 'warn').length;
 
   const SEVERITY_SCORES: Record<string, number> = { Critical: 10, High: 8, Medium: 5, Low: 2, Info: 0 };
+  const CONFIDENCE_SCORES: Record<string, number> = { Confirmed: 4, High: 3, Likely: 3, Medium: 2, Low: 1 };
+
+  // Sort findings by Severity DESC, then Confidence DESC
+  findings.sort((a, b) => {
+    const sevDiff = (SEVERITY_SCORES[b.severity] || 0) - (SEVERITY_SCORES[a.severity] || 0);
+    if (sevDiff !== 0) return sevDiff;
+    return (CONFIDENCE_SCORES[b.confidence] || 0) - (CONFIDENCE_SCORES[a.confidence] || 0);
+  });
+
   const highestSeverity = findings.reduce((highest, f) => {
     return (SEVERITY_SCORES[f.severity] || 0) > (SEVERITY_SCORES[highest] || 0) ? f.severity : highest;
   }, 'Info' as string);

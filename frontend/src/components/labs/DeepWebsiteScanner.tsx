@@ -494,29 +494,77 @@ export default function DeepWebsiteScanner() {
           </div>
 
           {/* Diagnostic Findings List */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center justify-between">
-              <span>Security Diagnostic Findings ({result.findings.length})</span>
-              <span className="text-[10px] text-zinc-500 font-normal">Click a card to inspect evidence & recommendation</span>
-            </h4>
+          {(() => {
+            const SEV_VALS: Record<string, number> = { Critical: 5, High: 4, Medium: 3, Low: 2, Info: 1 };
+            const CONF_VALS: Record<string, number> = { Confirmed: 4, High: 3, Medium: 2, Low: 1 };
 
-            {result.findings.length === 0 ? (
-              <div className="p-6 rounded-xl bg-[#050508] border border-zinc-800 text-center font-mono text-xs text-zinc-400">
-                <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2 opacity-80" />
-                No vulnerabilities detected in this target inspection mode.
-              </div>
-            ) : (
-              <div className="space-y-2.5">
-                {result.findings.map((f, idx) => {
-                  const isExpanded = expandedIndex === idx;
-                  const sevStyle = SEVERITY_COLORS[f.severity] || SEVERITY_COLORS.Info;
+            const sortedFindings = [...result.findings].sort((a, b) => {
+              const sevDiff = (SEV_VALS[b.severity] || 0) - (SEV_VALS[a.severity] || 0);
+              if (sevDiff !== 0) return sevDiff;
+              return (CONF_VALS[b.confidence] || 0) - (CONF_VALS[a.confidence] || 0);
+            });
 
-                  return (
-                    <div
-                      key={idx}
-                      onClick={() => setExpandedIndex(isExpanded ? null : idx)}
-                      className={`p-4 rounded-xl bg-[#050508] border transition-all cursor-pointer hover:border-zinc-700 ${sevStyle.border}`}
-                    >
+            const topFinding = sortedFindings[0];
+
+            return (
+              <div className="space-y-3">
+                {/* Prominent Top Finding Banner */}
+                {topFinding && (
+                  <div
+                    className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                      topFinding.severity === 'Critical'
+                        ? 'bg-rose-500/10 border-rose-500/40 text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.15)]'
+                        : topFinding.severity === 'High'
+                        ? 'bg-orange-500/10 border-orange-500/40 text-orange-300 shadow-[0_0_20px_rgba(249,115,22,0.15)]'
+                        : topFinding.severity === 'Medium'
+                        ? 'bg-amber-500/10 border-amber-500/40 text-amber-300'
+                        : 'bg-cyan-500/10 border-cyan-500/40 text-cyan-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <ShieldAlert className="w-6 h-6 shrink-0 text-current" />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase font-bold bg-black/40 border border-current">
+                            {topFinding.severity} Priority
+                          </span>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 border border-current">
+                            {topFinding.confidence} Confidence
+                          </span>
+                        </div>
+                        <h4 className="text-sm font-extrabold tracking-tight mt-1 text-white">
+                          {topFinding.vulnerabilityType} detected on {topFinding.inputPointTested}
+                        </h4>
+                      </div>
+                    </div>
+                    <span className="text-xs font-mono px-3 py-1.5 rounded-lg bg-black/40 border border-current text-white font-bold shrink-0">
+                      {topFinding.cwe || 'CWE'} • {topFinding.owasp || 'A03:2021'}
+                    </span>
+                  </div>
+                )}
+
+                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center justify-between">
+                  <span>Security Diagnostic Findings ({sortedFindings.length})</span>
+                  <span className="text-[10px] text-zinc-500 font-normal">Sorted by Severity & Confidence • Click to inspect details</span>
+                </h4>
+
+                {sortedFindings.length === 0 ? (
+                  <div className="p-6 rounded-xl bg-[#050508] border border-zinc-800 text-center font-mono text-xs text-zinc-400">
+                    <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2 opacity-80" />
+                    No vulnerabilities detected in this target inspection mode.
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {sortedFindings.map((f, idx) => {
+                      const isExpanded = expandedIndex === idx;
+                      const sevStyle = SEVERITY_COLORS[f.severity] || SEVERITY_COLORS.Info;
+
+                      return (
+                        <div
+                          key={idx}
+                          onClick={() => setExpandedIndex(isExpanded ? null : idx)}
+                          className={`p-4 rounded-xl bg-[#050508] border transition-all cursor-pointer hover:border-zinc-700 ${sevStyle.border}`}
+                        >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex items-center gap-2.5 flex-wrap">
                           <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border font-bold uppercase ${sevStyle.badge}`}>
@@ -584,10 +632,12 @@ export default function DeepWebsiteScanner() {
                     </div>
                   );
                 })}
-              </div>
-            )}
-          </div>
-        </motion.div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </motion.div>
       )}
     </div>
   );
