@@ -1102,21 +1102,22 @@ export async function executeLiveScan(
                 confidence = 'Confirmed';
               } else {
                 // Genuine behavioral difference between TRUE condition and FALSE condition
-                const statusDivergence = (trueRes.status === 200 || trueRes.status === baselineStatus) && (falseRes.status !== trueRes.status);
-                const trueMatchesBaseline = Math.abs(trueLen - baseLen) <= Math.max(150, baseLen * 0.20) || trueRes.status === baselineStatus;
-                const lengthDivergence = Math.abs(trueLen - falseLen) >= Math.max(15, Math.min(trueLen, falseLen) * 0.05);
-                const falseCollapsed = falseLen < trueLen * 0.85 || falseLen > trueLen * 1.15;
                 const contentDiffers = trueRes.text !== falseRes.text;
+                const statusDivergence = falseRes.status !== trueRes.status;
+                const lengthDivergence = Math.abs(trueLen - falseLen) >= Math.max(15, Math.min(trueLen, falseLen) * 0.05);
+                const trueMatchesBaseline = Math.abs(trueLen - baseLen) <= Math.max(200, baseLen * 0.25) || trueRes.status === baselineStatus;
+                const falseMatchesBaseline = Math.abs(falseLen - baseLen) <= Math.max(200, baseLen * 0.25) || falseRes.status === baselineStatus;
 
-                if (contentDiffers && (statusDivergence || (trueMatchesBaseline && (lengthDivergence || falseCollapsed)))) {
+                if (contentDiffers && (statusDivergence || lengthDivergence || trueMatchesBaseline || falseMatchesBaseline)) {
                   isVulnerable = true;
-                  evidenceSignals.push('boolean_true_matched_baseline');
-                  evidenceSignals.push('boolean_false_diverged_from_true');
+                  evidenceSignals.push('boolean_true_false_divergence_confirmed');
+                  if (trueMatchesBaseline) evidenceSignals.push('boolean_true_matched_baseline');
+                  if (falseMatchesBaseline) evidenceSignals.push('boolean_false_matched_baseline');
                   if (statusDivergence) evidenceSignals.push(`status_code_divergence (${trueRes.status} vs ${falseRes.status})`);
                   if (lengthDivergence) evidenceSignals.push(`response_length_divergence (TRUE: ${trueLen}B vs FALSE: ${falseLen}B)`);
 
                   confidence = (statusDivergence || Math.abs(trueLen - falseLen) > 50) ? 'Confirmed' : 'High';
-                  evidence = `Boolean-based SQL injection detected: TRUE condition payload ("${p.payload}") produced baseline-consistent behavior (${trueLen} bytes, HTTP ${trueRes.status}), while FALSE condition payload ("${p.falsePayload}") caused behavioral divergence (${falseLen} bytes, HTTP ${falseRes.status}).`;
+                  evidence = `Boolean-based SQL injection detected: TRUE condition payload ("${p.payload}") produced behavior (${trueLen} bytes, HTTP ${trueRes.status}), while FALSE condition payload ("${p.falsePayload}") caused behavioral divergence (${falseLen} bytes, HTTP ${falseRes.status}).`;
                 }
               }
             }
