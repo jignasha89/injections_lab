@@ -1223,6 +1223,7 @@ export async function executeLiveScan(
             }
 
             if (isVulnerable) {
+              console.log(`[VULN_DETECTED] Finding registered: "${p.name}" on input "${input.name}"`);
               findings.push({
                 inputPointTested: `${input.method} ${input.actionUrl} [${input.name}] (${input.location})`,
                 payloadUsed: p.payload,
@@ -1237,8 +1238,8 @@ export async function executeLiveScan(
                 recommendation: p.recommendation || 'Sanitize and parameterize all input points.',
               });
             }
-          } catch {
-            // Continue testing remaining probes
+          } catch (err) {
+            console.error(`[PROBE_ERROR] Exception caught while executing probe "${p.name}" (${p.id}) on input "${input.name}":`, err);
           }
 
           await sleep(rateLimitDelay);
