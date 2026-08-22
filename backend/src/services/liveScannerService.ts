@@ -672,19 +672,46 @@ async function renderPageWithBrowser(
 ): Promise<string | null> {
   let browser: any = null;
   try {
-    const puppeteer = await import('puppeteer');
-    browser = await puppeteer.default.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--single-process',
-        '--no-zygote',
-      ],
-      timeout: Math.min(timeoutMs, 25000),
-    });
+    const isServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+    if (isServerless) {
+      const chromiumMod: any = await import('@sparticuz/chromium');
+      const puppeteerCore: any = await import('puppeteer-core');
+      const chrom = chromiumMod.default || chromiumMod;
+      const executablePath = await chrom.executablePath();
+      browser = await (puppeteerCore.default || puppeteerCore).launch({
+        args: chrom.args,
+        defaultViewport: chrom.defaultViewport,
+        executablePath: executablePath,
+        headless: chrom.headless,
+      });
+    } else {
+      try {
+        const puppeteer: any = await import('puppeteer');
+        browser = await (puppeteer.default || puppeteer).launch({
+          headless: true,
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--single-process',
+            '--no-zygote',
+          ],
+          timeout: Math.min(timeoutMs, 25000),
+        });
+      } catch {
+        const chromiumMod: any = await import('@sparticuz/chromium');
+        const puppeteerCore: any = await import('puppeteer-core');
+        const chrom = chromiumMod.default || chromiumMod;
+        const executablePath = await chrom.executablePath();
+        browser = await (puppeteerCore.default || puppeteerCore).launch({
+          args: chrom.args,
+          defaultViewport: chrom.defaultViewport,
+          executablePath: executablePath,
+          headless: chrom.headless,
+        });
+      }
+    }
 
     const page = await browser.newPage();
     if (userAgent) {

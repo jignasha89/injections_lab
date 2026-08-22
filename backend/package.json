@@ -12,6 +12,7 @@
     "test:regression": "ts-node src/scripts/regressionTest.ts"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^149.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/cheerio": "^0.22.35",
     "@types/cors": "^2.8.17",
@@ -33,6 +34,7 @@
     "mongoose": "^8.0.3",
     "morgan": "^1.10.0",
     "puppeteer": "^25.8.0",
+    "puppeteer-core": "^25.8.0",
     "typescript": "^5.3.3"
   },
   "devDependencies": {
