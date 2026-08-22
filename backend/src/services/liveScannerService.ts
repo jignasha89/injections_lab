@@ -7,6 +7,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as cheerio from 'cheerio';
 import payloadConfig from '../config/payloads.json';
+import { evaluateBooleanDifferential } from './detectors/booleanSqliDetector';
 
 export interface LiveScanConfig {
   scanMode?: 'passive' | 'active';
@@ -1101,23 +1102,25 @@ export async function executeLiveScan(
                 evidence = `${matchedDb} error signature detected during boolean probe testing: "${matchedSig}"`;
                 confidence = 'Confirmed';
               } else {
-                // Genuine behavioral difference between TRUE condition and FALSE condition
-                const contentDiffers = trueRes.text !== falseRes.text;
-                const statusDivergence = falseRes.status !== trueRes.status;
-                const lengthDivergence = Math.abs(trueLen - falseLen) >= Math.max(15, Math.min(trueLen, falseLen) * 0.05);
-                const trueMatchesBaseline = Math.abs(trueLen - baseLen) <= Math.max(200, baseLen * 0.25) || trueRes.status === baselineStatus;
-                const falseMatchesBaseline = Math.abs(falseLen - baseLen) <= Math.max(200, baseLen * 0.25) || falseRes.status === baselineStatus;
+                const evalResult = evaluateBooleanDifferential(
+                  baseLen,
+                  baselineStatus,
+                  trueLen,
+                  trueRes.status,
+                  falseLen,
+                  falseRes.status,
+                  trueRes.text,
+                  falseRes.text,
+                  baselineText,
+                  p.payload,
+                  p.falsePayload
+                );
 
-                if (contentDiffers && (statusDivergence || lengthDivergence || trueMatchesBaseline || falseMatchesBaseline)) {
+                if (evalResult.isVulnerable) {
                   isVulnerable = true;
-                  evidenceSignals.push('boolean_true_false_divergence_confirmed');
-                  if (trueMatchesBaseline) evidenceSignals.push('boolean_true_matched_baseline');
-                  if (falseMatchesBaseline) evidenceSignals.push('boolean_false_matched_baseline');
-                  if (statusDivergence) evidenceSignals.push(`status_code_divergence (${trueRes.status} vs ${falseRes.status})`);
-                  if (lengthDivergence) evidenceSignals.push(`response_length_divergence (TRUE: ${trueLen}B vs FALSE: ${falseLen}B)`);
-
-                  confidence = (statusDivergence || Math.abs(trueLen - falseLen) > 50) ? 'Confirmed' : 'High';
-                  evidence = `Boolean-based SQL injection detected: TRUE condition payload ("${p.payload}") produced behavior (${trueLen} bytes, HTTP ${trueRes.status}), while FALSE condition payload ("${p.falsePayload}") caused behavioral divergence (${falseLen} bytes, HTTP ${falseRes.status}).`;
+                  evidenceSignals.push(...evalResult.evidenceSignals);
+                  confidence = evalResult.confidence;
+                  evidence = evalResult.evidence;
                 }
               }
             }
