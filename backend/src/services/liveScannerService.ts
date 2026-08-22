@@ -1071,6 +1071,7 @@ export async function executeLiveScan(
 
             // ── B. Generic Boolean-Based Differential SQLi Detection ──
             if (p.detectionType === 'boolean_diff' && p.falsePayload) {
+              console.log(`[PROBE_EXEC] Executing Boolean Differential Pair on input "${input.name}": TRUE="${p.payload}" vs FALSE="${p.falsePayload}"`);
               // 1. Send TRUE condition probe
               const trueRes = await executeProbe(input, p.payload);
               await sleep(rateLimitDelay);
@@ -1080,6 +1081,8 @@ export async function executeLiveScan(
               const trueLen = trueRes.text.length;
               const falseLen = falseRes.text.length;
               const baseLen = baselineText.length;
+
+              console.log(`[PROBE_DIFF] Input "${input.name}": Baseline=${baseLen}B (HTTP ${baselineStatus}), TRUE=${trueLen}B (HTTP ${trueRes.status}), FALSE=${falseLen}B (HTTP ${falseRes.status})`);
 
               // Check if either probe generated a DB error
               let matchedDb = '';
@@ -1100,9 +1103,9 @@ export async function executeLiveScan(
               } else {
                 // Genuine behavioral difference between TRUE condition and FALSE condition
                 const statusDivergence = (trueRes.status === 200 || trueRes.status === baselineStatus) && (falseRes.status !== trueRes.status);
-                const trueMatchesBaseline = Math.abs(trueLen - baseLen) <= Math.max(100, baseLen * 0.15) || trueRes.status === baselineStatus;
-                const lengthDivergence = Math.abs(trueLen - falseLen) >= Math.max(30, Math.min(trueLen, falseLen) * 0.10);
-                const falseCollapsed = falseLen < trueLen * 0.75;
+                const trueMatchesBaseline = Math.abs(trueLen - baseLen) <= Math.max(150, baseLen * 0.20) || trueRes.status === baselineStatus;
+                const lengthDivergence = Math.abs(trueLen - falseLen) >= Math.max(15, Math.min(trueLen, falseLen) * 0.05);
+                const falseCollapsed = falseLen < trueLen * 0.85 || falseLen > trueLen * 1.15;
                 const contentDiffers = trueRes.text !== falseRes.text;
 
                 if (contentDiffers && (statusDivergence || (trueMatchesBaseline && (lengthDivergence || falseCollapsed)))) {
@@ -1112,7 +1115,7 @@ export async function executeLiveScan(
                   if (statusDivergence) evidenceSignals.push(`status_code_divergence (${trueRes.status} vs ${falseRes.status})`);
                   if (lengthDivergence) evidenceSignals.push(`response_length_divergence (TRUE: ${trueLen}B vs FALSE: ${falseLen}B)`);
 
-                  confidence = (statusDivergence || Math.abs(trueLen - falseLen) > 80) ? 'Confirmed' : 'High';
+                  confidence = (statusDivergence || Math.abs(trueLen - falseLen) > 50) ? 'Confirmed' : 'High';
                   evidence = `Boolean-based SQL injection detected: TRUE condition payload ("${p.payload}") produced baseline-consistent behavior (${trueLen} bytes, HTTP ${trueRes.status}), while FALSE condition payload ("${p.falsePayload}") caused behavioral divergence (${falseLen} bytes, HTTP ${falseRes.status}).`;
                 }
               }

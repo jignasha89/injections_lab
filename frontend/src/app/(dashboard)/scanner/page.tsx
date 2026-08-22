@@ -853,9 +853,18 @@ export default function ScannerPage() {
                               {finding.severity}
                             </span>
                             <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${CONFIDENCE_STYLES[finding.confidence]}`}>
-                              {finding.confidence}
+                              {finding.confidence} Confidence
                             </span>
-                            <span className="text-sm font-mono font-bold text-white">{finding.type}</span>
+                            <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold">
+                              {finding.type.includes('Boolean') ? 'Boolean-Based SQLi' :
+                               finding.type.includes('Auth Bypass') ? 'SQL Auth Bypass' :
+                               finding.type.includes('Quote Error') || finding.type.includes('Error') ? 'Error-Based SQLi' :
+                               finding.type.includes('Time') || finding.type.includes('Delay') ? 'Time-Based Blind SQLi' :
+                               finding.type.includes('XSS') || finding.type.includes('Canary') ? 'Reflected XSS' :
+                               finding.type.includes('Template') || finding.type.includes('Math') ? 'SSTI / Code Eval' :
+                               finding.type.includes('Header') ? 'Security Header Misconfig' : finding.type}
+                            </span>
+                            <span className="text-sm font-mono font-bold text-white ml-1">{finding.type}</span>
                           </div>
                           <div className="flex items-center gap-3">
                             <p className="text-[11px] text-zinc-500 font-mono truncate">{finding.location}</p>

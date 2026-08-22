@@ -566,14 +566,23 @@ export default function DeepWebsiteScanner() {
                           className={`p-4 rounded-xl bg-[#050508] border transition-all cursor-pointer hover:border-zinc-700 ${sevStyle.border}`}
                         >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2.5 flex-wrap">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border font-bold uppercase ${sevStyle.badge}`}>
                             {f.severity}
                           </span>
                           <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border font-bold ${CONFIDENCE_COLORS[f.confidence] || CONFIDENCE_COLORS.Low}`}>
                             {f.confidence} Confidence
                           </span>
-                          <span className="text-xs font-mono font-bold text-white">{f.vulnerabilityType}</span>
+                          <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold">
+                            {f.vulnerabilityType.includes('Boolean') ? 'Boolean-Based SQLi' :
+                             f.vulnerabilityType.includes('Auth Bypass') ? 'SQL Auth Bypass' :
+                             f.vulnerabilityType.includes('Quote Error') || f.vulnerabilityType.includes('Error') ? 'Error-Based SQLi' :
+                             f.vulnerabilityType.includes('Time') || f.vulnerabilityType.includes('Delay') ? 'Time-Based Blind SQLi' :
+                             f.vulnerabilityType.includes('XSS') || f.vulnerabilityType.includes('Canary') ? 'Reflected XSS' :
+                             f.vulnerabilityType.includes('Template') || f.vulnerabilityType.includes('Math') ? 'SSTI / Code Eval' :
+                             f.vulnerabilityType.includes('Header') ? 'Security Header Misconfig' : f.vulnerabilityType}
+                          </span>
+                          <span className="text-xs font-mono font-bold text-white ml-1">{f.vulnerabilityType}</span>
                         </div>
                         <div className="flex items-center gap-2 text-zinc-500 text-xs font-mono">
                           <span>{f.owasp || 'A03:2021'}</span>
