@@ -18,6 +18,7 @@ export interface LiveScanConfig {
   cookies?: string;
   customHeaders?: Record<string, string>;
   maxRedirects?: number;
+  enableHeadlessBrowser?: boolean;
 }
 
 export interface SecurityHeaderResult {
@@ -850,15 +851,17 @@ export async function executeLiveScan(
     ? `A Web Application Firewall (${wafResult.vendor || 'WAF'}) was detected. Results may under-report real vulnerabilities, as the WAF may be blocking or altering probe payloads.`
     : undefined;
 
-  // 7. Parse HTML Structure (with dynamic JavaScript SPA rendering support)
+  // 7. Parse HTML Structure (with optional dynamic JavaScript SPA rendering support)
   let pageHtml = rawHtml;
-  try {
-    const renderedHtml = await renderPageWithBrowser(normalizedUrl, timeoutMs, config.userAgent);
-    if (renderedHtml && renderedHtml.length > 50) {
-      pageHtml = renderedHtml;
+  if (config.enableHeadlessBrowser) {
+    try {
+      const renderedHtml = await renderPageWithBrowser(normalizedUrl, timeoutMs, config.userAgent);
+      if (renderedHtml && renderedHtml.length > 50) {
+        pageHtml = renderedHtml;
+      }
+    } catch {
+      pageHtml = rawHtml;
     }
-  } catch {
-    pageHtml = rawHtml;
   }
 
   const discovered = parseHtmlContent(pageHtml, normalizedUrl);
@@ -1008,17 +1011,29 @@ export async function executeLiveScan(
       return { text: resText, status: resStatus, headers: resHeaders, duration };
     };
 
+    // Baseline response cache per actionUrl + method
+    const baselineCache = new Map<string, { text: string; status: number; headers: Record<string, unknown>; duration: number }>();
+
+    const fetchBaseline = async (input: TestInputTarget) => {
+      const cacheKey = `${input.method}:${input.actionUrl}`;
+      if (baselineCache.has(cacheKey)) {
+        return baselineCache.get(cacheKey)!;
+      }
+      const baseRes = await executeProbe(input, 'injlab_safe_baseline_token');
+      baselineCache.set(cacheKey, baseRes);
+      return baseRes;
+    };
+
     // Iterate through unique input targets
     for (const input of uniqueTargets) {
       // 1. Safe Baseline Request
-      const baselineVal = 'injlab_safe_baseline_token';
       let baselineText = '';
       let baselineStatus = 200;
       let baselineDuration = 0;
       let baselineHeaders: Record<string, unknown> = {};
 
       try {
-        const baseRes = await executeProbe(input, baselineVal);
+        const baseRes = await fetchBaseline(input);
         baselineText = baseRes.text;
         baselineStatus = baseRes.status;
         baselineHeaders = baseRes.headers;
