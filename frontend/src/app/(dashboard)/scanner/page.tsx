@@ -432,11 +432,32 @@ export default function ScannerPage() {
 
   const topFinding = result?.findings && result.findings.length > 0
     ? [...result.findings].sort((a, b) => {
+        const isHeaderA = (a.type || '').includes('Header') ? 1 : 0;
+        const isHeaderB = (b.type || '').includes('Header') ? 1 : 0;
+        if (isHeaderA !== isHeaderB) return isHeaderA - isHeaderB;
+
+        const confA = CONF_ORDER[a.confidence] || 0;
+        const confB = CONF_ORDER[b.confidence] || 0;
+        if (confA !== confB && (a.confidence === 'Confirmed' || b.confidence === 'Confirmed')) {
+          return confB - confA;
+        }
+
         const sevDiff = (SEV_ORDER[b.severity] || 0) - (SEV_ORDER[a.severity] || 0);
         if (sevDiff !== 0) return sevDiff;
-        return (CONF_ORDER[b.confidence] || 0) - (CONF_ORDER[a.confidence] || 0);
+        return confB - confA;
       })[0]
     : null;
+
+  const topLabel = topFinding ? (
+    (topFinding.type || '').includes('Boolean') ? 'Boolean-Based SQLi' :
+    (topFinding.type || '').includes('UNION') || (topFinding.type || '').includes('Union') ? 'UNION-Based SQLi' :
+    (topFinding.type || '').includes('Auth Bypass') ? 'SQL Auth Bypass' :
+    (topFinding.type || '').includes('Quote Error') || (topFinding.type || '').includes('Error') ? 'Error-Based SQLi' :
+    (topFinding.type || '').includes('Time') || (topFinding.type || '').includes('Delay') ? 'Time-Based Blind SQLi' :
+    (topFinding.type || '').includes('XSS') || (topFinding.type || '').includes('Canary') ? 'Reflected XSS' :
+    (topFinding.type || '').includes('Template') || (topFinding.type || '').includes('Math') ? 'SSTI / Code Eval' :
+    (topFinding.type || '').includes('Header') ? 'Security Header Misconfig' : topFinding.type
+  ) : '';
 
   const families = result
     ? ['All', ...Object.keys(result.summary.injectionFamilyCounts)]
@@ -797,12 +818,15 @@ export default function ScannerPage() {
                   <div className="flex items-center gap-3">
                     <ShieldAlert className="w-6 h-6 shrink-0 text-current" />
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase font-bold bg-black/40 border border-current">
                           {topFinding.severity} Priority
                         </span>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 border border-current">
                           {topFinding.confidence} Confidence
+                        </span>
+                        <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 font-bold">
+                          {topLabel}
                         </span>
                       </div>
                       <h4 className="text-sm font-extrabold tracking-tight mt-1 text-white">

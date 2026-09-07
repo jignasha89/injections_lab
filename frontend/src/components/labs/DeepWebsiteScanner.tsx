@@ -499,12 +499,32 @@ export default function DeepWebsiteScanner() {
             const CONF_VALS: Record<string, number> = { Confirmed: 4, High: 3, Medium: 2, Low: 1 };
 
             const sortedFindings = [...result.findings].sort((a, b) => {
+              const isHeaderA = (a.vulnerabilityType || '').includes('Header') ? 1 : 0;
+              const isHeaderB = (b.vulnerabilityType || '').includes('Header') ? 1 : 0;
+              if (isHeaderA !== isHeaderB) return isHeaderA - isHeaderB;
+
+              const confA = CONF_VALS[a.confidence] || 0;
+              const confB = CONF_VALS[b.confidence] || 0;
+              if (confA !== confB && (a.confidence === 'Confirmed' || b.confidence === 'Confirmed')) {
+                return confB - confA;
+              }
+
               const sevDiff = (SEV_VALS[b.severity] || 0) - (SEV_VALS[a.severity] || 0);
               if (sevDiff !== 0) return sevDiff;
-              return (CONF_VALS[b.confidence] || 0) - (CONF_VALS[a.confidence] || 0);
+              return confB - confA;
             });
 
             const topFinding = sortedFindings[0];
+            const topLabel = topFinding ? (
+              topFinding.vulnerabilityType.includes('Boolean') ? 'Boolean-Based SQLi' :
+              topFinding.vulnerabilityType.includes('UNION') || topFinding.vulnerabilityType.includes('Union') ? 'UNION-Based SQLi' :
+              topFinding.vulnerabilityType.includes('Auth Bypass') ? 'SQL Auth Bypass' :
+              topFinding.vulnerabilityType.includes('Quote Error') || topFinding.vulnerabilityType.includes('Error') ? 'Error-Based SQLi' :
+              topFinding.vulnerabilityType.includes('Time') || topFinding.vulnerabilityType.includes('Delay') ? 'Time-Based Blind SQLi' :
+              topFinding.vulnerabilityType.includes('XSS') || topFinding.vulnerabilityType.includes('Canary') ? 'Reflected XSS' :
+              topFinding.vulnerabilityType.includes('Template') || topFinding.vulnerabilityType.includes('Math') ? 'SSTI / Code Eval' :
+              topFinding.vulnerabilityType.includes('Header') ? 'Security Header Misconfig' : topFinding.vulnerabilityType
+            ) : '';
 
             return (
               <div className="space-y-3">
@@ -524,12 +544,15 @@ export default function DeepWebsiteScanner() {
                     <div className="flex items-center gap-3">
                       <ShieldAlert className="w-6 h-6 shrink-0 text-current" />
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase font-bold bg-black/40 border border-current">
                             {topFinding.severity} Priority
                           </span>
                           <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40 border border-current">
                             {topFinding.confidence} Confidence
+                          </span>
+                          <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 font-bold">
+                            {topLabel}
                           </span>
                         </div>
                         <h4 className="text-sm font-extrabold tracking-tight mt-1 text-white">
