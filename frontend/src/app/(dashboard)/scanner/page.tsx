@@ -329,26 +329,27 @@ export default function ScannerPage() {
           family = 'Client-Side / XSS';
         }
 
+        const item = f as any;
         return {
-          id: (f as any).id,
-          type: f.vulnerabilityType || f.type,
+          id: item.id,
+          type: item.vulnerabilityType || item.type || 'Vulnerability',
           injectionFamily: family,
-          location: f.inputPointTested || f.location,
-          parameter: f.parameter || (f.inputPointTested ? f.inputPointTested.split(' [')[1]?.split(']')[0] : undefined),
-          paramValue: f.payloadUsed || f.paramValue,
-          severity: f.severity || 'Medium',
-          confidence: f.confidence === 'Confirmed' ? 'Confirmed' : 'Suspected',
-          cvss: f.cvss || 7.5,
-          cwe: f.cwe_id || f.cwe || 'CWE-89',
-          cwe_id: f.cwe_id || f.cwe || 'CWE-89',
-          owasp: f.owasp || (f.owasp_categories ? f.owasp_categories[0] : 'A03:2021'),
-          owasp_category: f.owasp_categories || f.owasp_category || (f.owasp ? [f.owasp] : ['A03:2021']),
-          owasp_categories: f.owasp_categories || f.owasp_category || (f.owasp ? [f.owasp] : ['A03:2021']),
-          description: f.description || f.evidence || f.vulnerabilityType,
-          evidence: f.evidence,
-          evidenceSignals: f.evidenceSignals || [],
-          pocPayload: f.payloadUsed || f.pocPayload,
-          recommendation: f.recommendation,
+          location: item.inputPointTested || item.location || 'Target parameter',
+          parameter: item.parameter || (item.inputPointTested ? item.inputPointTested.split(' [')[1]?.split(']')[0] : undefined),
+          paramValue: item.payloadUsed || item.paramValue,
+          severity: item.severity || 'Medium',
+          confidence: item.confidence === 'Confirmed' ? 'Confirmed' : 'Suspected',
+          cvss: item.cvss || 7.5,
+          cwe: item.cwe_id || item.cwe || 'CWE-89',
+          cwe_id: item.cwe_id || item.cwe || 'CWE-89',
+          owasp: item.owasp || (item.owasp_categories ? item.owasp_categories[0] : 'A03:2021'),
+          owasp_category: item.owasp_categories || item.owasp_category || (item.owasp ? [item.owasp] : ['A03:2021']),
+          owasp_categories: item.owasp_categories || item.owasp_category || (item.owasp ? [item.owasp] : ['A03:2021']),
+          description: item.description || item.evidence || item.vulnerabilityType,
+          evidence: item.evidence || 'Pattern detected',
+          evidenceSignals: item.evidenceSignals || [],
+          pocPayload: item.payloadUsed || item.pocPayload || 'N/A',
+          recommendation: item.recommendation || 'Sanitize input.',
         };
       });
 
