@@ -896,11 +896,15 @@ export default function ScannerPage() {
                             </span>
                             <span className="text-sm font-mono font-bold text-white ml-1">{finding.type}</span>
                           </div>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
                             <p className="text-[11px] text-zinc-500 font-mono truncate">{finding.location}</p>
-                            <span className={`text-[10px] font-mono shrink-0 ${FAMILY_COLORS[finding.injectionFamily] || 'text-zinc-400'}`}>
-                              {finding.injectionFamily}
-                            </span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {(finding.owasp_categories || finding.owasp_category || (finding.owasp ? [finding.owasp] : ['A03:2021-Injection'])).map((owaspTag, oIdx) => (
+                                <span key={oIdx} className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/30 text-purple-300 font-bold">
+                                  {owaspTag}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         </div>
                         {isExpanded ? <ChevronUp className="w-4 h-4 text-zinc-400 shrink-0" /> : <ChevronDown className="w-4 h-4 text-zinc-400 shrink-0" />}
@@ -953,19 +957,25 @@ export default function ScannerPage() {
                             </div>
                           </div>
 
-                          {/* Scores */}
-                          <div className="grid grid-cols-3 gap-3 font-mono">
+                          {/* Scores & OWASP Badges */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 font-mono">
                             <div className="p-3 bg-[#050508] rounded-xl border border-zinc-800">
-                              <span className="text-[10px] text-zinc-500 block">CVSS Score</span>
+                              <span className="text-[10px] text-zinc-500 block uppercase">CVSS Severity Score</span>
                               <span className="text-rose-400 font-bold text-sm">{finding.cvss} / 10</span>
                             </div>
                             <div className="p-3 bg-[#050508] rounded-xl border border-zinc-800">
-                              <span className="text-[10px] text-zinc-500 block">CWE</span>
-                              <span className="text-cyan-400 font-bold text-sm">{finding.cwe}</span>
+                              <span className="text-[10px] text-zinc-500 block uppercase">CWE Classification</span>
+                              <span className="text-cyan-400 font-bold text-sm">{finding.cwe_id || finding.cwe}</span>
                             </div>
                             <div className="p-3 bg-[#050508] rounded-xl border border-zinc-800">
-                              <span className="text-[10px] text-zinc-500 block">OWASP</span>
-                              <span className="text-purple-400 font-bold text-sm">{finding.owasp}</span>
+                              <span className="text-[10px] text-zinc-500 block uppercase mb-1">OWASP Top 10 (2021)</span>
+                              <div className="flex flex-wrap gap-1">
+                                {(finding.owasp_categories || finding.owasp_category || (finding.owasp ? [finding.owasp] : ['A03:2021-Injection'])).map((owaspTag, oIdx) => (
+                                  <span key={oIdx} className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 border border-purple-500/40 text-purple-300 font-bold">
+                                    {owaspTag}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
                           </div>
 
