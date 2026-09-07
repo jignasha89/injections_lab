@@ -88,6 +88,22 @@ const FAMILY_COLORS: Record<string, string> = {
   'Protocol / Header / Log / AI Injection': 'text-cyan-300',
 };
 
+function getVulnerabilityLabel(vulnerabilityType: string): string {
+  const t = vulnerabilityType || '';
+  if (t.includes('Boolean')) return 'Boolean-Based SQLi';
+  if (t.includes('UNION') || t.includes('Union')) return 'UNION-Based SQLi';
+  if (t.includes('Auth Bypass')) return 'SQL Auth Bypass';
+  if (t.includes('Quote Error') || t.includes('Error-Based') || t.includes('Single Quote Error') || t.includes('Double Quote Error')) return 'Error-Based SQLi';
+  if (t.includes('Time') || t.includes('Delay')) return 'Time-Based Blind SQLi';
+  if (t.includes('Classic')) return 'Classic SQLi';
+  if (t.includes('NoSQL')) return 'NoSQL Injection';
+  if (t.includes('XSS') || t.includes('Canary') || t.includes('Attribute Breakout')) return 'Reflected XSS';
+  if (t.includes('Command') || t.includes('Shell') || t.includes('Echo') || t.includes('Pipe')) return 'Command Injection';
+  if (t.includes('Template') || t.includes('Math') || t.includes('SSTI')) return 'SSTI / Code Eval';
+  if (t.includes('Header')) return 'Security Header Misconfig';
+  return t;
+}
+
 export default function ScannerPage() {
   const [url, setUrl] = useState('');
   const [scanMode, setScanMode] = useState<'heuristic' | 'active'>('active');
@@ -449,16 +465,7 @@ export default function ScannerPage() {
       })[0]
     : null;
 
-  const topLabel = topFinding ? (
-    (topFinding.type || '').includes('Boolean') ? 'Boolean-Based SQLi' :
-    (topFinding.type || '').includes('UNION') || (topFinding.type || '').includes('Union') ? 'UNION-Based SQLi' :
-    (topFinding.type || '').includes('Auth Bypass') ? 'SQL Auth Bypass' :
-    (topFinding.type || '').includes('Quote Error') || (topFinding.type || '').includes('Error') ? 'Error-Based SQLi' :
-    (topFinding.type || '').includes('Time') || (topFinding.type || '').includes('Delay') ? 'Time-Based Blind SQLi' :
-    (topFinding.type || '').includes('XSS') || (topFinding.type || '').includes('Canary') ? 'Reflected XSS' :
-    (topFinding.type || '').includes('Template') || (topFinding.type || '').includes('Math') ? 'SSTI / Code Eval' :
-    (topFinding.type || '').includes('Header') ? 'Security Header Misconfig' : topFinding.type
-  ) : '';
+  const topLabel = topFinding ? getVulnerabilityLabel(topFinding.type) : '';
 
   const families = result
     ? ['All', ...Object.keys(result.summary.injectionFamilyCounts)]
@@ -881,14 +888,7 @@ export default function ScannerPage() {
                               {finding.confidence} Confidence
                             </span>
                             <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold">
-                              {finding.type.includes('Boolean') ? 'Boolean-Based SQLi' :
-                               finding.type.includes('UNION') || finding.type.includes('Union') ? 'UNION-Based SQLi' :
-                               finding.type.includes('Auth Bypass') ? 'SQL Auth Bypass' :
-                               finding.type.includes('Quote Error') || finding.type.includes('Error') ? 'Error-Based SQLi' :
-                               finding.type.includes('Time') || finding.type.includes('Delay') ? 'Time-Based Blind SQLi' :
-                               finding.type.includes('XSS') || finding.type.includes('Canary') ? 'Reflected XSS' :
-                               finding.type.includes('Template') || finding.type.includes('Math') ? 'SSTI / Code Eval' :
-                               finding.type.includes('Header') ? 'Security Header Misconfig' : finding.type}
+                              {getVulnerabilityLabel(finding.type)}
                             </span>
                             <span className="text-sm font-mono font-bold text-white ml-1">{finding.type}</span>
                           </div>

@@ -1606,9 +1606,16 @@ export function analyzeUrl(rawUrl: string): ScanResult {
         const nameMatch = rule.paramNamePattern ? rule.paramNamePattern.test(param) : false;
         const valueMatch = rule.paramValuePattern ? rule.paramValuePattern.test(val) : false;
 
-        const shouldMatch = rule.requireBoth
-          ? (nameMatch && valueMatch)
-          : (rule.paramNamePattern && rule.paramValuePattern ? (nameMatch || valueMatch) : (rule.paramNamePattern ? nameMatch : valueMatch));
+        let shouldMatch = false;
+        if (rule.requireBoth) {
+          shouldMatch = nameMatch && valueMatch;
+        } else if (rule.paramNamePattern && rule.paramValuePattern) {
+          shouldMatch = valueMatch;
+        } else if (rule.paramValuePattern) {
+          shouldMatch = valueMatch;
+        } else if (rule.paramNamePattern) {
+          shouldMatch = nameMatch;
+        }
 
         if (shouldMatch) {
           // Check additional constraints

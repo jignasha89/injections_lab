@@ -119,6 +119,22 @@ const CONFIDENCE_COLORS: Record<string, string> = {
   Low: 'text-zinc-400 bg-zinc-800 border-zinc-700',
 };
 
+export function getVulnerabilityLabel(vulnerabilityType: string): string {
+  const t = vulnerabilityType || '';
+  if (t.includes('Boolean')) return 'Boolean-Based SQLi';
+  if (t.includes('UNION') || t.includes('Union')) return 'UNION-Based SQLi';
+  if (t.includes('Auth Bypass')) return 'SQL Auth Bypass';
+  if (t.includes('Quote Error') || t.includes('Error-Based') || t.includes('Single Quote Error') || t.includes('Double Quote Error')) return 'Error-Based SQLi';
+  if (t.includes('Time') || t.includes('Delay')) return 'Time-Based Blind SQLi';
+  if (t.includes('Classic')) return 'Classic SQLi';
+  if (t.includes('NoSQL')) return 'NoSQL Injection';
+  if (t.includes('XSS') || t.includes('Canary') || t.includes('Attribute Breakout')) return 'Reflected XSS';
+  if (t.includes('Command') || t.includes('Shell') || t.includes('Echo') || t.includes('Pipe')) return 'Command Injection';
+  if (t.includes('Template') || t.includes('Math') || t.includes('SSTI')) return 'SSTI / Code Eval';
+  if (t.includes('Header')) return 'Security Header Misconfig';
+  return t;
+}
+
 export default function DeepWebsiteScanner() {
   const [url, setUrl] = useState('');
   const [scanMode, setScanMode] = useState<'passive' | 'active'>('passive');
@@ -516,16 +532,7 @@ export default function DeepWebsiteScanner() {
             });
 
             const topFinding = sortedFindings[0];
-            const topLabel = topFinding ? (
-              topFinding.vulnerabilityType.includes('Boolean') ? 'Boolean-Based SQLi' :
-              topFinding.vulnerabilityType.includes('UNION') || topFinding.vulnerabilityType.includes('Union') ? 'UNION-Based SQLi' :
-              topFinding.vulnerabilityType.includes('Auth Bypass') ? 'SQL Auth Bypass' :
-              topFinding.vulnerabilityType.includes('Quote Error') || topFinding.vulnerabilityType.includes('Error') ? 'Error-Based SQLi' :
-              topFinding.vulnerabilityType.includes('Time') || topFinding.vulnerabilityType.includes('Delay') ? 'Time-Based Blind SQLi' :
-              topFinding.vulnerabilityType.includes('XSS') || topFinding.vulnerabilityType.includes('Canary') ? 'Reflected XSS' :
-              topFinding.vulnerabilityType.includes('Template') || topFinding.vulnerabilityType.includes('Math') ? 'SSTI / Code Eval' :
-              topFinding.vulnerabilityType.includes('Header') ? 'Security Header Misconfig' : topFinding.vulnerabilityType
-            ) : '';
+            const topLabel = topFinding ? getVulnerabilityLabel(topFinding.vulnerabilityType) : '';
 
             return (
               <div className="space-y-3">
@@ -598,14 +605,7 @@ export default function DeepWebsiteScanner() {
                             {f.confidence} Confidence
                           </span>
                           <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold">
-                            {f.vulnerabilityType.includes('Boolean') ? 'Boolean-Based SQLi' :
-                             f.vulnerabilityType.includes('UNION') || f.vulnerabilityType.includes('Union') ? 'UNION-Based SQLi' :
-                             f.vulnerabilityType.includes('Auth Bypass') ? 'SQL Auth Bypass' :
-                             f.vulnerabilityType.includes('Quote Error') || f.vulnerabilityType.includes('Error') ? 'Error-Based SQLi' :
-                             f.vulnerabilityType.includes('Time') || f.vulnerabilityType.includes('Delay') ? 'Time-Based Blind SQLi' :
-                             f.vulnerabilityType.includes('XSS') || f.vulnerabilityType.includes('Canary') ? 'Reflected XSS' :
-                             f.vulnerabilityType.includes('Template') || f.vulnerabilityType.includes('Math') ? 'SSTI / Code Eval' :
-                             f.vulnerabilityType.includes('Header') ? 'Security Header Misconfig' : f.vulnerabilityType}
+                            {getVulnerabilityLabel(f.vulnerabilityType)}
                           </span>
                           <span className="text-xs font-mono font-bold text-white ml-1">{f.vulnerabilityType}</span>
                         </div>

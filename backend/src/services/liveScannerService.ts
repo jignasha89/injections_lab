@@ -918,19 +918,20 @@ export async function executeLiveScan(
 
     // B. URL parameters from discovered page links (preserving complete query parameter context)
     for (const link of discovered.linksWithParams) {
-      if (!testTargets.some((t) => t.name === link.param && t.location === 'URL Parameter')) {
-        let actionUrl = normalizedUrl;
-        try {
-          const resolved = new URL(link.href, normalizedUrl);
-          if (link.allParams) {
-            for (const [k, v] of Object.entries(link.allParams)) {
-              resolved.searchParams.set(k, v);
-            }
+      let actionUrl = normalizedUrl;
+      try {
+        const resolved = new URL(link.href, normalizedUrl);
+        if (link.allParams) {
+          for (const [k, v] of Object.entries(link.allParams)) {
+            resolved.searchParams.set(k, v);
           }
-          actionUrl = resolved.toString();
-        } catch {
-          actionUrl = normalizedUrl;
         }
+        actionUrl = resolved.toString();
+      } catch {
+        actionUrl = normalizedUrl;
+      }
+
+      if (!testTargets.some((t) => t.name === link.param && t.actionUrl === actionUrl && t.method === 'GET')) {
         testTargets.push({
           name: link.param,
           location: 'URL Parameter',
@@ -963,6 +964,26 @@ export async function executeLiveScan(
           defaultValue: input.value || 'test',
           formAllInputs: formDefaults,
         });
+      }
+    }
+
+    // D. URL parameters from discovered script API endpoints
+    for (const scriptEndpoint of discovered.scriptApiEndpoints) {
+      try {
+        const resolved = new URL(scriptEndpoint, normalizedUrl);
+        resolved.searchParams.forEach((val, key) => {
+          if (!testTargets.some((t) => t.name === key && t.actionUrl === resolved.toString() && t.method === 'GET')) {
+            testTargets.push({
+              name: key,
+              location: 'URL Parameter',
+              method: 'GET',
+              actionUrl: resolved.toString(),
+              defaultValue: val || '1',
+            });
+          }
+        });
+      } catch {
+        // Ignore unparseable script endpoint URLs
       }
     }
 
