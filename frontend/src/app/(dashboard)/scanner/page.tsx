@@ -330,7 +330,7 @@ export default function ScannerPage() {
         }
 
         return {
-          id: f.id,
+          id: (f as any).id,
           type: f.vulnerabilityType || f.type,
           injectionFamily: family,
           location: f.inputPointTested || f.location,
