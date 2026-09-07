@@ -46,6 +46,22 @@ describe('Scanner Heuristic Utility', () => {
     expect(result.pathSegments).toContain('12345');
     expect(result.potentialInjectionPoints.length).toBeGreaterThan(0);
   });
+
+  it('should correctly classify Boolean-based payload without UNION label', () => {
+    const result = analyzeUrl('http://localhost:3000/api/users?cat=1%20AND%201=1');
+    const booleanFinding = result.findings.find(f => f.type.includes('Boolean'));
+    const unionFinding = result.findings.find(f => f.type.includes('UNION'));
+    expect(booleanFinding).toBeDefined();
+    expect(booleanFinding?.type).toBe('Boolean-Based Blind SQL Injection');
+    expect(unionFinding).toBeUndefined();
+  });
+
+  it('should correctly classify UNION payload as UNION-Based SQL Injection', () => {
+    const result = analyzeUrl('http://localhost:3000/api/users?col=name&order=1%20UNION%20SELECT%20null,version()');
+    const unionFinding = result.findings.find(f => f.type.includes('UNION'));
+    expect(unionFinding).toBeDefined();
+    expect(unionFinding?.type).toBe('UNION-Based SQL Injection');
+  });
 });
 
 // New Modules: IDs 56-78

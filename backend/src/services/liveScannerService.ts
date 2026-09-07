@@ -673,11 +673,12 @@ async function renderPageWithBrowser(
   userAgent?: string
 ): Promise<string | null> {
   let browser: any = null;
+  const dynamicImport = (specifier: string) => new Function('specifier', 'return import(specifier)')(specifier);
   try {
     const isServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
     if (isServerless) {
-      const chromiumMod: any = await import('@sparticuz/chromium');
-      const puppeteerCore: any = await import('puppeteer-core');
+      const chromiumMod: any = await dynamicImport('@sparticuz/chromium');
+      const puppeteerCore: any = await dynamicImport('puppeteer-core');
       const chrom = chromiumMod.default || chromiumMod;
       const executablePath = await chrom.executablePath();
       browser = await (puppeteerCore.default || puppeteerCore).launch({
@@ -688,7 +689,7 @@ async function renderPageWithBrowser(
       });
     } else {
       try {
-        const puppeteer: any = await import('puppeteer');
+        const puppeteer: any = await dynamicImport('puppeteer');
         browser = await (puppeteer.default || puppeteer).launch({
           headless: true,
           args: [
@@ -702,8 +703,8 @@ async function renderPageWithBrowser(
           timeout: Math.min(timeoutMs, 25000),
         });
       } catch {
-        const chromiumMod: any = await import('@sparticuz/chromium');
-        const puppeteerCore: any = await import('puppeteer-core');
+        const chromiumMod: any = await dynamicImport('@sparticuz/chromium');
+        const puppeteerCore: any = await dynamicImport('puppeteer-core');
         const chrom = chromiumMod.default || chromiumMod;
         const executablePath = await chrom.executablePath();
         browser = await (puppeteerCore.default || puppeteerCore).launch({
@@ -820,8 +821,9 @@ export async function executeLiveScan(
     validateStatus: () => true, // Capture all HTTP status codes (200, 401, 403, 500, etc.)
   });
 
+  const probeTimeoutMs = Math.min(config.timeoutMs || 4000, 5000);
   const probeHttpClient = axios.create({
-    timeout: timeoutMs,
+    timeout: probeTimeoutMs,
     headers: requestHeaders,
     maxRedirects: 0,
     validateStatus: () => true,
@@ -885,7 +887,7 @@ export async function executeLiveScan(
 
   // 9. Differential Testing (Active Mode)
   if (effectiveMode === 'active') {
-    const rateLimitDelay = config.rateLimitMs || 500; // 500ms rate limit delay
+    const rateLimitDelay = config.rateLimitMs !== undefined ? config.rateLimitMs : (isLocal ? 10 : 50);
     const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
     // Compile list of inputs to test
@@ -961,6 +963,17 @@ export async function executeLiveScan(
       }
     }
 
+    // Deduplicate test targets by method + actionUrl + input name
+    const uniqueTargets: TestInputTarget[] = [];
+    const seenTargetKeys = new Set<string>();
+    for (const target of testTargets) {
+      const key = `${target.method}:${target.actionUrl}:${target.name}`;
+      if (!seenTargetKeys.has(key)) {
+        seenTargetKeys.add(key);
+        uniqueTargets.push(target);
+      }
+    }
+
     // Helper: Execute a test probe request against current target input
     const executeProbe = async (
       targetInput: TestInputTarget,
@@ -995,8 +1008,8 @@ export async function executeLiveScan(
       return { text: resText, status: resStatus, headers: resHeaders, duration };
     };
 
-    // Iterate through input targets
-    for (const input of testTargets) {
+    // Iterate through unique input targets
+    for (const input of uniqueTargets) {
       // 1. Safe Baseline Request
       const baselineVal = 'injlab_safe_baseline_token';
       let baselineText = '';

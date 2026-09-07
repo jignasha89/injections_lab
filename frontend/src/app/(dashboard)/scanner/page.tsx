@@ -857,6 +857,7 @@ export default function ScannerPage() {
                             </span>
                             <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold">
                               {finding.type.includes('Boolean') ? 'Boolean-Based SQLi' :
+                               finding.type.includes('UNION') || finding.type.includes('Union') ? 'UNION-Based SQLi' :
                                finding.type.includes('Auth Bypass') ? 'SQL Auth Bypass' :
                                finding.type.includes('Quote Error') || finding.type.includes('Error') ? 'Error-Based SQLi' :
                                finding.type.includes('Time') || finding.type.includes('Delay') ? 'Time-Based Blind SQLi' :

@@ -575,6 +575,7 @@ export default function DeepWebsiteScanner() {
                           </span>
                           <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold">
                             {f.vulnerabilityType.includes('Boolean') ? 'Boolean-Based SQLi' :
+                             f.vulnerabilityType.includes('UNION') || f.vulnerabilityType.includes('Union') ? 'UNION-Based SQLi' :
                              f.vulnerabilityType.includes('Auth Bypass') ? 'SQL Auth Bypass' :
                              f.vulnerabilityType.includes('Quote Error') || f.vulnerabilityType.includes('Error') ? 'Error-Based SQLi' :
                              f.vulnerabilityType.includes('Time') || f.vulnerabilityType.includes('Delay') ? 'Time-Based Blind SQLi' :

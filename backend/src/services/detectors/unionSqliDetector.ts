@@ -55,12 +55,12 @@ export function evaluateUnionSqli(
     };
   }
 
-  // 3. Significant Structural / Column-Select Divergence
+  // 3. Significant Structural / Column-Select Divergence (Only when expectedMatch is not explicitly required/set)
   const probeLen = probeText.length;
   const baseLen = baselineText.length;
   const lengthRatio = baseLen > 0 ? probeLen / baseLen : 1;
 
-  if (payload.toUpperCase().includes('UNION SELECT') && lengthRatio > 1.35 && probeStatus === 200) {
+  if (!expectedMatch && payload.toUpperCase().includes('UNION SELECT') && lengthRatio > 1.35 && probeStatus === 200) {
     evidenceSignals.push('union_resultset_expansion_detected');
     evidenceSignals.push(`response_length_boost (+${probeLen - baseLen}B)`);
 
