@@ -1,0 +1,199 @@
+{
+  "targetUrl": "http://testfire.net/bank/login.aspx?uid=admin&btnSubmit=Login",
+  "scanTimestamp": "2026-09-07T18:43:34.091Z",
+  "parameters": [
+    "uid",
+    "btnSubmit"
+  ],
+  "paramValues": {
+    "uid": "admin",
+    "btnSubmit": "Login"
+  },
+  "pathSegments": [
+    "bank",
+    "login.aspx"
+  ],
+  "domain": "testfire.net",
+  "techStackClues": [
+    "ASP.NET"
+  ],
+  "potentialInjectionPoints": [
+    {
+      "type": "Query Parameter",
+      "location": "?uid=admin",
+      "risk": "High",
+      "reason": "Parameter \"uid\" is a user-controlled input point"
+    },
+    {
+      "type": "Query Parameter",
+      "location": "?btnSubmit=Login",
+      "risk": "Medium",
+      "reason": "Parameter \"btnSubmit\" is a user-controlled input point"
+    },
+    {
+      "type": "HTTP Headers",
+      "location": "Request Headers (User-Agent, Referer, Cookie, Host, etc.)",
+      "risk": "Medium",
+      "reason": "HTTP headers are often logged or reflected without sanitization"
+    }
+  ],
+  "findings": [
+    {
+      "id": "sqli-error-based",
+      "type": "Error-Based SQL Injection",
+      "category": "SQL/NoSQL Injection",
+      "injectionFamily": "SQL/NoSQL Injection",
+      "endpoint": "/bank/login.aspx",
+      "location": "Query parameter: uid (value=\"admin\")",
+      "parameter": "uid",
+      "paramValue": "admin",
+      "severity": "High",
+      "confidence": "Suspected",
+      "cvss": 8.6,
+      "cwe": "CWE-89",
+      "cwe_id": "CWE-89",
+      "owasp": "A03:2021 – Injection",
+      "owasp_category": [
+        "A03:2021 – Injection"
+      ],
+      "owasp_categories": [
+        "A03:2021 – Injection"
+      ],
+      "description": "Numeric ID or lookup parameters are prime candidates for error-based SQLi where database error messages leak schema, version, and table names to attackers.",
+      "evidence": "Parameter \"uid\"=\"admin\" detected — sqli-error-based",
+      "pocPayload": "1 AND EXTRACTVALUE(1,CONCAT(0x7e,version()))",
+      "recommendation": "Suppress verbose DB error messages. Use custom error pages. Apply strict input type validation (integers only)."
+    },
+    {
+      "id": "sqli-time-blind",
+      "type": "Time-Based Blind SQL Injection",
+      "category": "SQL/NoSQL Injection",
+      "injectionFamily": "SQL/NoSQL Injection",
+      "endpoint": "/bank/login.aspx",
+      "location": "Query parameter: uid (value=\"admin\")",
+      "parameter": "uid",
+      "paramValue": "admin",
+      "severity": "High",
+      "confidence": "Suspected",
+      "cvss": 7.5,
+      "cwe": "CWE-89",
+      "cwe_id": "CWE-89",
+      "owasp": "A03:2021 – Injection",
+      "owasp_category": [
+        "A03:2021 – Injection"
+      ],
+      "owasp_categories": [
+        "A03:2021 – Injection"
+      ],
+      "description": "Parameters exposed in dynamic queries may be susceptible to time-delay injection functions (SLEEP, WAITFOR DELAY, pg_sleep).",
+      "evidence": "Parameter \"uid\"=\"admin\" detected — sqli-time-blind",
+      "pocPayload": "1; WAITFOR DELAY '0:0:5'--",
+      "recommendation": "Never pass user input directly into SQL statements. Apply parameterized queries universally."
+    },
+    {
+      "id": "ldap-injection",
+      "type": "LDAP Injection",
+      "category": "Protocol / Header / Log / AI Injection",
+      "injectionFamily": "Protocol / Header / Log / AI Injection",
+      "endpoint": "/bank/login.aspx",
+      "location": "Query parameter: uid (value=\"admin\")",
+      "parameter": "uid",
+      "paramValue": "admin",
+      "severity": "High",
+      "confidence": "Suspected",
+      "cvss": 8.8,
+      "cwe": "CWE-90",
+      "cwe_id": "CWE-90",
+      "owasp": "A03:2021 – Injection",
+      "owasp_category": [
+        "A03:2021 – Injection",
+        "A05:2021 – Security Misconfiguration"
+      ],
+      "owasp_categories": [
+        "A03:2021 – Injection",
+        "A05:2021 – Security Misconfiguration"
+      ],
+      "description": "Authentication parameters passed to LDAP directory queries without escaping enable LDAP injection — attackers can modify filter logic to authenticate as any user or dump the entire directory.",
+      "evidence": "Parameter \"uid\"=\"admin\" detected — ldap-injection",
+      "pocPayload": "*)(uid=*))(|(uid=*",
+      "recommendation": "Escape all LDAP special characters (*, (, ), \\, NUL). Use an LDAP library with built-in escaping. Apply the principle of least privilege for directory bind accounts."
+    },
+    {
+      "id": "imap-injection",
+      "type": "IMAP Command Injection",
+      "category": "Protocol / Header / Log / AI Injection",
+      "injectionFamily": "Protocol / Header / Log / AI Injection",
+      "endpoint": "/bank/login.aspx",
+      "location": "Query parameter: uid (value=\"admin\")",
+      "parameter": "uid",
+      "paramValue": "admin",
+      "severity": "High",
+      "confidence": "Suspected",
+      "cvss": 7,
+      "cwe": "CWE-93",
+      "cwe_id": "CWE-93",
+      "owasp": "A03:2021 – Injection",
+      "owasp_category": [
+        "A03:2021 – Injection",
+        "A05:2021 – Security Misconfiguration"
+      ],
+      "owasp_categories": [
+        "A03:2021 – Injection",
+        "A05:2021 – Security Misconfiguration"
+      ],
+      "description": "IMAP command parameters interpolated into raw IMAP protocol commands without escaping allow injection of additional IMAP commands — enabling unauthorized access to all mailboxes.",
+      "evidence": "Parameter \"uid\"=\"admin\" detected — imap-injection",
+      "pocPayload": "INBOX\r\nA003 FETCH 1:* (BODY[])",
+      "recommendation": "Use IMAP client libraries that escape all parameters. Never build IMAP command strings with string concatenation. Validate folder names strictly."
+    },
+    {
+      "id": "sqli-header-universal",
+      "type": "HTTP Header Injection (Universal)",
+      "category": "Protocol / Header / Log / AI Injection",
+      "injectionFamily": "Protocol / Header / Log / AI Injection",
+      "location": "HTTP Request Headers",
+      "endpoint": "/bank/login.aspx",
+      "severity": "Medium",
+      "confidence": "Suspected",
+      "cvss": 5.4,
+      "cwe": "CWE-113",
+      "cwe_id": "CWE-113",
+      "owasp": "A03:2021 – Injection",
+      "owasp_category": [
+        "A03:2021 – Injection",
+        "A05:2021 – Security Misconfiguration"
+      ],
+      "owasp_categories": [
+        "A03:2021 – Injection",
+        "A05:2021 – Security Misconfiguration"
+      ],
+      "description": "HTTP headers (User-Agent, Referer, X-Forwarded-For) are often logged or reflected without CRLF sanitization. If reflected into HTTP response headers, CR+LF characters can split the response and inject arbitrary headers or cache-poison the response.",
+      "evidence": "All HTTP applications expose User-Agent, Referer, and X-Forwarded-For as potential injection surfaces.",
+      "pocPayload": "User-Agent: Mozilla/5.0%0d%0aInjected-Header: malicious-value",
+      "recommendation": "Strip \\r and \\n from all header values before logging or reflecting. Use structured logging. Apply WAF rules for CRLF injection patterns."
+    }
+  ],
+  "summary": {
+    "totalPages": 1,
+    "injectionPoints": 5,
+    "parameters": 2,
+    "affectedParametersCount": 1,
+    "totalFindings": 5,
+    "riskScore": 7.5,
+    "highestSeverity": "High",
+    "owaspCoverage": [
+      "A03:2021 – Injection",
+      "A05:2021 – Security Misconfiguration"
+    ],
+    "familiesTested": [
+      "SQL/NoSQL Injection",
+      "Client-Side / XSS",
+      "Server-Side / Code Execution",
+      "Protocol / Header / Log / AI Injection"
+    ],
+    "injectionFamilyCounts": {
+      "SQL/NoSQL Injection": 2,
+      "Protocol / Header / Log / AI Injection": 3
+    }
+  }
+}

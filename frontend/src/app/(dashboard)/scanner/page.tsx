@@ -330,20 +330,24 @@ export default function ScannerPage() {
         }
 
         return {
-          type: f.vulnerabilityType,
+          id: f.id,
+          type: f.vulnerabilityType || f.type,
           injectionFamily: family,
-          location: f.inputPointTested,
-          parameter: f.inputPointTested,
-          paramValue: f.payloadUsed,
+          location: f.inputPointTested || f.location,
+          parameter: f.parameter || (f.inputPointTested ? f.inputPointTested.split(' [')[1]?.split(']')[0] : undefined),
+          paramValue: f.payloadUsed || f.paramValue,
           severity: f.severity || 'Medium',
-          confidence: f.confidence || 'Medium',
+          confidence: f.confidence === 'Confirmed' ? 'Confirmed' : 'Suspected',
           cvss: f.cvss || 7.5,
-          cwe: f.cwe || 'CWE-89',
-          owasp: f.owasp || 'A03:2021',
-          description: f.evidence || f.vulnerabilityType,
+          cwe: f.cwe_id || f.cwe || 'CWE-89',
+          cwe_id: f.cwe_id || f.cwe || 'CWE-89',
+          owasp: f.owasp || (f.owasp_categories ? f.owasp_categories[0] : 'A03:2021'),
+          owasp_category: f.owasp_categories || f.owasp_category || (f.owasp ? [f.owasp] : ['A03:2021']),
+          owasp_categories: f.owasp_categories || f.owasp_category || (f.owasp ? [f.owasp] : ['A03:2021']),
+          description: f.description || f.evidence || f.vulnerabilityType,
           evidence: f.evidence,
           evidenceSignals: f.evidenceSignals || [],
-          pocPayload: f.payloadUsed,
+          pocPayload: f.payloadUsed || f.pocPayload,
           recommendation: f.recommendation,
         };
       });
@@ -381,6 +385,8 @@ export default function ScannerPage() {
         reason: `Discovered form with input fields: ${form.inputs.map((i) => i.name).join(', ')}`,
       }));
 
+      const owaspCoverageList = Array.from(new Set(mappedFindings.flatMap((f) => f.owasp_categories || [f.owasp])));
+
       setResult({
         targetUrl: data.targetUrl || url,
         scanTimestamp: data.scanTimestamp || new Date().toISOString(),
@@ -397,11 +403,12 @@ export default function ScannerPage() {
         findings: mappedFindings,
         summary: {
           totalPages: 1,
-          injectionPoints: urlPoints.length + (data.discoveredEndpoints?.forms?.length || 0) + (data.discoveredEndpoints?.linksWithParams?.length || 0),
+          injectionPoints: mappedFindings.length,
           parameters: data.summary?.paramsCount || combinedParams.length,
+          affectedParametersCount: data.summary?.paramsCount || combinedParams.length,
           riskScore: data.summary?.riskScore || 0,
           highestSeverity: data.summary?.highestSeverity || 'Info',
-          owaspCoverage: ['A03:2021-Injection', 'A05:2021-Security Misconfiguration'],
+          owaspCoverage: owaspCoverageList.length > 0 ? owaspCoverageList : ['A03:2021-Injection', 'A05:2021-Security Misconfiguration'],
           familiesTested: ['SQL/NoSQL Injection', 'Client-Side / XSS', 'Server-Side / Code Execution', 'Protocol / Header / Log / AI Injection'],
           injectionFamilyCounts: familyCounts,
         },
@@ -762,7 +769,7 @@ export default function ScannerPage() {
                   </div>
                   <div className="p-3.5 bg-[#050508] rounded-xl border border-zinc-800">
                     <p className="text-[10px] text-zinc-500 uppercase">Findings</p>
-                    <p className="text-xl font-bold text-rose-400 mt-1">{result.summary.injectionPoints}</p>
+                    <p className="text-xl font-bold text-rose-400 mt-1">{result.findings.length}</p>
                   </div>
                   <div className="p-3.5 bg-[#050508] rounded-xl border border-zinc-800">
                     <p className="text-[10px] text-zinc-500 uppercase">Parameters</p>
