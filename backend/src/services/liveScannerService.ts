@@ -9,6 +9,7 @@ import * as cheerio from 'cheerio';
 import payloadConfig from '../config/payloads.json';
 import { evaluateBooleanDifferential } from './detectors/booleanSqliDetector';
 import { evaluateUnionSqli } from './detectors/unionSqliDetector';
+import { mapToOwaspTop10 } from './scannerService';
 
 export interface LiveScanConfig {
   scanMode?: 'passive' | 'active';
@@ -51,16 +52,24 @@ export interface DiscoveredLinkParam {
 }
 
 export interface ScanFindingResult {
+  id?: string;
+  type?: string;
+  category?: string;
+  parameter?: string;
+  endpoint?: string;
   inputPointTested: string;
   payloadUsed: string;
   vulnerabilityType: string;
-  confidence: 'Low' | 'Medium' | 'High' | 'Confirmed';
+  confidence: 'Confirmed' | 'Suspected';
   evidence: string;
   evidenceSignals?: string[];
   severity: 'Critical' | 'High' | 'Medium' | 'Low' | 'Info';
   cvss?: number;
   cwe?: string;
+  cwe_id?: string;
   owasp?: string;
+  owasp_category?: string[];
+  owasp_categories?: string[];
   recommendation: string;
 }
 
@@ -1089,9 +1098,9 @@ export async function executeLiveScan(
         for (const p of payloads) {
           try {
             let isVulnerable = false;
+            let confidence: 'Confirmed' | 'Suspected' = 'Suspected';
             let evidence = '';
             let evidenceSignals: string[] = [];
-            let confidence: 'Low' | 'Medium' | 'High' | 'Confirmed' = 'Medium';
 
             // ── A. Error-Based SQLi Detection ──
             if (p.detectionType === 'error_match') {
@@ -1117,7 +1126,7 @@ export async function executeLiveScan(
                 isVulnerable = true;
                 evidenceSignals.push(`server_error_anomaly (HTTP ${probeRes.status})`);
                 evidence = `Unescaped quote probe (${p.payload}) triggered HTTP ${probeRes.status} Internal Server Error, indicating unhandled database query exception.`;
-                confidence = 'High';
+                confidence = 'Suspected';
               }
             }
 
@@ -1215,7 +1224,7 @@ export async function executeLiveScan(
 
                 if (redirectedToNewLocation || issuedAuthCookie || (statusElevated && removedFailMarker)) {
                   isVulnerable = true;
-                  confidence = evidenceSignals.length >= 2 ? 'Confirmed' : 'High';
+                  confidence = evidenceSignals.length >= 2 ? 'Confirmed' : 'Suspected';
                   evidence = `SQL injection authentication bypass detected: Probe payload "${p.payload}" altered authentication state (redirect: "${bypassRes.headers['location'] || 'none'}", status: HTTP ${bypassRes.status}).`;
                 }
               }
@@ -1266,7 +1275,7 @@ export async function executeLiveScan(
                   evidenceSignals.push('command_output_verified');
                 }
 
-                confidence = evidenceSignals.length >= 2 ? 'Confirmed' : 'High';
+                confidence = evidenceSignals.length >= 2 ? 'Confirmed' : 'Suspected';
                 evidence = `Unencoded probe string reflected in response body: "${p.expectedMatch}"`;
               }
             }
@@ -1302,17 +1311,33 @@ export async function executeLiveScan(
 
             if (isVulnerable) {
               console.log(`[VULN_DETECTED] Finding registered: "${p.name}" on input "${input.name}"`);
+              const owaspTags = mapToOwaspTop10({
+                id: p.id,
+                type: p.name,
+                family: category,
+                evidence,
+                parameter: input.name,
+              });
+
               findings.push({
+                id: p.id,
+                type: p.name,
+                category: category,
+                parameter: input.name,
+                endpoint: input.actionUrl,
                 inputPointTested: `${input.method} ${input.actionUrl} [${input.name}] (${input.location})`,
                 payloadUsed: p.payload,
                 vulnerabilityType: p.name,
-                confidence,
+                confidence: confidence === 'Confirmed' ? 'Confirmed' : 'Suspected',
                 evidence,
                 evidenceSignals,
                 severity: p.severity || 'High',
                 cvss: p.cvss || 8.0,
                 cwe: p.cwe || 'CWE-89',
-                owasp: p.owasp || 'A03:2021-Injection',
+                cwe_id: p.cwe || 'CWE-89',
+                owasp: owaspTags[0],
+                owasp_category: owaspTags,
+                owasp_categories: owaspTags,
                 recommendation: p.recommendation || 'Sanitize and parameterize all input points.',
               });
             }
@@ -1351,10 +1376,8 @@ export async function executeLiveScan(
       ? Math.min(10, findings.reduce((sum, f) => sum + (f.cvss || 5.0), 0) / findings.length)
       : 0;
 
-  const totalParams =
-    parsedUrl.searchParams.size +
-    discovered.linksWithParams.length +
-    discovered.forms.reduce((acc, f) => acc + f.inputs.length, 0);
+  const affectedParamsSet = new Set(findings.map((f) => f.parameter).filter(Boolean) as string[]);
+  const affectedParamsCount = affectedParamsSet.size;
 
   return {
     targetUrl: rawUrl,
@@ -1374,7 +1397,7 @@ export async function executeLiveScan(
     summary: {
       totalPages: 1,
       formsCount: discovered.forms.length,
-      paramsCount: totalParams,
+      paramsCount: affectedParamsCount,
       scriptEndpointsCount: discovered.scriptApiEndpoints.length,
       totalFindings: findings.length,
       riskScore: Math.round(riskScore * 10) / 10,

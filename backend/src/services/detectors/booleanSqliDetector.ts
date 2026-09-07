@@ -6,21 +6,23 @@
 
 export interface BooleanDiffResult {
   isVulnerable: boolean;
-  confidence: 'Confirmed' | 'High' | 'Medium' | 'Low';
+  confidence: 'Confirmed' | 'Suspected';
   evidence: string;
   evidenceSignals: string[];
 }
 
 /**
- * Normalizes HTML response content by stripping dynamic tokens (MD5/SHA nonces, timestamps, CSRF tokens, session IDs)
+ * Normalizes HTML response content by stripping dynamic tokens (MD5/SHA nonces, UUIDs, ISO/Unix timestamps, CSRF tokens, session IDs, request IDs)
  * and collapsing excess whitespace.
  */
 export function normalizeHtmlForComparison(html: string): string {
   if (!html) return '';
   return html
     .replace(/\b[0-9a-fA-F]{32,64}\b/g, '') // MD5 / SHA hashes
+    .replace(/\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b/g, '') // UUIDs
     .replace(/\b\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:?\d{2})?\b/g, '') // ISO Timestamps
-    .replace(/\b(csrf|_token|nonce|session_?id|auth_?token|time|timestamp|clock)=["'][^"']+["']/gi, '') // CSRF & Token attributes
+    .replace(/\b\d{10,13}\b/g, '') // Unix timestamps in ms/sec
+    .replace(/\b(csrf|_token|nonce|session_?id|auth_?token|req_?id|request_?id|time|timestamp|clock)=["'][^"']+["']/gi, '') // CSRF & Token attributes
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -54,7 +56,7 @@ export function evaluateBooleanDifferential(
   // 2. HTTP Status Code Divergence (e.g. TRUE: 200 vs FALSE: 500 / 404 / 302)
   const statusDivergence = (trueStatus === 200 || trueStatus === baseStatus) && (falseStatus !== trueStatus);
 
-  // 3. Percentage Length Divergence (filtering out small 1-25 byte dynamic timestamp/token noise)
+  // 3. Percentage Length Divergence (filtering out small dynamic timestamp/token noise)
   const minLen = Math.min(trueLen, falseLen);
   const absLenDiff = Math.abs(trueLen - falseLen);
   const pctDiff = minLen > 0 ? absLenDiff / minLen : 1.0;
@@ -80,11 +82,12 @@ export function evaluateBooleanDifferential(
     if (statusDivergence) evidenceSignals.push(`status_code_divergence (${trueStatus} vs ${falseStatus})`);
     if (significantLengthDivergence) evidenceSignals.push(`response_length_divergence (TRUE: ${trueLen}B vs FALSE: ${falseLen}B)`);
 
-    const confidence = (statusDivergence || pctDiff >= 0.20 || (trueMatchesBase && !falseMatchesBase)) ? 'Confirmed' : 'High';
+    // Two-tier confidence: Confirmed requires 2+ distinct evidence signals (e.g. divergence + baseline match / status diff)
+    const confidence: 'Confirmed' | 'Suspected' = evidenceSignals.length >= 2 ? 'Confirmed' : 'Suspected';
     const evidence = `Boolean-based SQL injection detected: TRUE condition payload ("${payload}") produced baseline-consistent behavior (${trueLen} bytes, HTTP ${trueStatus}), while FALSE condition payload ("${falsePayload}") caused behavioral divergence (${falseLen} bytes, HTTP ${falseStatus}).`;
 
     return { isVulnerable: true, confidence, evidence, evidenceSignals };
   }
 
-  return { isVulnerable: false, confidence: 'Low', evidence: '', evidenceSignals: [] };
+  return { isVulnerable: false, confidence: 'Suspected', evidence: '', evidenceSignals: [] };
 }

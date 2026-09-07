@@ -10,18 +10,25 @@
 // ─────────────────────────────────────────────────────────────
 
 export interface ScanFinding {
+  id?: string;
   type: string;
+  category?: string;
   injectionFamily: string;
   location: string;
+  endpoint?: string;
   parameter?: string;
   paramValue?: string;
   severity: 'Critical' | 'High' | 'Medium' | 'Low' | 'Info';
-  confidence: 'Confirmed' | 'Likely' | 'Possible' | 'Low';
+  confidence: 'Confirmed' | 'Suspected' | 'Likely' | 'Possible' | 'Low';
   cvss: number;
   cwe: string;
+  cwe_id?: string;
   owasp: string;
+  owasp_category?: string[];
+  owasp_categories?: string[];
   description: string;
   evidence: string;
+  evidenceSignals?: string[];
   pocPayload: string;
   recommendation: string;
 }
@@ -40,12 +47,108 @@ export interface ScanResult {
     totalPages: number;
     injectionPoints: number;
     parameters: number;
+    affectedParametersCount?: number;
+    totalFindings?: number;
     riskScore: number;
     highestSeverity: string;
     owaspCoverage: string[];
     familiesTested: string[];
     injectionFamilyCounts: Record<string, number>;
   };
+}
+
+/**
+ * Maps finding attributes to OWASP Top 10 (2021) categories adhering to multi-tag rules.
+ */
+export function mapToOwaspTop10(rule: {
+  id?: string;
+  type: string;
+  family?: string;
+  injectionFamily?: string;
+  evidence?: string;
+  location?: string;
+  parameter?: string;
+}): string[] {
+  const typeStr = (rule.type || '').toLowerCase();
+  const famStr = (rule.family || rule.injectionFamily || '').toLowerCase();
+  const evStr = (rule.evidence || '').toLowerCase();
+  const locStr = (rule.location || rule.parameter || '').toLowerCase();
+  const tags: Set<string> = new Set();
+
+  if (
+    famStr.includes('sql') ||
+    famStr.includes('client-side') ||
+    famStr.includes('server-side') ||
+    famStr.includes('protocol') ||
+    typeStr.includes('sqli') ||
+    typeStr.includes('sql') ||
+    typeStr.includes('nosql') ||
+    typeStr.includes('xss') ||
+    typeStr.includes('command') ||
+    typeStr.includes('code') ||
+    typeStr.includes('eval') ||
+    typeStr.includes('ssti') ||
+    typeStr.includes('crlf') ||
+    typeStr.includes('log') ||
+    typeStr.includes('prompt') ||
+    typeStr.includes('xpath') ||
+    typeStr.includes('ldap')
+  ) {
+    tags.add('A03:2021 – Injection');
+  }
+
+  if (
+    typeStr.includes('auth') ||
+    typeStr.includes('login') ||
+    typeStr.includes('bypass') ||
+    locStr.includes('login') ||
+    locStr.includes('user') ||
+    locStr.includes('password')
+  ) {
+    tags.add('A03:2021 – Injection');
+    tags.add('A07:2021 – Identification and Authentication Failures');
+  }
+
+  if (
+    typeStr.includes('header') ||
+    famStr.includes('header') ||
+    typeStr.includes('csp') ||
+    typeStr.includes('hsts')
+  ) {
+    tags.add('A05:2021 – Security Misconfiguration');
+  }
+
+  if (
+    typeStr.includes('union') ||
+    evStr.includes('data dump') ||
+    evStr.includes('exfiltrat') ||
+    typeStr.includes('out-of-band')
+  ) {
+    tags.add('A03:2021 – Injection');
+    tags.add('A02:2021 – Cryptographic Failures');
+  }
+
+  if (typeStr.includes('ssrf') || famStr.includes('ssrf')) {
+    tags.add('A10:2021 – Server-Side Request Forgery (SSRF)');
+  }
+
+  if (typeStr.includes('deserializ') || typeStr.includes('object injection')) {
+    tags.add('A08:2021 – Software and Data Integrity Failures');
+  }
+
+  if (typeStr.includes('access control') || typeStr.includes('path traversal') || typeStr.includes('lfi')) {
+    tags.add('A01:2021 – Broken Access Control');
+  }
+
+  if (typeStr.includes('outdated') || typeStr.includes('vulnerable component') || typeStr.includes('version')) {
+    tags.add('A06:2021 – Vulnerable and Outdated Components');
+  }
+
+  if (tags.size === 0) {
+    tags.add('A03:2021 – Injection');
+  }
+
+  return Array.from(tags);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1681,19 +1784,33 @@ export function analyzeUrl(rawUrl: string): ScanResult {
     // Avoid duplicates by injection type
     if (matched && !seenTypes.has(rule.type)) {
       seenTypes.add(rule.type);
-      findings.push({
+      const owaspTags = mapToOwaspTop10({
+        id: rule.id,
         type: rule.type,
+        family: rule.family,
+        evidence,
+        parameter: matchedParam,
+      });
+
+      findings.push({
+        id: rule.id,
+        type: rule.type,
+        category: rule.family,
         injectionFamily: rule.family,
+        endpoint: url.pathname,
         location: matchedParam === 'path'
           ? `Path: ${url.pathname}`
           : `Query parameter: ${matchedParam}${matchedValue ? ` (value="${matchedValue}")` : ''}`,
         parameter: matchedParam !== 'path' ? matchedParam : undefined,
         paramValue: matchedValue || undefined,
         severity: rule.severity,
-        confidence: rule.confidence,
+        confidence: rule.confidence === 'Confirmed' ? 'Confirmed' : 'Suspected',
         cvss: rule.cvss,
         cwe: rule.cwe,
-        owasp: rule.owasp,
+        cwe_id: rule.cwe,
+        owasp: owaspTags[0],
+        owasp_category: owaspTags,
+        owasp_categories: owaspTags,
         description: rule.description,
         evidence: evidence || rule.evidence || `Pattern match on "${matchedParam}"`,
         pocPayload: rule.pocPayload,
@@ -1704,15 +1821,27 @@ export function analyzeUrl(rawUrl: string): ScanResult {
 
   // ── Always add universal header injection warning ──
   if (!seenTypes.has('HTTP Header Injection')) {
+    const owaspTags = mapToOwaspTop10({
+      id: 'sqli-header-universal',
+      type: 'HTTP Header Injection',
+      family: 'Protocol / Header / Log / AI Injection',
+    });
+
     findings.push({
+      id: 'sqli-header-universal',
       type: 'HTTP Header Injection (Universal)',
+      category: 'Protocol / Header / Log / AI Injection',
       injectionFamily: 'Protocol / Header / Log / AI Injection',
       location: 'HTTP Request Headers',
+      endpoint: url.pathname,
       severity: 'Medium',
-      confidence: 'Possible',
+      confidence: 'Suspected',
       cvss: 5.4,
       cwe: 'CWE-113',
-      owasp: 'A03:2021',
+      cwe_id: 'CWE-113',
+      owasp: owaspTags[0],
+      owasp_category: owaspTags,
+      owasp_categories: owaspTags,
       description: 'HTTP headers (User-Agent, Referer, X-Forwarded-For) are often logged or reflected without CRLF sanitization. If reflected into HTTP response headers, CR+LF characters can split the response and inject arbitrary headers or cache-poison the response.',
       evidence: 'All HTTP applications expose User-Agent, Referer, and X-Forwarded-For as potential injection surfaces.',
       pocPayload: 'User-Agent: Mozilla/5.0%0d%0aInjected-Header: malicious-value',
@@ -1723,12 +1852,15 @@ export function analyzeUrl(rawUrl: string): ScanResult {
   // ── Sort findings by severity ──
   findings.sort((a, b) => (SEVERITY_ORDER[b.severity] || 0) - (SEVERITY_ORDER[a.severity] || 0));
 
-  // ── Build summary ──
-  const owaspCoverage = [...new Set(findings.map((f) => f.owasp))];
+  // ── Build canonical summary strictly derived from findings[] ──
+  const affectedParamsSet = new Set(findings.map((f) => f.parameter).filter(Boolean) as string[]);
+  const owaspCoverage = Array.from(new Set(findings.flatMap((f) => f.owasp_categories || [f.owasp])));
   const familiesTested = [...new Set(INJECTION_RULES.map((r) => r.family))];
   const injectionFamilyCounts: Record<string, number> = {};
+
   for (const f of findings) {
-    injectionFamilyCounts[f.injectionFamily] = (injectionFamilyCounts[f.injectionFamily] || 0) + 1;
+    const famKey = f.category || f.injectionFamily;
+    injectionFamilyCounts[famKey] = (injectionFamilyCounts[famKey] || 0) + 1;
   }
 
   const highestSeverity = findings.reduce((best, f) => {
@@ -1754,6 +1886,8 @@ export function analyzeUrl(rawUrl: string): ScanResult {
       totalPages: 1,
       injectionPoints: findings.length,
       parameters: parameters.length,
+      affectedParametersCount: affectedParamsSet.size,
+      totalFindings: findings.length,
       riskScore: Math.round(riskScore * 10) / 10,
       highestSeverity,
       owaspCoverage,

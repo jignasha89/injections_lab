@@ -23,15 +23,24 @@ import {
 } from 'lucide-react';
 
 export interface ScanFinding {
+  id?: string;
+  type?: string;
+  category?: string;
+  parameter?: string;
+  endpoint?: string;
   inputPointTested: string;
   payloadUsed: string;
   vulnerabilityType: string;
-  confidence: 'Low' | 'Medium' | 'High' | 'Confirmed';
+  confidence: 'Confirmed' | 'Suspected';
   evidence: string;
+  evidenceSignals?: string[];
   severity: 'Critical' | 'High' | 'Medium' | 'Low' | 'Info';
   cvss?: number;
   cwe?: string;
+  cwe_id?: string;
   owasp?: string;
+  owasp_category?: string[];
+  owasp_categories?: string[];
   recommendation: string;
 }
 
@@ -114,9 +123,7 @@ const SEVERITY_COLORS: Record<string, { badge: string; border: string }> = {
 
 const CONFIDENCE_COLORS: Record<string, string> = {
   Confirmed: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
-  High: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
-  Medium: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
-  Low: 'text-zinc-400 bg-zinc-800 border-zinc-700',
+  Suspected: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
 };
 
 export function getVulnerabilityLabel(vulnerabilityType: string): string {
@@ -609,9 +616,13 @@ export default function DeepWebsiteScanner() {
                           </span>
                           <span className="text-xs font-mono font-bold text-white ml-1">{f.vulnerabilityType}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-zinc-500 text-xs font-mono">
-                          <span>{f.owasp || 'A03:2021'}</span>
-                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        <div className="flex items-center gap-1.5 flex-wrap text-zinc-400 text-xs font-mono">
+                          {(f.owasp_categories || (f.owasp ? [f.owasp] : ['A03:2021 – Injection'])).map((owaspTag, oIdx) => (
+                            <span key={oIdx} className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-300 font-bold">
+                              {owaspTag}
+                            </span>
+                          ))}
+                          {isExpanded ? <ChevronUp className="w-4 h-4 ml-1 text-zinc-500" /> : <ChevronDown className="w-4 h-4 ml-1 text-zinc-500" />}
                         </div>
                       </div>
 

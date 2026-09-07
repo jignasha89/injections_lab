@@ -8,7 +8,7 @@ import { DB_ERROR_PATTERNS } from '../liveScannerService';
 
 export interface UnionDiffResult {
   isVulnerable: boolean;
-  confidence: 'Confirmed' | 'High' | 'Medium' | 'Low';
+  confidence: 'Confirmed' | 'Suspected';
   evidence: string;
   evidenceSignals: string[];
 }
@@ -44,12 +44,11 @@ export function evaluateUnionSqli(
     evidenceSignals.push('union_canary_string_reflected');
     evidenceSignals.push('query_column_projection_verified');
 
-    const confidence = probeStatus === baselineStatus || probeStatus === 200 ? 'Confirmed' : 'High';
     const evidence = `UNION-based SQL injection detected: Payload "${payload}" projected custom canary string ("${expectedMatch}") into the HTTP response body.`;
 
     return {
       isVulnerable: true,
-      confidence,
+      confidence: 'Confirmed',
       evidence,
       evidenceSignals,
     };
@@ -66,7 +65,7 @@ export function evaluateUnionSqli(
 
     return {
       isVulnerable: true,
-      confidence: 'High',
+      confidence: 'Suspected',
       evidence: `UNION SELECT payload ("${payload}") expanded query result set from ${baseLen}B to ${probeLen}B.`,
       evidenceSignals,
     };
@@ -74,7 +73,7 @@ export function evaluateUnionSqli(
 
   return {
     isVulnerable: false,
-    confidence: 'Low',
+    confidence: 'Suspected',
     evidence: '',
     evidenceSignals: [],
   };

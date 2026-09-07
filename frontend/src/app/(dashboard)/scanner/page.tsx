@@ -18,16 +18,21 @@ import {
 } from 'lucide-react';
 
 interface Finding {
+  id?: string;
   type: string;
+  category?: string;
   injectionFamily: string;
   location: string;
   parameter?: string;
   paramValue?: string;
   severity: 'Critical' | 'High' | 'Medium' | 'Low' | 'Info';
-  confidence: 'Confirmed' | 'Likely' | 'Possible' | 'Low';
+  confidence: 'Confirmed' | 'Suspected';
   cvss: number;
   cwe: string;
+  cwe_id?: string;
   owasp: string;
+  owasp_category?: string[];
+  owasp_categories?: string[];
   description: string;
   evidence: string;
   evidenceSignals?: string[];
@@ -58,6 +63,7 @@ interface ScanResult {
     totalPages: number;
     injectionPoints: number;
     parameters: number;
+    affectedParametersCount?: number;
     riskScore: number;
     highestSeverity: string;
     owaspCoverage: string[];
@@ -76,9 +82,7 @@ const SEV_STYLES: Record<string, string> = {
 
 const CONFIDENCE_STYLES: Record<string, string> = {
   Confirmed: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
-  Likely: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
-  Possible: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
-  Low: 'text-zinc-400 bg-zinc-800 border-zinc-700',
+  Suspected: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
 };
 
 const FAMILY_COLORS: Record<string, string> = {

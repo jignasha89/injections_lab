@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Altoro Mutual / Testfire Login (SQLi Target)",
+    "url": "http://testfire.net/bank/login.aspx?uid=admin&btnSubmit=Login",
+    "expectedFindingsCount": 2,
+    "expectedTypes": [
+      "SQL Authentication Bypass",
+      "Classic SQL Injection"
+    ],
+    "expectZeroFalsePositives": false,
+    "description": "Known vulnerable Altoro Mutual ASP.NET test site with authentication bypass SQLi."
+  },
+  {
+    "name": "Acunetix TestPHP Products (SQLi Category Target)",
+    "url": "http://testphp.vulnweb.com/listproducts.php?cat=1",
+    "expectedFindingsCount": 2,
+    "expectedTypes": [
+      "Boolean-Based Blind SQL Injection",
+      "UNION-Based SQL Injection"
+    ],
+    "expectZeroFalsePositives": false,
+    "description": "Known vulnerable Acunetix PHP test target with numeric category SQLi."
+  },
+  {
+    "name": "DVWA Command Injection Sandbox Page",
+    "url": "http://dvwa.local/vulnerabilities/exec/?ip=127.0.0.1%3B+echo+injlab_cmd_probe_success",
+    "expectedFindingsCount": 1,
+    "expectedTypes": [
+      "Command Injection"
+    ],
+    "expectZeroFalsePositives": false,
+    "description": "DVWA OS Command Injection test fixture."
+  },
+  {
+    "name": "DVWA Reflected XSS Sandbox Page",
+    "url": "http://dvwa.local/vulnerabilities/xss_r/?name=%3Cinjlab_xss_canary_probe%3E",
+    "expectedFindingsCount": 1,
+    "expectedTypes": [
+      "Reflected XSS"
+    ],
+    "expectZeroFalsePositives": false,
+    "description": "DVWA Reflected Cross-Site Scripting test fixture."
+  },
+  {
+    "name": "Static Benign Clean Page (False Positive Verification Target)",
+    "url": "http://localhost/static_clean_about_page.html",
+    "expectedFindingsCount": 0,
+    "expectedTypes": [],
+    "expectZeroFalsePositives": true,
+    "description": "Clean static HTML document with zero dynamic parameters — must yield zero injection findings."
+  }
+]
