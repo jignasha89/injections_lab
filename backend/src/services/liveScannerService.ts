@@ -903,9 +903,10 @@ export async function executeLiveScan(
       formAllInputs?: Record<string, string>;
     }
 
+    // Compile list of inputs to test strictly on the EXACT target URL entered
     const testTargets: TestInputTarget[] = [];
 
-    // A. URL Query Parameters from target URL
+    // A. URL Query Parameters from the exact target URL entered
     parsedUrl.searchParams.forEach((val, key) => {
       testTargets.push({
         name: key,
@@ -916,33 +917,7 @@ export async function executeLiveScan(
       });
     });
 
-    // B. URL parameters from discovered page links (preserving complete query parameter context)
-    for (const link of discovered.linksWithParams) {
-      let actionUrl = normalizedUrl;
-      try {
-        const resolved = new URL(link.href, normalizedUrl);
-        if (link.allParams) {
-          for (const [k, v] of Object.entries(link.allParams)) {
-            resolved.searchParams.set(k, v);
-          }
-        }
-        actionUrl = resolved.toString();
-      } catch {
-        actionUrl = normalizedUrl;
-      }
-
-      if (!testTargets.some((t) => t.name === link.param && t.actionUrl === actionUrl && t.method === 'GET')) {
-        testTargets.push({
-          name: link.param,
-          location: 'URL Parameter',
-          method: 'GET',
-          actionUrl,
-          defaultValue: link.value || '1',
-        });
-      }
-    }
-
-    // C. Form Fields (Only GET & POST, skipping file uploads)
+    // B. Form Fields on the exact target page HTML
     for (const form of discovered.forms) {
       if (form.isFileUpload) continue; // Skip file uploads
 
@@ -960,30 +935,10 @@ export async function executeLiveScan(
           name: input.name,
           location: 'Form Field',
           method: form.method,
-          actionUrl: form.action,
+          actionUrl: form.action || normalizedUrl,
           defaultValue: input.value || 'test',
           formAllInputs: formDefaults,
         });
-      }
-    }
-
-    // D. URL parameters from discovered script API endpoints
-    for (const scriptEndpoint of discovered.scriptApiEndpoints) {
-      try {
-        const resolved = new URL(scriptEndpoint, normalizedUrl);
-        resolved.searchParams.forEach((val, key) => {
-          if (!testTargets.some((t) => t.name === key && t.actionUrl === resolved.toString() && t.method === 'GET')) {
-            testTargets.push({
-              name: key,
-              location: 'URL Parameter',
-              method: 'GET',
-              actionUrl: resolved.toString(),
-              defaultValue: val || '1',
-            });
-          }
-        });
-      } catch {
-        // Ignore unparseable script endpoint URLs
       }
     }
 
