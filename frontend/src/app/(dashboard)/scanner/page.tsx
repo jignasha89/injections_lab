@@ -430,6 +430,7 @@ export default function ScannerPage() {
     return (CONF_ORDER[b.confidence] || 0) - (CONF_ORDER[a.confidence] || 0);
   });
 
+  // SAFEGUARD ASSERTION: topFinding MUST always be derived dynamically from result.findings
   const topFinding = result?.findings && result.findings.length > 0
     ? [...result.findings].sort((a, b) => {
         const isHeaderA = (a.type || '').includes('Header') ? 1 : 0;

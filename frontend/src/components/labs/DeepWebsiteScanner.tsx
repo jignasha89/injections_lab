@@ -498,6 +498,7 @@ export default function DeepWebsiteScanner() {
             const SEV_VALS: Record<string, number> = { Critical: 5, High: 4, Medium: 3, Low: 2, Info: 1 };
             const CONF_VALS: Record<string, number> = { Confirmed: 4, High: 3, Medium: 2, Low: 1 };
 
+            // SAFEGUARD ASSERTION: topFinding MUST always be derived dynamically from result.findings
             const sortedFindings = [...result.findings].sort((a, b) => {
               const isHeaderA = (a.vulnerabilityType || '').includes('Header') ? 1 : 0;
               const isHeaderB = (b.vulnerabilityType || '').includes('Header') ? 1 : 0;
