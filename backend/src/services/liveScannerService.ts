@@ -22,6 +22,44 @@ export interface LiveScanConfig {
   enableHeadlessBrowser?: boolean;
 }
 
+/**
+ * Generates an exact, copy-pasteable cURL reproduction command for a vulnerability finding.
+ */
+export function generateCurlCommand(
+  method: 'GET' | 'POST',
+  actionUrl: string,
+  paramName: string,
+  payloadStr: string,
+  formAllInputs?: Record<string, string>
+): { fullUrl: string; curlCmd: string } {
+  if (method === 'POST') {
+    const formData: Record<string, string> = {
+      ...(formAllInputs || {}),
+      [paramName]: payloadStr,
+    };
+    const bodyStr = new URLSearchParams(formData).toString();
+    return {
+      fullUrl: actionUrl,
+      curlCmd: `curl -i -X POST -H "Content-Type: application/x-www-form-urlencoded" -d "${bodyStr.replace(/"/g, '\\"')}" "${actionUrl}"`,
+    };
+  } else {
+    try {
+      const u = new URL(actionUrl);
+      u.searchParams.set(paramName, payloadStr);
+      const fullUrl = u.toString();
+      return {
+        fullUrl,
+        curlCmd: `curl -i "${fullUrl}"`,
+      };
+    } catch {
+      return {
+        fullUrl: `${actionUrl}?${paramName}=${encodeURIComponent(payloadStr)}`,
+        curlCmd: `curl -i "${actionUrl}?${paramName}=${encodeURIComponent(payloadStr)}"`,
+      };
+    }
+  }
+}
+
 export interface SecurityHeaderResult {
   header: string;
   present: boolean;
@@ -57,11 +95,16 @@ export interface ScanFindingResult {
   category?: string;
   parameter?: string;
   endpoint?: string;
+  fullUrlWithPayload: string;
+  method: 'GET' | 'POST';
   inputPointTested: string;
   payloadUsed: string;
   vulnerabilityType: string;
-  confidence: 'Confirmed' | 'Suspected';
+  confidence: 'Confirmed' | 'Likely' | 'Needs manual review';
   evidence: string;
+  rawResponseSnippet: string;
+  proofExplanation: string;
+  reproduceCurl: string;
   evidenceSignals?: string[];
   severity: 'Critical' | 'High' | 'Medium' | 'Low' | 'Info';
   cvss?: number;
@@ -771,10 +814,17 @@ export async function executeLiveScan(
   config: LiveScanConfig = {},
   clientIp: string = 'unknown'
 ): Promise<DeepScanResult> {
+  const scanStartTime = Date.now();
   const timestamp = new Date().toISOString();
+  const isVercelServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+  // Maximum execution time budget for active probes (7.5s on Vercel to stay safely under 10s Hobby timeout, 45s locally)
+  const maxActiveBudgetMs = isVercelServerless ? 7500 : 45000;
+
+  console.log(`[SCAN_DIAGNOSTIC] [1/5] Incoming Live Scan Request: rawUrl="${rawUrl}", authorized=${authorized}, isVercel=${isVercelServerless}`);
 
   // 1. URL Normalization & Validation
   if (!rawUrl || typeof rawUrl !== 'string' || !rawUrl.trim()) {
+    console.error(`[SCAN_DIAGNOSTIC] [ERROR] Target URL missing or invalid string.`);
     throw new Error('Target URL is required. Please provide a valid web address.');
   }
 
@@ -782,16 +832,20 @@ export async function executeLiveScan(
   try {
     parsedUrl = new URL(rawUrl.startsWith('http') ? rawUrl : `http://${rawUrl}`);
   } catch {
+    console.error(`[SCAN_DIAGNOSTIC] [ERROR] URL parsing failed for: "${rawUrl}"`);
     throw new Error(`Invalid URL format: "${rawUrl}". Please provide a valid HTTP/HTTPS URL.`);
   }
 
   if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+    console.error(`[SCAN_DIAGNOSTIC] [ERROR] Unsupported protocol: "${parsedUrl.protocol}"`);
     throw new Error('Only HTTP and HTTPS protocols are supported.');
   }
 
   const normalizedUrl = parsedUrl.toString();
   const hostname = parsedUrl.hostname;
   const isLocal = isLocalOrPrivateTarget(hostname);
+
+  console.log(`[SCAN_DIAGNOSTIC] [2/5] Target Normalized: "${normalizedUrl}" (Hostname: ${hostname}, LocalTarget: ${isLocal})`);
 
   // 2. Global / Config Mode resolution
   const configuredMode = (process.env.SCAN_MODE?.toLowerCase() || 'passive') as 'passive' | 'active';
@@ -800,6 +854,7 @@ export async function executeLiveScan(
 
   // 3. Permissions Enforcement
   if (!authorized) {
+    console.error(`[SCAN_DIAGNOSTIC] [ERROR] Authorization flag is false for target "${normalizedUrl}"`);
     throw new Error(
       'Authorization confirmation required. You must explicitly confirm ownership or permission to scan this target.'
     );
@@ -816,7 +871,7 @@ export async function executeLiveScan(
   });
 
   // 5. Fetch Target Webpage
-  const timeoutMs = Math.min(Math.max(config.timeoutMs || 25000, 1000), 60000); // 25s default, max 60s
+  const timeoutMs = Math.min(Math.max(config.timeoutMs || 25000, 1000), 60000);
   const requestHeaders = {
     'User-Agent': config.userAgent || 'InjectionLab-DeepScanner/2.0 (Authorized Security Audit; Educational)',
     Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -828,10 +883,10 @@ export async function executeLiveScan(
     timeout: timeoutMs,
     headers: requestHeaders,
     maxRedirects: config.maxRedirects || 5,
-    validateStatus: () => true, // Capture all HTTP status codes (200, 401, 403, 500, etc.)
+    validateStatus: () => true,
   });
 
-  const probeTimeoutMs = Math.min(config.timeoutMs || 4000, 5000);
+  const probeTimeoutMs = isVercelServerless ? 2500 : Math.min(config.timeoutMs || 4000, 5000);
   const probeHttpClient = axios.create({
     timeout: probeTimeoutMs,
     headers: requestHeaders,
@@ -839,30 +894,40 @@ export async function executeLiveScan(
     validateStatus: () => true,
   });
 
-  const startTime = Date.now();
+  const fetchStartTime = Date.now();
   let rootResponse: AxiosResponse;
+
+  console.log(`[SCAN_DIAGNOSTIC] [3/5] Fetching Target Root Webpage...`);
 
   try {
     rootResponse = await httpClient.get(normalizedUrl);
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : 'Network request failed';
+    console.error(`[SCAN_DIAGNOSTIC] [ERROR] Network fetch failed for target "${normalizedUrl}":`, errorMsg);
     throw new Error(`Failed to fetch target URL "${normalizedUrl}": ${errorMsg}`);
   }
 
-  const responseTimeMs = Date.now() - startTime;
+  const responseTimeMs = Date.now() - fetchStartTime;
   const rawHtml = typeof rootResponse.data === 'string' ? rootResponse.data : JSON.stringify(rootResponse.data);
   const responseHeaders = rootResponse.headers as Record<string, unknown>;
 
-  // 6. Security Header Auditing & WAF (Web Application Firewall) Detection
+  console.log(`[SCAN_DIAGNOSTIC] Root Fetch Completed in ${responseTimeMs}ms | Status: HTTP ${rootResponse.status} | Body Length: ${rawHtml.length} bytes`);
+
+  // 6. Security Header Auditing & WAF Detection
   const securityHeaders = analyzeSecurityHeaders(responseHeaders, parsedUrl.protocol === 'https:');
   const wafResult = detectWaf(responseHeaders, rawHtml, rootResponse.status);
   const wafNotice = wafResult.detected
     ? `A Web Application Firewall (${wafResult.vendor || 'WAF'}) was detected. Results may under-report real vulnerabilities, as the WAF may be blocking or altering probe payloads.`
     : undefined;
 
-  // 7. Parse HTML Structure (with optional dynamic JavaScript SPA rendering support)
+  if (wafResult.detected) {
+    console.log(`[SCAN_DIAGNOSTIC] WAF Signature Detected: ${wafResult.vendor || 'Generic WAF'} (${wafResult.evidence})`);
+  }
+
+  // 7. Parse HTML Structure
   let pageHtml = rawHtml;
-  if (config.enableHeadlessBrowser) {
+  // Disable headless browser on serverless environment to prevent lambda execution timeouts
+  if (config.enableHeadlessBrowser && !isVercelServerless) {
     try {
       const renderedHtml = await renderPageWithBrowser(normalizedUrl, timeoutMs, config.userAgent);
       if (renderedHtml && renderedHtml.length > 50) {
@@ -875,6 +940,8 @@ export async function executeLiveScan(
 
   const discovered = parseHtmlContent(pageHtml, normalizedUrl);
 
+  console.log(`[SCAN_DIAGNOSTIC] [4/5] Discovered Structure: Forms=${discovered.forms.length}, LinksWithParams=${discovered.linksWithParams.length}, ScriptApiEndpoints=${discovered.scriptApiEndpoints.length}`);
+
   // 8. Generate Passive / Baseline Findings
   const findings: ScanFindingResult[] = [];
 
@@ -883,10 +950,15 @@ export async function executeLiveScan(
     if (hResult.status === 'fail') {
       findings.push({
         inputPointTested: `HTTP Response Header: ${headerName}`,
+        fullUrlWithPayload: normalizedUrl,
+        method: 'GET',
         payloadUsed: 'N/A (Passive Header Inspection)',
         vulnerabilityType: `Missing Security Header (${headerName})`,
         confidence: 'Confirmed',
         evidence: `Header "${headerName}" is missing from server HTTP response headers.`,
+        rawResponseSnippet: `HTTP/1.1 ${rootResponse.status}\n${Object.entries(responseHeaders).map(([k, v]) => `${k}: ${v}`).join('\n')}`,
+        proofExplanation: `Target response does not contain the mandatory standard security header "${headerName}".`,
+        reproduceCurl: `curl -i "${normalizedUrl}"`,
         evidenceSignals: ['header_missing_from_response', 'renderable_http_response_verified'],
         severity: headerName === 'Content-Security-Policy' || headerName === 'X-Frame-Options' ? 'Medium' : 'Low',
         cvss: headerName === 'Content-Security-Policy' ? 5.3 : 4.0,
@@ -1057,6 +1129,12 @@ export async function executeLiveScan(
 
     // Iterate through unique input targets
     for (const input of uniqueTargets) {
+      // Check serverless execution time budget safety
+      if (Date.now() - scanStartTime > maxActiveBudgetMs) {
+        console.warn(`[SCAN_DIAGNOSTIC] [TIME_BUDGET_REACHED] Active probing time budget (${maxActiveBudgetMs}ms) reached on target "${input.name}". Finalizing scan results to prevent serverless function timeout.`);
+        break;
+      }
+
       // 1. Safe Baseline Request
       let baselineText = '';
       let baselineStatus = 200;
@@ -1079,6 +1157,10 @@ export async function executeLiveScan(
       const categories = Object.keys(payloadConfig) as (keyof typeof payloadConfig)[];
 
       for (const category of categories) {
+        if (Date.now() - scanStartTime > maxActiveBudgetMs) {
+          console.warn(`[SCAN_DIAGNOSTIC] [TIME_BUDGET_REACHED] Category "${category}" interrupted by execution budget.`);
+          break;
+        }
         const payloads = payloadConfig[category] as Array<{
           id: string;
           name: string;
@@ -1098,9 +1180,11 @@ export async function executeLiveScan(
         for (const p of payloads) {
           try {
             let isVulnerable = false;
-            let confidence: 'Confirmed' | 'Suspected' = 'Suspected';
+            let confidence: 'Confirmed' | 'Likely' | 'Needs manual review' = 'Needs manual review';
             let evidence = '';
             let evidenceSignals: string[] = [];
+            let rawResponseSnippet = '';
+            let proofExplanation = '';
 
             // ── A. Error-Based SQLi Detection ──
             if (p.detectionType === 'error_match') {
@@ -1122,11 +1206,15 @@ export async function executeLiveScan(
                 isVulnerable = true;
                 evidence = `${matchedDb} syntax error signature detected in response body: "${matchedSignature}"`;
                 confidence = 'Confirmed';
+                rawResponseSnippet = probeRes.text.slice(Math.max(0, probeRes.text.indexOf(matchedSignature) - 40), probeRes.text.indexOf(matchedSignature) + matchedSignature.length + 100).trim();
+                proofExplanation = `Target application returned unhandled ${matchedDb} database exception containing syntax error token "${matchedSignature}".`;
               } else if ((p.payload === "'" || p.payload === '"') && baselineStatus < 500 && probeRes.status >= 500) {
                 isVulnerable = true;
                 evidenceSignals.push(`server_error_anomaly (HTTP ${probeRes.status})`);
                 evidence = `Unescaped quote probe (${p.payload}) triggered HTTP ${probeRes.status} Internal Server Error, indicating unhandled database query exception.`;
-                confidence = 'Suspected';
+                confidence = 'Likely';
+                rawResponseSnippet = `HTTP/1.1 ${probeRes.status} Internal Server Error\n${probeRes.text.slice(0, 250)}`;
+                proofExplanation = `Injecting single quote quote character "${p.payload}" broke underlying SQL query syntax, causing HTTP ${probeRes.status} exception.`;
               }
             }
 
@@ -1161,6 +1249,8 @@ export async function executeLiveScan(
                 evidenceSignals.push(`db_error_detected (${matchedDb})`);
                 evidence = `${matchedDb} error signature detected during boolean probe testing: "${matchedSig}"`;
                 confidence = 'Confirmed';
+                rawResponseSnippet = (trueRes.text.includes(matchedSig) ? trueRes.text : falseRes.text).slice(0, 250);
+                proofExplanation = `${matchedDb} database query error occurred during differential boolean evaluation.`;
               } else {
                 const evalResult = evaluateBooleanDifferential(
                   baseLen,
@@ -1181,6 +1271,8 @@ export async function executeLiveScan(
                   evidenceSignals.push(...evalResult.evidenceSignals);
                   confidence = evalResult.confidence;
                   evidence = evalResult.evidence;
+                  rawResponseSnippet = `TRUE Probe (HTTP ${trueRes.status}, ${trueLen}B): ${trueRes.text.slice(0, 120)}\nFALSE Probe (HTTP ${falseRes.status}, ${falseLen}B): ${falseRes.text.slice(0, 120)}`;
+                  proofExplanation = `Target application evaluates boolean expressions dynamically in SQL backend (TRUE probe returned ${trueLen}B, FALSE probe returned ${falseLen}B).`;
                 }
               }
             }
@@ -1200,19 +1292,16 @@ export async function executeLiveScan(
                   evidenceSignals.push(`db_error_signature_detected (${db})`);
                   evidence = `${db} error signature triggered by authentication bypass payload: "${bypassRes.text.match(pattern)?.[0]}"`;
                   confidence = 'Confirmed';
+                  rawResponseSnippet = bypassRes.text.slice(0, 250);
+                  proofExplanation = `Authentication query failed with database syntax error when injection payload "${p.payload}" was supplied.`;
                   break;
                 }
               }
 
               if (!isVulnerable) {
-                // Universal auth bypass behavioral signals:
-                // 1. Redirection away from login/auth
                 const redirectedToNewLocation = bypassLoc.length > 0 && !bypassLoc.includes('login') && !bypassLoc.includes('auth') && !bypassLoc.includes('fail') && !bypassLoc.includes('signin') && bypassLoc !== baselineLoc;
-                // 2. Issuance of new session cookie not present in baseline
                 const issuedAuthCookie = bypassSetCookie.length > 0 && !baseSetCookie.includes(bypassSetCookie.split(';')[0]) && /sess|auth|token|jwt|id|key/i.test(bypassSetCookie);
-                // 3. Status transition: 401/403 baseline -> 200/302 bypass
                 const statusElevated = (baselineStatus === 401 || baselineStatus === 403) && (bypassRes.status === 200 || bypassRes.status === 302);
-                // 4. Failure marker vanished
                 const genericFailPatterns = /invalid username|invalid password|invalid credentials|authentication failed|login failed|incorrect password|user not found|access denied/i;
                 const hadFailMarker = genericFailPatterns.test(baselineText) || baselineStatus === 401 || baselineStatus === 403;
                 const removedFailMarker = hadFailMarker && !genericFailPatterns.test(bypassRes.text) && (bypassRes.status === 200 || bypassRes.status === 302);
@@ -1224,8 +1313,10 @@ export async function executeLiveScan(
 
                 if (redirectedToNewLocation || issuedAuthCookie || (statusElevated && removedFailMarker)) {
                   isVulnerable = true;
-                  confidence = evidenceSignals.length >= 2 ? 'Confirmed' : 'Suspected';
+                  confidence = evidenceSignals.length >= 2 ? 'Confirmed' : 'Likely';
                   evidence = `SQL injection authentication bypass detected: Probe payload "${p.payload}" altered authentication state (redirect: "${bypassRes.headers['location'] || 'none'}", status: HTTP ${bypassRes.status}).`;
+                  rawResponseSnippet = `HTTP/1.1 ${bypassRes.status}\nLocation: ${bypassRes.headers['location'] || 'N/A'}\nSet-Cookie: ${bypassRes.headers['set-cookie'] || 'N/A'}\n${bypassRes.text.slice(0, 150)}`;
+                  proofExplanation = `Authentication logic was bypassed using SQL tautology payload "${p.payload}", resulting in status ${bypassRes.status} and authentication state alteration.`;
                 }
               }
             }
@@ -1234,7 +1325,6 @@ export async function executeLiveScan(
             if (p.detectionType === 'union_match') {
               console.log(`[PROBE_EXEC] Executing UNION SELECT Probe on input "${input.name}": Payload="${p.payload}"`);
               const probeRes = await executeProbe(input, p.payload);
-              console.log(`[PROBE_DIFF] Input "${input.name}": Baseline=${baselineText.length}B (HTTP ${baselineStatus}), UNION=${probeRes.text.length}B (HTTP ${probeRes.status})`);
 
               const evalResult = evaluateUnionSqli(
                 baselineText,
@@ -1250,6 +1340,8 @@ export async function executeLiveScan(
                 evidenceSignals.push(...evalResult.evidenceSignals);
                 confidence = evalResult.confidence;
                 evidence = evalResult.evidence;
+                rawResponseSnippet = probeRes.text.slice(0, 250);
+                proofExplanation = `UNION SELECT injection payload "${p.payload}" allowed extracting arbitrary query data into response body.`;
               }
             }
 
@@ -1258,25 +1350,35 @@ export async function executeLiveScan(
               const probeRes = await executeProbe(input, p.payload);
               const probeContentType = String(probeRes.headers['content-type'] || '').toLowerCase();
               const isHtmlContext = probeContentType.includes('text/html') || probeContentType.includes('application/xhtml+xml');
+              const text = probeRes.text;
 
-              if (probeRes.text.includes(p.expectedMatch) && !baselineText.includes(p.expectedMatch)) {
+              // STRICT FILTER: Check if payload reflection is HTML-escaped (&lt;script&gt;, &#x3C;script)
+              const isHtmlEscaped = text.includes('&lt;') || text.includes('&amp;lt;') || text.includes('&#x3C;') || text.includes('&#60;');
+              const containsRawUnescapedPayload = text.includes(p.payload);
+
+              // If input contains HTML tags (<script>) but response strictly reflects HTML-escaped text (&lt;script&gt;), IT IS NOT XSS!
+              if (p.payload.includes('<') && isHtmlEscaped && !containsRawUnescapedPayload) {
+                isVulnerable = false; // Safe! Reflected text is properly HTML entity encoded
+              } else if (text.includes(p.expectedMatch) && !baselineText.includes(p.expectedMatch)) {
                 isVulnerable = true;
                 evidenceSignals.push('probe_string_reflected');
                 if (isHtmlContext) {
                   evidenceSignals.push('html_render_context_verified');
                 }
-                if (p.payload.includes('<') && probeRes.text.includes(p.payload)) {
+                if (containsRawUnescapedPayload) {
                   evidenceSignals.push('unescaped_html_tags_confirmed');
-                }
-                if (p.payload.includes('"') && probeRes.text.includes(p.payload)) {
-                  evidenceSignals.push('attribute_quote_unescaped');
                 }
                 if (p.name.includes('Shell') || p.name.includes('Command') || p.name.includes('Echo')) {
                   evidenceSignals.push('command_output_verified');
                 }
 
-                confidence = evidenceSignals.length >= 2 ? 'Confirmed' : 'Suspected';
+                confidence = containsRawUnescapedPayload && isHtmlContext ? 'Confirmed' : 'Likely';
                 evidence = `Unencoded probe string reflected in response body: "${p.expectedMatch}"`;
+                const idx = text.indexOf(p.expectedMatch);
+                rawResponseSnippet = text.slice(Math.max(0, idx - 40), idx + p.expectedMatch.length + 80).trim();
+                proofExplanation = containsRawUnescapedPayload
+                  ? `Payload "${p.payload}" was reflected verbatim into HTML response without HTML entity escaping, enabling executable XSS.`
+                  : `Probe string "${p.expectedMatch}" was reflected directly into response body.`;
               }
             }
 
@@ -1293,6 +1395,9 @@ export async function executeLiveScan(
                 evidenceSignals.push('literal_expression_suppressed');
                 confidence = 'Confirmed';
                 evidence = `Dynamic template evaluation detected: expression "${p.payload}" resulted in computed string "${p.expectedMatch}".`;
+                const idx = probeRes.text.indexOf(p.expectedMatch);
+                rawResponseSnippet = probeRes.text.slice(Math.max(0, idx - 40), idx + p.expectedMatch.length + 80).trim();
+                proofExplanation = `Server template engine evaluated expression "${p.payload}" and output computed result "${p.expectedMatch}".`;
               }
             }
 
@@ -1306,6 +1411,8 @@ export async function executeLiveScan(
                 evidenceSignals.push(`baseline_differential_confirmed (+${probeRes.duration - baselineDuration}ms)`);
                 confidence = 'Confirmed';
                 evidence = `Response time anomaly: baseline response took ${baselineDuration}ms, probe took ${probeRes.duration}ms (~${expectedDelay}ms expected delay).`;
+                rawResponseSnippet = `Baseline Response Time: ${baselineDuration}ms\nProbe Response Time: ${probeRes.duration}ms\nDelay Differential: +${probeRes.duration - baselineDuration}ms`;
+                proofExplanation = `Target application execution was held for ${probeRes.duration}ms when SQL sleep payload "${p.payload}" was injected.`;
               }
             }
 
@@ -1319,17 +1426,30 @@ export async function executeLiveScan(
                 parameter: input.name,
               });
 
+              const { fullUrl, curlCmd } = generateCurlCommand(
+                input.method,
+                input.actionUrl,
+                input.name,
+                p.payload,
+                input.formAllInputs
+              );
+
               findings.push({
                 id: p.id,
                 type: p.name,
                 category: category,
                 parameter: input.name,
                 endpoint: input.actionUrl,
+                fullUrlWithPayload: fullUrl,
+                method: input.method,
                 inputPointTested: `${input.method} ${input.actionUrl} [${input.name}] (${input.location})`,
                 payloadUsed: p.payload,
                 vulnerabilityType: p.name,
-                confidence: confidence === 'Confirmed' ? 'Confirmed' : 'Suspected',
+                confidence,
                 evidence,
+                rawResponseSnippet: rawResponseSnippet || '(Response body verification completed)',
+                proofExplanation: proofExplanation || evidence,
+                reproduceCurl: curlCmd,
                 evidenceSignals,
                 severity: p.severity || 'High',
                 cvss: p.cvss || 8.0,

@@ -23,10 +23,12 @@ interface Finding {
   category?: string;
   injectionFamily: string;
   location: string;
+  fullUrlWithPayload?: string;
+  method?: 'GET' | 'POST';
   parameter?: string;
   paramValue?: string;
   severity: 'Critical' | 'High' | 'Medium' | 'Low' | 'Info';
-  confidence: 'Confirmed' | 'Suspected';
+  confidence: 'Confirmed' | 'Likely' | 'Needs manual review';
   cvss: number;
   cwe: string;
   cwe_id?: string;
@@ -35,6 +37,9 @@ interface Finding {
   owasp_categories?: string[];
   description: string;
   evidence: string;
+  rawResponseSnippet?: string;
+  proofExplanation?: string;
+  reproduceCurl?: string;
   evidenceSignals?: string[];
   pocPayload: string;
   recommendation: string;
@@ -82,7 +87,8 @@ const SEV_STYLES: Record<string, string> = {
 
 const CONFIDENCE_STYLES: Record<string, string> = {
   Confirmed: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
-  Suspected: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+  Likely: 'text-orange-400 bg-orange-500/10 border-orange-500/30',
+  'Needs manual review': 'text-amber-400 bg-amber-500/10 border-amber-500/30',
 };
 
 const FAMILY_COLORS: Record<string, string> = {
@@ -335,10 +341,12 @@ export default function ScannerPage() {
           type: item.vulnerabilityType || item.type || 'Vulnerability',
           injectionFamily: family,
           location: item.inputPointTested || item.location || 'Target parameter',
+          fullUrlWithPayload: item.fullUrlWithPayload,
+          method: item.method,
           parameter: item.parameter || (item.inputPointTested ? item.inputPointTested.split(' [')[1]?.split(']')[0] : undefined),
           paramValue: item.payloadUsed || item.paramValue,
           severity: item.severity || 'Medium',
-          confidence: item.confidence === 'Confirmed' ? 'Confirmed' : 'Suspected',
+          confidence: item.confidence === 'Confirmed' ? 'Confirmed' : (item.confidence === 'Likely' ? 'Likely' : 'Needs manual review'),
           cvss: item.cvss || 7.5,
           cwe: item.cwe_id || item.cwe || 'CWE-89',
           cwe_id: item.cwe_id || item.cwe || 'CWE-89',
@@ -347,6 +355,9 @@ export default function ScannerPage() {
           owasp_categories: item.owasp_categories || item.owasp_category || (item.owasp ? [item.owasp] : ['A03:2021']),
           description: item.description || item.evidence || item.vulnerabilityType,
           evidence: item.evidence || 'Pattern detected',
+          rawResponseSnippet: item.rawResponseSnippet,
+          proofExplanation: item.proofExplanation,
+          reproduceCurl: item.reproduceCurl,
           evidenceSignals: item.evidenceSignals || [],
           pocPayload: item.payloadUsed || item.pocPayload || 'N/A',
           recommendation: item.recommendation || 'Sanitize input.',
@@ -491,6 +502,9 @@ export default function ScannerPage() {
           Injection Scanner{' '}
           <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-bold">
             78 Injection Modules
+          </span>
+          <span className="text-xs font-mono px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold">
+            v2.1.0-verified
           </span>
         </h2>
         <p className="text-zinc-400 text-sm mt-1.5 font-mono">
@@ -935,6 +949,40 @@ export default function ScannerPage() {
                             </span>
                             <p className="text-zinc-300 font-mono text-[11px] leading-relaxed">{finding.evidence}</p>
                           </div>
+
+                          {/* Proof Explanation */}
+                          {finding.proofExplanation && (
+                            <div className="p-3.5 bg-emerald-500/10 rounded-xl border border-emerald-500/30">
+                              <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                                <ShieldAlert className="w-3.5 h-3.5 text-emerald-400" /> Why This Proves Vulnerable
+                              </span>
+                              <p className="text-zinc-200 leading-relaxed font-mono text-[11px]">{finding.proofExplanation}</p>
+                            </div>
+                          )}
+
+                          {/* Raw Evidence Response Snippet */}
+                          {finding.rawResponseSnippet && (
+                            <div className="space-y-1.5">
+                              <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <Eye className="w-3 h-3" /> Raw HTTP Response Proof Snippet
+                              </span>
+                              <pre className="p-3 bg-[#050508] rounded-xl border border-amber-500/20 font-mono text-[11px] text-amber-300/90 whitespace-pre-wrap overflow-x-auto break-all">
+                                {finding.rawResponseSnippet}
+                              </pre>
+                            </div>
+                          )}
+
+                          {/* Reproduction Command */}
+                          {finding.reproduceCurl && (
+                            <div className="space-y-1.5">
+                              <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <Code2 className="w-3 h-3 text-cyan-400" /> Reproduce Manually (Exact cURL Command)
+                              </span>
+                              <div className="p-3 bg-[#050508] rounded-xl border border-cyan-500/30 font-mono text-[11px] text-cyan-300 break-all select-all flex items-center justify-between gap-2">
+                                <code>{finding.reproduceCurl}</code>
+                              </div>
+                            </div>
+                          )}
 
                           {/* Corroborating Signals */}
                           {finding.evidenceSignals && finding.evidenceSignals.length > 0 && (

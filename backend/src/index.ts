@@ -58,6 +58,14 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
+// Anti-caching middleware to prevent Vercel CDN/edge stale response caching
+app.use((_req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/labs', labRoutes);
@@ -70,6 +78,7 @@ app.use('/api/user', userRoutes);
 app.get('/api/health', (_req, res) => {
   res.json({
     status: 'ok',
+    version: '2.1.0-verified',
     message: 'InjectionLab API is running',
     timestamp: new Date().toISOString(),
     disclaimer: 'This platform is for authorized educational use only.',

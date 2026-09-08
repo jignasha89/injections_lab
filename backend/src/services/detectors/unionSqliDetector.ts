@@ -8,7 +8,7 @@ import { DB_ERROR_PATTERNS } from '../liveScannerService';
 
 export interface UnionDiffResult {
   isVulnerable: boolean;
-  confidence: 'Confirmed' | 'Suspected';
+  confidence: 'Confirmed' | 'Likely' | 'Needs manual review';
   evidence: string;
   evidenceSignals: string[];
 }
@@ -65,7 +65,7 @@ export function evaluateUnionSqli(
 
     return {
       isVulnerable: true,
-      confidence: 'Suspected',
+      confidence: 'Likely',
       evidence: `UNION SELECT payload ("${payload}") expanded query result set from ${baseLen}B to ${probeLen}B.`,
       evidenceSignals,
     };
@@ -73,7 +73,7 @@ export function evaluateUnionSqli(
 
   return {
     isVulnerable: false,
-    confidence: 'Suspected',
+    confidence: 'Needs manual review',
     evidence: '',
     evidenceSignals: [],
   };

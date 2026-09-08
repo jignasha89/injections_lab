@@ -6,7 +6,7 @@
 
 export interface BooleanDiffResult {
   isVulnerable: boolean;
-  confidence: 'Confirmed' | 'Suspected';
+  confidence: 'Confirmed' | 'Likely' | 'Needs manual review';
   evidence: string;
   evidenceSignals: string[];
 }
@@ -53,6 +53,16 @@ export function evaluateBooleanDifferential(
   // 1. Core Text & Structure Divergence
   const contentDiffers = normTrue !== normFalse;
 
+  // Safeguard: Check if the text divergence is strictly due to the literal probe strings being reflected in the HTML response
+  const normTrueStripped = normTrue.split(payload).join('').split(encodeURIComponent(payload)).join('').trim();
+  const normFalseStripped = normFalse.split(falsePayload).join('').split(encodeURIComponent(falsePayload)).join('').trim();
+  const isReflectionOnly = normTrueStripped === normFalseStripped && trueStatus === falseStatus;
+
+  // If the ONLY difference between TRUE and FALSE probes is that the probe payload string was echoed back in the page body, it is NOT SQLi
+  if (isReflectionOnly && trueStatus === baseStatus) {
+    return { isVulnerable: false, confidence: 'Needs manual review', evidence: '', evidenceSignals: [] };
+  }
+
   // 2. HTTP Status Code Divergence (e.g. TRUE: 200 vs FALSE: 500 / 404 / 302)
   const statusDivergence = (trueStatus === 200 || trueStatus === baseStatus) && (falseStatus !== trueStatus);
 
@@ -66,9 +76,9 @@ export function evaluateBooleanDifferential(
   const trueMatchesBase = Math.abs(trueLen - baseLen) <= Math.max(150, baseLen * 0.15) || trueStatus === baseStatus;
   const falseMatchesBase = Math.abs(falseLen - baseLen) <= Math.max(150, baseLen * 0.15) || falseStatus === baseStatus;
 
-  // Genuine boolean vulnerability requires structural content difference AND
+  // Genuine boolean vulnerability requires structural content difference AND NOT reflection-only AND
   // (status divergence OR significant length divergence OR baseline asymmetry)
-  const isVulnerable = contentDiffers && (
+  const isVulnerable = contentDiffers && !isReflectionOnly && (
     statusDivergence ||
     (significantLengthDivergence && (trueMatchesBase || falseMatchesBase)) ||
     (trueMatchesBase && !falseMatchesBase) ||
@@ -83,11 +93,11 @@ export function evaluateBooleanDifferential(
     if (significantLengthDivergence) evidenceSignals.push(`response_length_divergence (TRUE: ${trueLen}B vs FALSE: ${falseLen}B)`);
 
     // Two-tier confidence: Confirmed requires 2+ distinct evidence signals (e.g. divergence + baseline match / status diff)
-    const confidence: 'Confirmed' | 'Suspected' = evidenceSignals.length >= 2 ? 'Confirmed' : 'Suspected';
+    const confidence: 'Confirmed' | 'Likely' | 'Needs manual review' = evidenceSignals.length >= 2 ? 'Confirmed' : 'Likely';
     const evidence = `Boolean-based SQL injection detected: TRUE condition payload ("${payload}") produced baseline-consistent behavior (${trueLen} bytes, HTTP ${trueStatus}), while FALSE condition payload ("${falsePayload}") caused behavioral divergence (${falseLen} bytes, HTTP ${falseStatus}).`;
 
     return { isVulnerable: true, confidence, evidence, evidenceSignals };
   }
 
-  return { isVulnerable: false, confidence: 'Suspected', evidence: '', evidenceSignals: [] };
+  return { isVulnerable: false, confidence: 'Needs manual review', evidence: '', evidenceSignals: [] };
 }

@@ -21,7 +21,7 @@ describe('Boolean Differential & UNION SQLi Detector Unit Test Suite', () => {
       '1 AND 1=1', '1 AND 1=2'
     );
     expect(resNumeric.isVulnerable).toBe(true);
-    expect(resNumeric.confidence === 'Confirmed' || resNumeric.confidence === 'Suspected').toBe(true);
+    expect(resNumeric.confidence === 'Confirmed' || resNumeric.confidence === 'Likely' || resNumeric.confidence === 'Needs manual review').toBe(true);
   });
 
   it("Test 3: String/Quote Tautology SQLi (' OR '1'='1 vs ' OR '1'='2)", () => {
@@ -37,7 +37,7 @@ describe('Boolean Differential & UNION SQLi Detector Unit Test Suite', () => {
       "' OR '1'='1", "' OR '1'='2"
     );
     expect(resTautology.isVulnerable).toBe(true);
-    expect(resTautology.confidence === 'Confirmed' || resTautology.confidence === 'Suspected').toBe(true);
+    expect(resTautology.confidence === 'Confirmed' || resTautology.confidence === 'Likely' || resTautology.confidence === 'Needs manual review').toBe(true);
   });
 
   it('Test 4: Zero False Positives on Non-Vulnerable Page (Dynamic Timestamps)', () => {
