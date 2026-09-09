@@ -1,257 +1,334 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Terminal, Radio, Target } from 'lucide-react';
-import GlobeVisualization from '@/components/dashboard/GlobeVisualization';
 import Link from 'next/link';
+import { Target, Radio, Activity, ShieldAlert, Cpu, Terminal } from 'lucide-react';
+import CompactGlobe from '@/components/dashboard/CompactGlobe';
 
-const MOCK_LOGS = [
-  "Initializing payload evasion engine...",
-  "WAF evasion required for target constraints.",
-  "Loading NoSQL injection vector (ID: 412).",
-  "Bypass payload verified against filters.",
-  "Syncing telemetry with command center.",
-  "Executing blind SQLi on /api/graphql.",
-  "Rate limit detected, throttling execution.",
-  "Template injection payload successful.",
-  "Exfiltrating data fragment...",
-  "Session token identified in response."
+export interface InterceptorPayload {
+  id: number;
+  time: string;
+  tcpPort: string;
+  targetPort: string;
+  method: string;
+  path: string;
+  host: string;
+  contentLength: number;
+  hexData: string;
+  status: string;
+}
+
+const INITIAL_PAYLOADS: InterceptorPayload[] = [
+  {
+    id: 1,
+    time: '14:32:45',
+    tcpPort: '@053',
+    targetPort: '443',
+    method: 'POST',
+    path: '/api/v1/execute',
+    host: 'target.local',
+    contentLength: 1038,
+    hexData: '30 51 a5 b2 13 1b 84 19 fc 53 63 51 c4 cf 3f 23 e2',
+    status: '200 OK'
+  },
+  {
+    id: 2,
+    time: '14:32:40',
+    tcpPort: '@052',
+    targetPort: '443',
+    method: 'POST',
+    path: '/api/v1/execute',
+    host: 'target.local',
+    contentLength: 1036,
+    hexData: '84 22 bc 37 5e b0 37 d9 23 e7 5d 29 c1 c4 7e 04',
+    status: '200 OK'
+  },
+  {
+    id: 3,
+    time: '14:32:35',
+    tcpPort: '@051',
+    targetPort: '443',
+    method: 'POST',
+    path: '/api/v1/graphql',
+    host: 'target.local',
+    contentLength: 1104,
+    hexData: '7b 22 71 75 65 72 79 22 3a 20 22 7b 20 75 73 65 72 73',
+    status: '200 OK'
+  },
+  {
+    id: 4,
+    time: '14:32:30',
+    tcpPort: '@050',
+    targetPort: '443',
+    method: 'POST',
+    path: '/api/v1/auth/login',
+    host: 'target.local',
+    contentLength: 984,
+    hexData: '27 20 4f 52 20 27 31 27 3d 27 31 20 2d 2d 20 41 44',
+    status: '200 OK'
+  }
 ];
 
+export interface InjectionStatItem {
+  id: string;
+  name: string;
+  percent: number;
+  color: string;
+  barColor: string;
+}
+
 export default function DashboardPage() {
-  const [logs, setLogs] = useState<{id: number, text: string}[]>([]);
-  const logsContainerRef = useRef<HTMLDivElement>(null);
-  const logCounter = useRef(0);
+  // Payloads Interceptor Stream
+  const [payloads, setPayloads] = useState<InterceptorPayload[]>(INITIAL_PAYLOADS);
+  const interceptorRef = useRef<HTMLDivElement>(null);
 
+  // Injection Statistics State
+  const [stats, setStats] = useState<InjectionStatItem[]>([
+    { id: 'sqli', name: 'Blind SQL Injection (Time-Based)', percent: 24, color: '#00d4ff', barColor: 'from-[#3b82f6] to-[#00d4ff]' },
+    { id: 'xss', name: 'Cross-Site Scripting (Reflected)', percent: 19, color: '#ff9500', barColor: 'bg-[#ff9500]' },
+    { id: 'ssti', name: 'Server-Side Template Injection', percent: 15, color: '#ff0051', barColor: 'bg-[#ff0051]' },
+    { id: 'cmdi', name: 'OS Command Execution', percent: 14, color: '#7c3aed', barColor: 'bg-[#7c3aed]' },
+    { id: 'nosql', name: 'NoSQL Query Tampering', percent: 12, color: '#ec4899', barColor: 'bg-[#ec4899]' },
+    { id: 'ldap', name: 'LDAP / XPath Fuzzing', percent: 10, color: '#ffb800', barColor: 'bg-[#ffb800]' },
+    { id: 'traversal', name: 'Path Traversal / SSRF', percent: 6, color: '#00ff00', barColor: 'bg-[#00ff00]' },
+  ]);
 
-
+  // Stream new live payloads every 5 seconds
   useEffect(() => {
-    // Helper to generate a random log
-    const createLog = (id: number) => {
-      const nextLog = MOCK_LOGS[Math.floor(Math.random() * MOCK_LOGS.length)];
-      
-      const rand = Math.random();
-      let level = '[INFO]';
-      if (rand > 0.9) level = '[CRITICAL]';
-      else if (rand > 0.75) level = '[HIGH]';
-      else if (rand > 0.5) level = '[MEDIUM]';
-      else if (rand > 0.3) level = '[LOW]';
-      
-      const time = new Date(Date.now() - (20 - id) * 1000).toLocaleTimeString('en-US', { hour12: false });
-      return { id, text: `${time} ${level} ${nextLog}` };
-    };
+    const hexSamples = [
+      'a9 4f 12 c8 7b 3a 90 f4 1c d2 8e 5e 33 b1 70 e9',
+      '55 b8 e1 09 4c 9a 21 df 67 89 12 c3 45 f6 78 90',
+      '7b 22 69 64 22 3a 20 22 27 20 4f 52 20 31 3d 31',
+      '3c 73 63 72 69 70 74 3e 61 6c 65 72 74 28 31 29'
+    ];
+    const pathSamples = [
+      '/api/v1/execute',
+      '/api/v1/graphql',
+      '/api/v2/auth/login',
+      '/api/v1/user/search'
+    ];
 
-    // Pre-fill terminal so it doesn't look empty
-    const initialLogs = Array.from({ length: 20 }).map((_, i) => {
-      logCounter.current += 1;
-      return createLog(logCounter.current);
-    });
-    setLogs(initialLogs);
+    let portCounter = 54;
 
-    // Continuous fast stream
     const interval = setInterval(() => {
-      logCounter.current += 1;
-      const newLog = createLog(logCounter.current);
-      newLog.text = newLog.text.replace(/:\d\d /, `:${new Date().getSeconds().toString().padStart(2, '0')} `); // Update to real current time
-      
-      setLogs(prev => {
-        const newLogs = [...prev, newLog];
-        return newLogs.slice(-25); // Keep last 25 logs for scrolling
-      });
-    }, 800);
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+      portCounter += 1;
+
+      const newEntry: InterceptorPayload = {
+        id: Date.now(),
+        time: timeStr,
+        tcpPort: `@0${portCounter}`,
+        targetPort: '443',
+        method: 'POST',
+        path: pathSamples[Math.floor(Math.random() * pathSamples.length)],
+        host: 'target.local',
+        contentLength: Math.floor(Math.random() * 200) + 950,
+        hexData: hexSamples[Math.floor(Math.random() * hexSamples.length)],
+        status: '200 OK'
+      };
+
+      setPayloads(prev => [newEntry, ...prev.slice(0, 15)]);
+    }, 5000);
+
     return () => clearInterval(interval);
   }, []);
 
+  // Update Injection Statistics percentages every 4 seconds
   useEffect(() => {
-    if (logsContainerRef.current) {
-      logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight;
-    }
-  }, [logs]);
+    const interval = setInterval(() => {
+      setStats(prev => {
+        const delta = (Math.random() - 0.5) * 2;
+        const newStats = prev.map(item => {
+          if (item.id === 'sqli') {
+            const nextP = Math.min(30, Math.max(20, Math.round(item.percent + delta)));
+            return { ...item, percent: nextP };
+          }
+          if (item.id === 'xss') {
+            const nextP = Math.min(25, Math.max(15, Math.round(item.percent - delta * 0.5)));
+            return { ...item, percent: nextP };
+          }
+          return item;
+        });
+        return newStats;
+      });
+    }, 4000);
 
-
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="absolute inset-0 p-6 lg:p-8 flex flex-col font-sans text-text-primary overflow-hidden">
-      <div className="w-full h-full flex flex-col">
-
-      {/* Header */}
-      <div className="flex items-center justify-between pb-4 shrink-0 bg-gradient-to-r from-[#0d1222] via-[#090d18] to-purple-950/20 p-5 rounded-2xl border border-indigo-500/30 mb-5 shadow-[0_0_20px_rgba(99,102,241,0.15)] hover:border-cyan-400/40 hover:shadow-[0_0_25px_rgba(6,182,212,0.2)] hover:-translate-y-0.5 transition-all duration-300">
+    <div className="min-h-screen bg-[#0a0e27] font-mono text-white flex flex-col selection:bg-[#00d4ff]/30 p-6 md:p-8">
+      
+      {/* ── TOP HEADER (Height: 80px) ── */}
+      <header className="h-[80px] border-b border-[#00d4ff]/30 pb-4 mb-6 flex items-center justify-between shrink-0">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-3 text-white">
-            <Radio className="w-5 h-5 text-cyan-400 animate-pulse drop-shadow-[0_0_8px_#06b6d4]" />
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white flex items-center gap-3 font-mono">
+            <Radio className="w-6 h-6 text-[#00d4ff] animate-pulse drop-shadow-[0_0_10px_#00d4ff]" />
             Threat Observatory
           </h1>
-          <p className="text-[13px] text-slate-300 mt-1 font-medium">
+          <p className="text-xs md:text-sm text-[#a0aec0] font-mono mt-1">
             InjectionLab enterprise security assessment command center
           </p>
         </div>
-        <Link href="/scanner" className="btn-cyber-primary px-5 py-2.5 text-sm flex items-center gap-2 shadow-[0_0_18px_rgba(99,102,241,0.4)] hover:shadow-[0_0_26px_rgba(6,182,212,0.6)] transition-all">
-          <Target className="w-4 h-4" /> Deploy Assessment
+
+        {/* Deploy Assessment Button (Gradient Purple -> Blue) */}
+        <Link
+          href="/scanner"
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] hover:from-[#8b5cf6] hover:to-[#60a5fa] text-white font-mono font-extrabold text-sm uppercase tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(124,58,237,0.45)] hover:shadow-[0_0_30px_rgba(59,130,246,0.65)] hover:scale-[1.02] active:scale-[0.98] transition-all"
+        >
+          <Target className="w-5 h-5 text-white" />
+          <span>Deploy Assessment</span>
         </Link>
-      </div>
+      </header>
 
-      {/* Main: Globe Left | Panels Right */}
-      <div className="flex flex-1 gap-6 lg:gap-8 min-h-0 h-full w-full">
+      {/* ── MAIN CONTENT: 3-COLUMN LAYOUT (35% | 35% | 30%) ── */}
+      <main className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 items-start">
 
-        {/* ── Globe Column ── */}
-        <div className="relative flex-[1.5] shrink-0 rounded-2xl overflow-hidden border border-indigo-500/30 bg-gradient-to-b from-[#0a0e1a] via-[#060812] to-[#030408] shadow-[0_0_25px_rgba(99,102,241,0.15)] hover:border-purple-500/40 transition-all duration-300">
-          {/* Status badge */}
-          <div className="absolute top-4 left-4 z-10 flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#0d1222]/90 backdrop-blur border border-cyan-400/40 text-[10px] font-mono text-cyan-200 uppercase tracking-widest shadow-[0_0_12px_rgba(6,182,212,0.25)] font-bold">
-              <span className="relative flex h-3 w-3 items-center justify-center">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400 shadow-[0_0_12px_#06b6d4]"></span>
+        {/* ── LEFT COLUMN (35% width / 4.2 cols -> lg:col-span-4) ── */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="p-6 rounded-lg bg-[#0f1535]/50 border border-[#00d4ff]/30 shadow-[0_0_20px_rgba(0,212,255,0.1)] hover:border-[#00d4ff]/50 transition-all">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-[#00d4ff]/20 pb-3 mb-4">
+              <h2 className="text-sm font-bold text-[#00d4ff] uppercase tracking-wider flex items-center gap-2 font-mono">
+                <Activity className="w-4 h-4 text-[#00d4ff]" /> LIVE TELEMETRY
+              </h2>
+              <span className="px-2.5 py-0.5 rounded bg-[#00d4ff]/15 border border-[#00d4ff]/40 text-[#00d4ff] text-[10px] font-bold uppercase tracking-wider shadow-[0_0_8px_rgba(0,212,255,0.3)] animate-pulse">
+                SIMULATED
               </span>
-              Live Telemetry
             </div>
-            <div className="px-3 py-1.5 rounded-lg bg-[#060812]/80 backdrop-blur border border-slate-700/60 text-[9px] font-bold text-slate-300 uppercase tracking-widest shadow-sm">
-              Simulated
+
+            {/* 3D Globe (450px x 400px Container) */}
+            <div className="w-full h-[400px] rounded-lg border border-[#00d4ff]/20 bg-[#070b1e]/90 flex items-center justify-center relative overflow-hidden p-2">
+              <CompactGlobe width={450} height={400} className="mx-auto" />
             </div>
+
+            <p className="text-[11px] text-[#a0aec0] font-mono mt-3 text-center">
+              Rotating Earth Telemetry • GERMANY, UK, JAPAN, CHINA, INDIA, VIETNAM, SOUTH KOREA, SINGAPORE
+            </p>
           </div>
-          <GlobeVisualization />
         </div>
 
-        {/* ── Middle Column (Traffic Interceptor) ── */}
-        <div className="flex-1 xl:flex-[1.2] shrink-0 flex flex-col gap-4 h-full relative overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-b from-[#0a0e1a] via-[#060812] to-[#030408] p-6 shadow-[0_0_25px_rgba(99,102,241,0.15)] hover:border-cyan-400/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.2)] hover:-translate-y-0.5 transition-all duration-300">
-          <div className="flex items-center justify-between mb-2 shrink-0 relative z-20 border-b border-indigo-500/25 pb-3">
-            <h3 className="text-[11px] font-bold text-cyan-300 uppercase tracking-widest flex items-center gap-2">
-              <Radio className="w-4 h-4 text-amber-400 animate-pulse drop-shadow-[0_0_8px_#f59e0b]" /> Live Interceptor
-            </h3>
-            <span className="text-[9.5px] font-mono text-amber-300 px-2.5 py-1 rounded-md bg-amber-500/15 border border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.25)] font-bold animate-pulse">Active Proxy</span>
-          </div>
-          <div className="flex-1 overflow-hidden relative">
-            <div className="absolute inset-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] font-mono text-[11px] text-slate-100 space-y-3 pb-6 flex flex-col-reverse">
-              {logs.slice(0, 15).map((log) => (
-                <div key={`traffic-${log.id}`} className="p-3 bg-[#0c101c] border border-cyan-500/30 rounded-xl shadow-md opacity-100 hover:bg-[#12182a] hover:border-cyan-400/60 hover:shadow-[0_0_15px_rgba(6,182,212,0.2)] transition-all">
-                  <div className="text-[10px] text-cyan-300 mb-1.5 flex justify-between font-bold tracking-wide">
-                    <span>TCP/IP {8000 + (log.id % 100)} &rarr; TARGET:443</span>
-                    <span className={log.text.includes('[CRITICAL]') ? 'text-red-400 bg-red-950/70 px-2 py-0.5 rounded border border-red-500/50 font-bold' : 'text-emerald-400 bg-emerald-950/70 px-2 py-0.5 rounded border border-emerald-500/50 font-bold'}>
-                      {log.text.includes('[CRITICAL]') ? 'BLOCKED' : '200 OK'}
+        {/* ── MIDDLE COLUMN (35% width / 4.2 cols -> lg:col-span-4) ── */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="p-6 rounded-lg bg-[#0f1535]/50 border border-[#00d4ff]/30 shadow-[0_0_20px_rgba(0,212,255,0.1)] hover:border-[#00d4ff]/50 transition-all">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-[#00d4ff]/20 pb-3 mb-4">
+              <h2 className="text-sm font-bold text-[#00d4ff] uppercase tracking-wider flex items-center gap-2 font-mono">
+                <Terminal className="w-4 h-4 text-[#00d4ff]" /> LIVE INTERCEPTOR
+              </h2>
+              <span className="px-2.5 py-0.5 rounded bg-[#ff9500]/15 border border-[#ff9500]/40 text-[#ff9500] text-[10px] font-bold uppercase tracking-wider shadow-[0_0_8px_rgba(255,149,0,0.3)] animate-pulse">
+                Active Proxy
+              </span>
+            </div>
+
+            {/* Scrollable Payload Interceptor Stream */}
+            <div 
+              ref={interceptorRef}
+              className="h-[430px] overflow-y-auto space-y-3 pr-1.5 scrollbar-thin scrollbar-thumb-[#00d4ff]/30"
+            >
+              {payloads.map((entry) => (
+                <div 
+                  key={entry.id}
+                  className="p-3 rounded-md bg-[#070b1e] border border-[#00d4ff]/20 text-[11px] font-mono space-y-1.5 hover:border-[#00d4ff]/50 transition-colors"
+                >
+                  <div className="flex items-center justify-between border-b border-[#00d4ff]/10 pb-1">
+                    <span className="text-[#00d4ff] font-bold">
+                      TCP/IP {entry.tcpPort} → TARGET:{entry.targetPort}
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-[#00ff00]/15 border border-[#00ff00]/40 text-[#00ff00] font-bold text-[9px]">
+                      {entry.status}
                     </span>
                   </div>
-                  <div className="break-all leading-relaxed text-slate-100">
-                    <span className="text-emerald-400 font-extrabold text-[11.5px]">POST</span> <span className="text-white font-bold text-[11px]">/api/v1/execute</span> <span className="text-slate-200 font-semibold text-[11px]">HTTP/1.1</span><br/>
-                    <span className="text-slate-200 font-semibold text-[11px]">Host: target.local</span><br/>
-                    <span className="text-slate-200 font-semibold text-[11px]">Content-Length: {84 + log.id}</span>
-                    <div className="text-[10px] text-cyan-200 mt-2 font-mono bg-[#050812] p-2 rounded-lg border border-slate-700/80 font-bold tracking-wider">
-                      {Array.from({length: 16}).map((_, i) => Math.floor((Math.random() * log.id * 123) % 256).toString(16).padStart(2,'0')).join(' ')}
-                    </div>
+
+                  <div className="text-slate-200">
+                    <span className="text-amber-400 font-bold">{entry.method}</span> {entry.path} <span className="text-[#a0aec0]">HTTP/1.1</span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] text-[#a0aec0]">
+                    <span>Host: {entry.host}</span>
+                    <span>Content-Length: {entry.contentLength}</span>
+                  </div>
+
+                  <div className="p-2 rounded bg-[#040714] border border-[#00d4ff]/15 text-[#a0aec0] text-[10px] break-all font-mono">
+                    {entry.hexData}
                   </div>
                 </div>
               ))}
             </div>
-            <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-[#030408] to-transparent pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-b from-[#0a0e1a] to-transparent pointer-events-none" />
+
           </div>
         </div>
 
-        {/* ── Right Panels Column ── */}
-        <div className="flex-1 flex flex-col gap-6 overflow-y-auto h-full min-w-0 custom-scrollbar pr-1">
-
-          {/* Active Payload Telemetry (Terminal) */}
-          <div className="h-1/2 rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-[#0a0e1a] via-[#060812] to-[#030408] p-6 flex flex-col relative overflow-hidden shadow-[0_0_25px_rgba(99,102,241,0.15)] hover:border-purple-400/40 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)] hover:-translate-y-0.5 transition-all duration-300">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-[#030408]/80 pointer-events-none z-10" />
-            <div className="flex items-center justify-between mb-3 shrink-0 relative z-20 border-b border-indigo-500/25 pb-3">
-              <h3 className="text-[11px] font-bold text-purple-300 uppercase tracking-widest flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-purple-400" /> Active Payload Telemetry
-              </h3>
-              <span className="relative flex h-3 w-3 items-center justify-center">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-400 shadow-[0_0_12px_#c084fc]"></span>
-              </span>
+        {/* ── RIGHT COLUMN (30% width / 3.6 cols -> lg:col-span-4) ── */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="p-6 rounded-lg bg-[#0f1535]/50 border border-[#00d4ff]/30 shadow-[0_0_20px_rgba(0,212,255,0.1)] hover:border-[#00d4ff]/50 transition-all font-mono">
+            
+            {/* Header */}
+            <div className="border-b border-[#00d4ff]/20 pb-3 mb-4">
+              <h2 className="text-sm font-bold text-[#00d4ff] uppercase tracking-wider flex items-center gap-2 font-mono">
+                <Cpu className="w-4 h-4 text-[#00d4ff]" /> ACTIVE PAYLOAD TELEMETRY
+              </h2>
             </div>
-            <div ref={logsContainerRef} className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] font-mono text-[11.5px] sm:text-[12px] leading-relaxed text-slate-100 space-y-2 relative z-0 pb-6 pr-2 font-medium">
-              {logs.map((log) => (
-                <div 
-                  key={log.id} 
-                  className="p-1 rounded hover:bg-slate-800/50 transition-colors"
-                  style={{ 
-                    animation: 'fadeInUp 0.3s ease forwards',
-                    color: log.text.includes('[CRITICAL]') ? '#FF4D4D' :
-                           log.text.includes('[HIGH]') ? '#FFA116' :
-                           log.text.includes('[MEDIUM]') ? '#FFD700' :
-                           log.text.includes('[LOW]') ? '#00E676' :
-                           log.text.includes('[INFO]') ? '#38BDF8' : '#F1F5F9',
-                    fontWeight: log.text.includes('[CRITICAL]') ? '700' :
-                                log.text.includes('[HIGH]') ? '600' : '500'
-                  }}
-                >
-                  {log.text}
+
+            {/* Injection Statistics Progress Bars */}
+            <div className="space-y-4 mb-6">
+              {stats.map((item) => (
+                <div key={item.id} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[13px]">
+                    <span className="text-white font-bold">{item.name}</span>
+                    <span className="font-bold text-[12px]" style={{ color: item.color }}>
+                      {item.percent}%
+                    </span>
+                  </div>
+
+                  {/* 6px height progress bar */}
+                  <div className="w-full h-[6px] rounded-full bg-[#040714] border border-[#00d4ff]/20 overflow-hidden p-[0.5px]">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ease-out bg-gradient-to-r ${item.barColor}`}
+                      style={{ width: `${item.percent}%` }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
 
-          {/* Payload Distribution Chart */}
-          <div className="h-1/2 rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-[#0a0e1a] via-[#060812] to-[#030408] p-6 flex flex-col relative overflow-hidden shadow-[0_0_25px_rgba(99,102,241,0.15)] hover:border-cyan-400/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.2)] hover:-translate-y-0.5 transition-all duration-300">
-            <div className="flex items-center justify-between mb-4 shrink-0 relative z-20 border-b border-indigo-500/25 pb-3">
-              <h3 className="text-[11px] font-bold text-white uppercase tracking-widest flex items-center gap-2">
-                <Target className="w-4 h-4 text-cyan-400" /> Payload Distribution
-              </h3>
-              <span className="text-[11px] font-mono px-2.5 py-1 rounded-md bg-indigo-500/20 border border-indigo-400/40 text-cyan-300 font-bold shadow-sm">55 Active Families</span>
-            </div>
-            
-            <div className="flex-1 flex flex-col justify-between text-xs space-y-3.5 pb-1">
-              {/* Stat Row 1 */}
-              <div className="group p-2.5 rounded-xl hover:bg-indigo-950/30 hover:shadow-[0_0_18px_rgba(99,102,241,0.2)] hover:border hover:border-indigo-400/40 transition-all duration-200 cursor-pointer">
-                <div className="flex justify-between font-mono text-[11px] mb-1.5">
-                  <span className="text-slate-100 font-semibold group-hover:text-cyan-300 transition-colors">Blind SQL Injection (Time-Based)</span>
-                  <span className="text-cyan-400 font-bold">24%</span>
-                </div>
-                <div className="w-full bg-[#141a2e] rounded-full h-3 overflow-hidden p-0.5 border border-slate-700/60 shadow-inner">
-                  <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 h-2 rounded-full shadow-[0_0_12px_rgba(99,102,241,0.7)] group-hover:scale-x-[1.02] origin-left transition-all duration-200" style={{ width: '24%' }}></div>
-                </div>
+            {/* Bottom Section: PAYLOAD DISTRIBUTION */}
+            <div className="pt-4 border-t border-[#00d4ff]/20">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-[#00d4ff] uppercase tracking-wider">
+                  PAYLOAD DISTRIBUTION
+                </span>
+                <span className="px-2.5 py-0.5 rounded bg-[#7c3aed]/20 border border-[#7c3aed]/50 text-[#c084fc] text-[10px] font-bold uppercase tracking-wider">
+                  55 Active Families
+                </span>
               </div>
 
-              {/* Stat Row 2 */}
-              <div className="group p-2.5 rounded-xl hover:bg-amber-950/30 hover:shadow-[0_0_18px_rgba(245,158,11,0.2)] hover:border hover:border-amber-400/40 transition-all duration-200 cursor-pointer">
-                <div className="flex justify-between font-mono text-[11px] mb-1.5">
-                  <span className="text-slate-100 font-semibold group-hover:text-amber-300 transition-colors">Cross-Site Scripting (Reflected)</span>
-                  <span className="text-amber-400 font-bold">18%</span>
-                </div>
-                <div className="w-full bg-[#141a2e] rounded-full h-3 overflow-hidden p-0.5 border border-slate-700/60 shadow-inner">
-                  <div className="bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-300 h-2 rounded-full shadow-[0_0_12px_rgba(245,158,11,0.7)] group-hover:scale-x-[1.02] origin-left transition-all duration-200" style={{ width: '18%' }}></div>
-                </div>
+              {/* Multi-Segment Color Breakdown Bar */}
+              <div className="w-full h-3 rounded-full bg-[#040714] border border-[#00d4ff]/20 overflow-hidden flex p-[1px] mb-2">
+                <div className="h-full bg-[#00d4ff] transition-all" style={{ width: `${stats.find(s=>s.id==='sqli')?.percent || 24}%` }} title="SQLi" />
+                <div className="h-full bg-[#ff9500] transition-all" style={{ width: `${stats.find(s=>s.id==='xss')?.percent || 19}%` }} title="XSS" />
+                <div className="h-full bg-[#ff0051] transition-all" style={{ width: `${stats.find(s=>s.id==='ssti')?.percent || 15}%` }} title="SSTI" />
+                <div className="h-full bg-[#7c3aed] transition-all" style={{ width: `${stats.find(s=>s.id==='cmdi')?.percent || 14}%` }} title="CmdI" />
+                <div className="h-full bg-[#ec4899] transition-all" style={{ width: `${stats.find(s=>s.id==='nosql')?.percent || 12}%` }} title="NoSQL" />
+                <div className="h-full bg-[#ffb800] transition-all" style={{ width: `${stats.find(s=>s.id==='ldap')?.percent || 10}%` }} title="LDAP" />
+                <div className="h-full bg-[#00ff00] transition-all" style={{ width: `${stats.find(s=>s.id==='traversal')?.percent || 6}%` }} title="Path" />
               </div>
 
-              {/* Stat Row 3 */}
-              <div className="group p-2.5 rounded-xl hover:bg-red-950/30 hover:shadow-[0_0_18px_rgba(239,68,68,0.2)] hover:border hover:border-red-400/40 transition-all duration-200 cursor-pointer">
-                <div className="flex justify-between font-mono text-[11px] mb-1.5">
-                  <span className="text-slate-100 font-semibold group-hover:text-red-300 transition-colors">Server-Side Template Injection</span>
-                  <span className="text-red-400 font-bold">15%</span>
-                </div>
-                <div className="w-full bg-[#141a2e] rounded-full h-3 overflow-hidden p-0.5 border border-slate-700/60 shadow-inner">
-                  <div className="bg-gradient-to-r from-red-500 via-orange-500 to-amber-400 h-2 rounded-full shadow-[0_0_12px_rgba(239,68,68,0.7)] group-hover:scale-x-[1.02] origin-left transition-all duration-200" style={{ width: '15%' }}></div>
-                </div>
-              </div>
-
-              {/* Stat Row 4 */}
-              <div className="group p-2.5 rounded-xl hover:bg-emerald-950/30 hover:shadow-[0_0_18px_rgba(16,185,129,0.2)] hover:border hover:border-emerald-400/40 transition-all duration-200 cursor-pointer">
-                <div className="flex justify-between font-mono text-[11px] mb-1.5">
-                  <span className="text-slate-100 font-semibold group-hover:text-emerald-300 transition-colors">Path Traversal & LFI</span>
-                  <span className="text-emerald-400 font-bold">12%</span>
-                </div>
-                <div className="w-full bg-[#141a2e] rounded-full h-3 overflow-hidden p-0.5 border border-slate-700/60 shadow-inner">
-                  <div className="bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-300 h-2 rounded-full shadow-[0_0_12px_rgba(16,185,129,0.7)] group-hover:scale-x-[1.02] origin-left transition-all duration-200" style={{ width: '12%' }}></div>
-                </div>
-              </div>
-
-              {/* Stat Row 5 */}
-              <div className="group p-2.5 rounded-xl hover:bg-slate-800/40 hover:shadow-[0_0_18px_rgba(148,163,184,0.2)] hover:border hover:border-slate-500/40 transition-all duration-200 cursor-pointer">
-                <div className="flex justify-between font-mono text-[11px] mb-1.5">
-                  <span className="text-slate-100 font-semibold group-hover:text-slate-200 transition-colors">Other Injection Vectors (31 Families)</span>
-                  <span className="text-slate-300 font-bold">31%</span>
-                </div>
-                <div className="w-full bg-[#141a2e] rounded-full h-3 overflow-hidden p-0.5 border border-slate-700/60 shadow-inner">
-                  <div className="bg-gradient-to-r from-slate-500 via-zinc-400 to-slate-300 h-2 rounded-full shadow-[0_0_8px_rgba(148,163,184,0.5)] group-hover:scale-x-[1.02] origin-left transition-all duration-200" style={{ width: '31%' }}></div>
-                </div>
+              <div className="flex items-center justify-between text-[10px] text-[#a0aec0] font-mono">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#00d4ff]" /> SQLi (24%)</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#ff9500]" /> XSS (19%)</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#ff0051]" /> SSTI (15%)</span>
               </div>
             </div>
-          </div>
 
+          </div>
         </div>
-        </div>
-      </div>
+
+      </main>
+
     </div>
   );
 }

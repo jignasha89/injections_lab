@@ -139,19 +139,30 @@ class BehavioralAnalyzer:
 
         false_body = None
         true_body = None
+        true_status = None
+        false_status = None
+        true_length = 0
+        false_length = 0
+        true_false_status_diff = False
+        true_false_len_diff = False
+        true_false_content_diff = False
+        true_false_different = False
+
         if true_false_pair:
             true_resp, false_resp = true_false_pair
             true_body = self._extract_body_text(true_resp)
             false_body = self._extract_body_text(false_resp)
-
-        true_false_different = False
-        if true_body is not None and false_body is not None:
-            true_false_different = self._content_differs_significantly(true_body, false_body)
-
-        boolean_detected = (
-            (status_differs or length_differs or content_differs)
-            and not true_false_different
-        )
+            true_status = true_resp.get("status_code", 200)
+            false_status = false_resp.get("status_code", 200)
+            true_length = len(true_body)
+            false_length = len(false_body)
+            true_false_status_diff = true_status != false_status
+            true_false_len_diff = abs(true_length - false_length) > 35
+            true_false_content_diff = self._content_differs_significantly(true_body, false_body)
+            true_false_different = true_false_status_diff or true_false_len_diff or true_false_content_diff
+            boolean_detected = true_false_different
+        else:
+            boolean_detected = status_differs or length_differs or content_differs
 
         if true_false_pair:
             true_false_ratio = self._compute_boolean_ratio(
@@ -173,23 +184,35 @@ class BehavioralAnalyzer:
         if true_false_pair:
             response_characteristics["true_hash"] = hash(true_body)
             response_characteristics["false_hash"] = hash(false_body)
+            response_characteristics["true_status"] = true_status
+            response_characteristics["false_status"] = false_status
+            response_characteristics["true_length"] = true_length
+            response_characteristics["false_length"] = false_length
 
         pattern = self._classify_boolean_pattern(
-            status_differs, length_differs, content_differs, baseline_status, payload_status
+            status_differs or true_false_status_diff,
+            length_differs or true_false_len_diff,
+            content_differs or true_false_content_diff,
+            baseline_status,
+            payload_status,
         )
 
         return {
             "detected": boolean_detected,
             "method": "boolean",
-            "status_differs": status_differs,
-            "length_differs": length_differs,
-            "content_differs": content_differs,
+            "status_differs": status_differs or true_false_status_diff,
+            "length_differs": length_differs or true_false_len_diff,
+            "content_differs": content_differs or true_false_content_diff,
             "true_false_different": true_false_different,
             "true_false_ratio": round(true_false_ratio, 3),
             "pattern": pattern,
             "characteristics": response_characteristics,
             "confidence": self._calculate_boolean_confidence(
-                status_differs, length_differs, content_differs, true_false_different, true_false_ratio
+                status_differs or true_false_status_diff,
+                length_differs or true_false_len_diff,
+                content_differs or true_false_content_diff,
+                true_false_different if true_false_pair else False,
+                true_false_ratio,
             ),
         }
 
@@ -276,16 +299,18 @@ class BehavioralAnalyzer:
         true_false_different: bool,
         true_false_ratio: float,
     ) -> float:
-        if true_false_different:
-            return 0.0
         confidence = 0.0
+        if true_false_different:
+            confidence += 0.5
         if status_differs:
-            confidence += 0.4
+            confidence += 0.3
         if length_differs:
-            confidence += 0.3
+            confidence += 0.25
         if content_differs:
-            confidence += 0.3
-        confidence = min(confidence, 0.8)
+            confidence += 0.25
+        if true_false_ratio > 0.5:
+            confidence += 0.15
+        confidence = min(confidence, 0.95)
         return round(confidence, 3)
 
     def content_based_check(

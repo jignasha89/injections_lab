@@ -101,6 +101,9 @@ export interface ScanResult {
  *  requireBoth       — BOTH paramName AND paramValue must match (forces CONFIRMED threshold)
  *  baseOutcome       — override minimum outcome when only 1 signal fires
  */
+import { RuleEvaluationContext, RuleEvaluationResult, RULE_EVALUATORS } from './ruleEvaluators';
+export { RuleEvaluationContext, RuleEvaluationResult };
+
 export interface InjectionRule {
   id: string;
   type: string;
@@ -121,6 +124,7 @@ export interface InjectionRule {
   requireBoth?: boolean;
   /** Minimum outcome when only 1 signal fires (default: PROBABLE for named params, INCONCLUSIVE for path-only) */
   baseOutcome?: DetectionOutcome;
+  evaluate?: (ctx: RuleEvaluationContext) => RuleEvaluationResult;
 }
 
 /** Map DetectionOutcome → legacy confidence label */
@@ -136,6 +140,16 @@ function fingerprint(ruleId: string, param: string, normalizedPath: string): str
   return `${ruleId}|${param}|${normalizedPath}`;
 }
 
+export function evaluateRule(rule: InjectionRule, ctx: RuleEvaluationContext): RuleEvaluationResult {
+  if (rule.evaluate && rule.evaluate !== ((c: RuleEvaluationContext) => evaluateRule(rule, c))) {
+    return rule.evaluate(ctx);
+  }
+  const evaluator = RULE_EVALUATORS[rule.id];
+  if (evaluator) {
+    return evaluator(ctx, rule);
+  }
+  return { found: false };
+}
 
 export const INJECTION_RULES: InjectionRule[] = [
   // ───────── SQL INJECTION ─────────
@@ -1098,6 +1112,16 @@ export const INJECTION_RULES: InjectionRule[] = [
     evidence: 'HTTP header parameter detected.',
   },
 ];
+
+// Assign real-comparison evaluate method to each rule in INJECTION_RULES
+for (const rule of INJECTION_RULES) {
+  const evaluator = RULE_EVALUATORS[rule.id];
+  if (evaluator) {
+    rule.evaluate = (ctx: RuleEvaluationContext) => evaluator(ctx, rule);
+  } else {
+    rule.evaluate = (ctx: RuleEvaluationContext) => evaluateRule(rule, ctx);
+  }
+}
 
 // ─────────────────────────────────────────────────────────────
 // TECH STACK DETECTION

@@ -131,7 +131,7 @@ export async function getScanResults(scanId: string, rawUrl: string): Promise<Sc
     if (findingsRes.ok) rawFindings = (await findingsRes.json()) as any[];
 
     // Fetch endpoints (attack surface) to count pages discovered
-    const surfaceRes = await fetch(`${ENGINE_URL}/api/scans/${scanId}/endpoints?limit=500`);
+    const surfaceRes = await fetch(`${ENGINE_URL}/api/scans/${scanId}/attack-surface`);
     let endpointsCount = 0;
     if (surfaceRes.ok) {
       const surfaceData: any = await surfaceRes.json();

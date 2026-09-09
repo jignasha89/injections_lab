@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { api } from '@/lib/api';
-import ParseTreeGraphic from '@/components/shared/ParseTreeGraphic';
 import {
   Scan,
   ShieldAlert,
@@ -18,15 +17,16 @@ import {
   BookOpen,
   AlertCircle,
   XCircle,
-  RotateCcw,
   Crosshair,
   Activity,
   AlertTriangle,
   Info,
+  Play
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { useScannerStore, ScanResult, Finding } from '@/store/scannerStore';
+import { useScannerStore, Finding } from '@/store/scannerStore';
+import AssessmentEngineProgress from '@/components/dashboard/AssessmentEngineProgress';
 
 const getSeverityBadgeClass = (severity: string) => {
   switch (severity) {
@@ -78,7 +78,6 @@ const FamilySeverityIcon = ({ severity, className }: { severity: string; classNa
   }
 };
 
-/** Parse structured evidence from JSON string */
 function parseEvidence(evidenceStr: string | undefined): any {
   if (!evidenceStr) return null;
   try {
@@ -91,7 +90,22 @@ function parseEvidence(evidenceStr: string | undefined): any {
 }
 
 export default function ScannerPage() {
-  const { url, setUrl, authorized, setAuthorized, loading, result, error, setError, startScan, stopScan, resetScan, reset, scanState, liveLogs } = useScannerStore();
+  const [timeStr, setTimeStr] = useState<string>('00:00:00');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setTimeStr(now.toLocaleTimeString('en-US', { hour12: false }));
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const { 
+    url, setUrl, authorized, setAuthorized, loading, result, error, setError, 
+    startScan, stopScan, resetScan, reset, scanState
+  } = useScannerStore();
 
   const isScanning = scanState === 'running' || scanState === 'stopping';
   const isScanFinished = scanState === 'stopped' || scanState === 'completed';
@@ -102,16 +116,6 @@ export default function ScannerPage() {
   const [expandedFamily, setExpandedFamily] = useState<string | null>(null);
   const [filterFamily, setFilterFamily] = useState<string>('All');
 
-  const getLogColorClass = (tool: string, level: string) => {
-    if (level === 'error') return 'text-severity-critical';
-    if (level === 'warn') return 'text-amber-400';
-    if (['crawler', 'deepcrawl', 'surface_mapper'].includes(tool)) return 'text-emerald-400';
-    if (['executor', 'sqlmap', 'nuclei', 'ffuf', 'payload_orchestrator'].includes(tool)) return 'text-severity-critical';
-    if (['response_analyzer', 'orchestrator'].includes(tool)) return 'text-blue-400';
-    return 'text-brand-primary';
-  };
-
-  /* Custom inline validation state */
   const [urlTouched, setUrlTouched] = useState(false);
   const [urlError, setUrlError] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
@@ -144,7 +148,6 @@ export default function ScannerPage() {
     setExpandedFinding(null);
     setFilterFamily('All');
 
-    /* Custom validation — prevent native tooltip */
     const validationError = validateUrl(url);
     if (validationError) {
       setUrlTouched(true);
@@ -177,11 +180,6 @@ export default function ScannerPage() {
     }
   };
 
-  const liveLogsEndRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    liveLogsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [liveLogs]);
-
   const filteredFindings = result?.findings.filter(
     (f) => filterFamily === 'All' || f.injectionFamily === filterFamily
   ) ?? [];
@@ -197,192 +195,171 @@ export default function ScannerPage() {
     ? ['All', ...Object.keys(result.summary.injectionFamilyCounts)]
     : ['All'];
 
-  // ─── STATE 1: CONFIGURATION (EMPTY OR LOADING) ───
+  // ─── STATE 1: CONFIGURATION (2-COLUMN LAYOUT 40/60) ───
   if (!result) {
     return (
-      <div className="max-w-[1600px] mx-auto pt-8 pb-24 text-text-primary font-sans flex flex-col xl:flex-row gap-8 items-start">
+      <div className="min-h-screen bg-[#0a0e27] font-mono text-white selection:bg-[#00d4ff]/30 flex flex-col">
         
-        {/* Left Column: Form */}
-        <div className="w-full xl:w-5/12 space-y-8">
-          <div className="space-y-4">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-surface-base border border-border-strong mb-2">
-              <Scan className="w-6 h-6 text-brand-primary" />
-            </div>
-            <h1 className="text-3xl font-semibold tracking-tight text-text-primary">
-              Active Assessment
+        {/* Full-Width Header (Height: 60px) */}
+        <header className="h-[60px] border-b border-[#00d4ff]/30 px-6 md:px-8 flex items-center justify-between bg-[#080c21]/90 shrink-0">
+          <div className="flex items-center gap-3">
+            <Activity className="w-5 h-5 text-[#00d4ff] animate-pulse" />
+            <h1 className="text-base md:text-lg font-bold text-[#00d4ff] uppercase tracking-wider font-mono">
+              InjectionLab Demo
             </h1>
-            <p className="text-sm text-text-secondary leading-relaxed">
-              Configure a target endpoint for deep inspection. Injection Lab will perform a structural analysis across 55+ known vulnerability patterns.
+          </div>
+
+          <div className="px-4 py-1 rounded bg-[#040714] border border-[#00d4ff]/30 text-[#00d4ff] font-mono font-bold text-sm md:text-base">
+            {timeStr}
+          </div>
+        </header>
+
+        {/* 2-Column Main View */}
+        <main className="flex-1 p-6 md:p-8 max-w-[1600px] w-full mx-auto">
+          {/* Page Heading */}
+          <div className="mb-6 border-b border-[#00d4ff]/20 pb-4">
+            <h2 className="text-xl font-bold text-[#00d4ff] uppercase tracking-wider flex items-center gap-2">
+              <Scan className="w-5 h-5 text-[#00d4ff]" /> INJECTION SCANNER
+            </h2>
+            <p className="text-xs text-[#a0aec0] font-mono mt-1">
+              Configure target endpoint for deep structural vulnerability inspection
             </p>
           </div>
 
-          <div className="cyber-card p-6 md:p-8 shadow-2xl">
-            <form ref={formRef} onSubmit={handleScan} noValidate className="space-y-6">
-              <div>
-                <label htmlFor="target-url" className="block text-xs font-semibold text-text-secondary uppercase tracking-widest mb-3">
-                  Target URL
-                </label>
-                <div className="relative group">
-                  <input
-                    id="target-url"
-                    type="text"
-                    placeholder="http://testfire.net/"
-                    value={url}
-                    onChange={(e) => handleUrlChange(e.target.value)}
-                    onBlur={handleUrlBlur}
-                    disabled={isScanning || loading}
-                    className={`cyber-input font-mono w-full pl-12 pr-4 py-4 text-sm md:text-base text-text-primary placeholder:text-text-secondary/30 transition-all ${urlTouched && urlError ? 'border-severity-critical focus:border-severity-critical focus:ring-severity-critical/20' : 'focus:border-border-focus'} ${isScanning ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary group-focus-within:text-brand-primary transition-colors" />
+        {/* 2-Column Layout (LEFT 40%, RIGHT 60%) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+          
+          {/* LEFT COLUMN (40% width / 5 cols) */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="p-6 rounded-2xl bg-[#070b1e]/90 border border-[#00d4ff]/35 shadow-[0_0_25px_rgba(0,212,255,0.12)]">
+              
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-[#00d4ff]/10 border border-[#00d4ff]/40 flex items-center justify-center text-[#00d4ff] shadow-[0_0_12px_rgba(0,212,255,0.3)]">
+                  <Scan className="w-5 h-5" />
                 </div>
-                {urlTouched && urlError && (
-                  <div className="mt-2 flex items-center gap-2 text-xs font-medium text-severity-critical">
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>{urlError}</span>
-                  </div>
-                )}
+                <div>
+                  <h2 className="text-lg font-bold text-white tracking-tight font-mono">
+                    Active Assessment
+                  </h2>
+                  <span className="text-[10px] text-[#00d4ff] font-mono uppercase tracking-wider font-bold">55 Rules Enabled</span>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-4 pt-4 border-t border-border-subtle">
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="authorized"
-                    checked={authorized}
-                    onChange={(e) => setAuthorized(e.target.checked)}
-                    disabled={isScanning || loading}
-                    className="mt-1 h-4 w-4 rounded border-border-strong bg-transparent text-brand-primary focus:ring-brand-primary/40 accent-[var(--color-brand-primary)] cursor-pointer"
-                  />
-                  <label htmlFor="authorized" className="text-xs text-text-secondary cursor-pointer select-none leading-relaxed">
-                    I confirm authorization to inspect this target and understand that structural parameter analysis will be performed.
+              <p className="text-xs text-[#a0aec0] leading-relaxed mb-6 font-mono">
+                Configure a target endpoint for deep structural inspection. InjectionLab will perform automated fuzzing across 55+ known vulnerability patterns.
+              </p>
+
+              {/* Form */}
+              <form ref={formRef} onSubmit={handleScan} noValidate className="space-y-6">
+                <div>
+                  <label htmlFor="target-url" className="block text-xs font-bold text-[#a0aec0] uppercase tracking-wider mb-2 font-mono">
+                    TARGET URL
                   </label>
+                  <div className="relative">
+                    <input
+                      id="target-url"
+                      type="text"
+                      placeholder="https://example.com?id=1&search=test"
+                      value={url}
+                      onChange={(e) => handleUrlChange(e.target.value)}
+                      onBlur={handleUrlBlur}
+                      disabled={isScanning || loading}
+                      className={`w-full h-[44px] px-4 rounded-md bg-[#040714] border text-xs md:text-sm text-white font-mono placeholder:text-[#a0aec0]/40 transition-all outline-none ${
+                        urlTouched && urlError ? 'border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#00d4ff]/30 focus:border-[#00d4ff] focus:ring-1 focus:ring-[#00d4ff]/50'
+                      }`}
+                    />
+                  </div>
+                  {urlTouched && urlError && (
+                    <div className="mt-2 flex items-center gap-2 text-xs font-medium text-red-400 font-mono">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{urlError}</span>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex gap-2 w-full mt-4">
-                  {/* START SCAN button - shown when idle or after scan finishes */}
+                <div className="pt-2 border-t border-[#00d4ff]/20">
+                  <div className="flex items-start gap-3 mb-6">
+                    <input
+                      type="checkbox"
+                      id="authorized"
+                      checked={authorized}
+                      onChange={(e) => setAuthorized(e.target.checked)}
+                      disabled={isScanning || loading}
+                      className="mt-1 h-4 w-4 rounded border-[#00d4ff]/40 bg-transparent text-[#00d4ff] focus:ring-[#00d4ff]/40 accent-[#00d4ff] cursor-pointer shrink-0"
+                    />
+                    <label htmlFor="authorized" className="text-xs text-[#a0aec0] font-mono cursor-pointer select-none leading-relaxed">
+                      I confirm authorization to inspect this target and understand that structural parameter analysis will be performed.
+                    </label>
+                  </div>
+
+                  {/* START SCAN button (Gradient purple -> cyan, 100% width) */}
                   {(scanState === 'idle' || isScanFinished) && (
                     <button
                       type="submit"
                       disabled={loading}
                       onClick={(e) => {
                         if (isScanFinished) {
-                          // Reset before starting a new scan
                           e.preventDefault();
                           resetScan();
                           setUrlTouched(false);
                           setUrlError('');
                           setSaveSuccess(false);
-                          // Let the form submit on next tick after reset
                           setTimeout(() => {
                             formRef.current?.requestSubmit();
                           }, 50);
                         }
                       }}
-                      className="btn-cyber-primary py-3.5 text-sm font-semibold flex items-center justify-center gap-2 flex-1 shadow-lg disabled:opacity-50 transition-all"
+                      className="w-full h-[46px] rounded-lg bg-gradient-to-r from-[#818cf8] via-[#6366f1] to-[#00d4ff] hover:from-[#a5b4fc] hover:to-[#33ddff] text-white font-mono font-extrabold text-sm uppercase tracking-widest transition-all shadow-[0_0_25px_rgba(0,212,255,0.4)] hover:shadow-[0_0_35px_rgba(0,212,255,0.7)] hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
-                      <Shield className="w-4 h-4" />
-                      Start Scan
+                      <Play className="w-4 h-4 fill-current text-white" />
+                      <span>START SCAN</span>
                     </button>
                   )}
-                  
-                  {/* STOP SCAN button - shown when scan is running */}
+
                   {scanState === 'running' && (
                     <button
                       type="button"
                       onClick={() => stopScan()}
-                      className="py-3.5 text-sm font-semibold flex items-center justify-center gap-2 flex-1 shadow-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50 rounded-md transition-all"
+                      className="w-full h-[46px] rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50 font-mono font-extrabold text-sm uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <XCircle className="w-4 h-4" /> Stop Scan
-                    </button>
-                  )}
-
-                  {/* STOPPING indicator */}
-                  {scanState === 'stopping' && (
-                    <button
-                      type="button"
-                      disabled
-                      className="py-3.5 text-sm font-semibold flex items-center justify-center gap-2 flex-1 shadow-lg bg-amber-500/10 text-amber-400/60 border border-amber-500/30 rounded-md cursor-not-allowed"
-                    >
-                      <Activity className="w-4 h-4 animate-pulse" /> Stopping...
+                      <XCircle className="w-4 h-4" /> STOP SCAN
                     </button>
                   )}
                 </div>
-              </div>
-              
-              {error && (
-                <div className="p-3 bg-severity-critical/10 border border-severity-critical/20 text-severity-critical text-xs font-medium flex items-center gap-2">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                  {error}
-                </div>
-              )}
-            </form>
-          </div>
-        </div>
 
-        {/* Right Column: Live Request Box */}
-        <div className="w-full xl:w-7/12 cyber-card p-0 flex flex-col h-[600px] overflow-hidden bg-[#0A0A0E] border-border-strong">
-          <div className="p-4 border-b border-border-strong flex items-center justify-between bg-surface-base">
-            <h3 className="text-sm font-semibold flex items-center gap-2 text-text-primary uppercase tracking-widest">
-              <Server className="w-4 h-4 text-brand-primary" /> Live Engine Logs
-            </h3>
-            {scanState === 'running' && (
-              <div className="flex items-center gap-2 text-[10px] font-mono font-bold text-brand-primary tracking-widest uppercase">
-                <div className="w-2 h-2 rounded-full bg-brand-primary animate-pulse" /> Streaming
-              </div>
-            )}
-            {scanState === 'stopping' && (
-              <div className="flex items-center gap-2 text-[10px] font-mono font-bold text-amber-400 tracking-widest uppercase">
-                <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" /> Stopping
-              </div>
-            )}
-            {scanState === 'stopped' && (
-              <div className="flex items-center gap-2 text-[10px] font-mono font-bold text-red-400 tracking-widest uppercase">
-                <div className="w-2 h-2 rounded-full bg-red-400" /> Stopped
-              </div>
-            )}
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 font-mono text-[11px] leading-relaxed">
-            {liveLogs.length === 0 ? (
-              <div className="text-text-secondary h-full flex flex-col items-center justify-center gap-4">
-                <div className="w-12 h-12 rounded-full border border-border-strong flex items-center justify-center bg-surface-base">
-                  <Code2 className="w-5 h-5 text-text-secondary" />
-                </div>
-                <p>Waiting for scan to initialize...</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {liveLogs.map((log, i) => (
-                  <div key={i} className="flex gap-4 border-b border-border-subtle/30 pb-2 break-all">
-                    <span className="text-text-secondary shrink-0 select-none">{log.timestamp}</span>
-                    <span className={`shrink-0 uppercase w-12 font-bold select-none ${getLogColorClass(log.tool, log.level)}`}>
-                      [{log.level}]
-                    </span>
-                    <span className="text-text-primary whitespace-pre-wrap">{log.message}</span>
+                {error && (
+                  <div className="p-3 rounded bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    {error}
                   </div>
-                ))}
-                <div ref={liveLogsEndRef} />
-              </div>
-            )}
+                )}
+              </form>
+            </div>
           </div>
-        </div>
 
+          {/* RIGHT COLUMN (60% width / 7 cols) */}
+          <div className="lg:col-span-7">
+            <AssessmentEngineProgress className="w-full" />
+          </div>
+
+        </div>
+        </main>
       </div>
     );
   }
 
-  // ─── STATE 2: RESULTS VIEW ───
+  // ─── STATE 2: SCAN RESULTS VIEW ───
   return (
-    <div className="max-w-[1600px] mx-auto space-y-8 text-text-primary font-sans pb-16">
-      
-      {/* Condensed Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 section-divider">
+    <div className="max-w-[1600px] mx-auto p-6 md:p-8 space-y-8 font-mono text-white pb-16">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[#00d4ff]/20">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary flex items-center gap-3">
-            <Shield className="w-6 h-6 text-brand-primary" />
+          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3 font-mono">
+            <Shield className="w-6 h-6 text-[#00d4ff]" />
             Assessment Complete
           </h1>
-          <p className="text-sm font-mono text-text-secondary mt-2">
-            Target: <span className="text-text-primary">{result.targetUrl}</span>
+          <p className="text-xs font-mono text-[#a0aec0] mt-2">
+            Target: <span className="text-[#00d4ff]">{result.targetUrl}</span>
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -392,14 +369,14 @@ export default function ScannerPage() {
               setUrlTouched(false);
               setUrlError('');
             }}
-            className="text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors"
+            className="px-4 py-2 rounded-lg bg-[#070b1e] border border-[#00d4ff]/30 text-xs font-mono font-bold text-[#a0aec0] hover:text-white hover:border-[#00d4ff] transition-all"
           >
             New Scan
           </button>
           <button
             onClick={handleSaveReport}
             disabled={saving || saveSuccess}
-            className="btn-cyber-primary px-5 py-2.5 text-xs font-semibold flex items-center gap-2 disabled:opacity-50 shrink-0"
+            className="px-5 py-2 rounded-lg bg-[#00d4ff] text-[#0a0e27] text-xs font-mono font-extrabold uppercase tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(0,212,255,0.4)] hover:bg-[#33ddff] disabled:opacity-50"
           >
             <Save className="w-3.5 h-3.5" />
             {saving ? 'Saving…' : saveSuccess ? '✓ Saved' : 'Save Report'}
@@ -408,279 +385,232 @@ export default function ScannerPage() {
       </div>
 
       {saveSuccess && (
-        <div className="p-4 bg-severity-low/10 text-severity-low border border-severity-low/20 text-sm font-medium flex items-center gap-2">
+        <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono flex items-center gap-2">
           <CheckCircle className="w-4 h-4 shrink-0" />
           Report successfully saved to Workspace.
         </div>
       )}
 
-      {/* Primary Results Summary */}
+      {/* Primary Results Summary Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="p-6 bg-surface-base border-l-4 border-l-severity-critical">
-          <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-2">Risk Score</p>
-          <p className={`stat-hero text-4xl ${result.summary.riskScore >= 7 ? 'text-severity-critical' : result.summary.riskScore >= 4 ? 'text-severity-medium' : 'text-severity-low'}`}>
-            {result.summary.riskScore} <span className="text-lg text-text-secondary font-sans">/ 10</span>
+        <div className="p-6 rounded-xl bg-[#070b1e] border-l-4 border-l-red-500 border border-[#00d4ff]/20">
+          <p className="text-[10px] font-mono font-bold text-[#a0aec0] uppercase tracking-widest mb-2">Risk Score</p>
+          <p className="text-4xl font-extrabold font-mono text-red-500">
+            {result.summary.riskScore} <span className="text-sm text-[#a0aec0]">/ 10</span>
           </p>
         </div>
-        <div className="p-6 bg-surface-hover">
-          <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-2">Unique Findings</p>
-          <p className="stat-hero text-4xl text-text-primary">{result.summary.injectionPoints}</p>
+        <div className="p-6 rounded-xl bg-[#070b1e] border border-[#00d4ff]/20">
+          <p className="text-[10px] font-mono font-bold text-[#a0aec0] uppercase tracking-widest mb-2">Unique Findings</p>
+          <p className="text-4xl font-extrabold font-mono text-white">{result.summary.injectionPoints}</p>
         </div>
-        <div className="p-6 bg-surface-hover">
-          <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-2">Parameters Analyzed</p>
-          <p className="stat-hero text-4xl text-text-primary">{result.summary.parameters}</p>
+        <div className="p-6 rounded-xl bg-[#070b1e] border border-[#00d4ff]/20">
+          <p className="text-[10px] font-mono font-bold text-[#a0aec0] uppercase tracking-widest mb-2">Parameters Analyzed</p>
+          <p className="text-4xl font-extrabold font-mono text-white">{result.summary.parameters}</p>
         </div>
-        <div className="p-6 bg-surface-hover">
-          <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-2">OWASP Coverage</p>
-          <p className="stat-hero text-4xl text-text-primary">{result.summary.owaspCoverage.length}</p>
+        <div className="p-6 rounded-xl bg-[#070b1e] border border-[#00d4ff]/20">
+          <p className="text-[10px] font-mono font-bold text-[#a0aec0] uppercase tracking-widest mb-2">OWASP Coverage</p>
+          <p className="text-4xl font-extrabold font-mono text-white">{result.summary.owaspCoverage.length}</p>
         </div>
       </div>
 
       {/* Tech stack */}
-      {result.techStackClues.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 pt-4">
-          <span className="text-xs text-text-secondary font-medium uppercase tracking-widest flex items-center gap-2">
-            <Server className="w-3.5 h-3.5" /> Intelligence:
+      {result.techStackClues && result.techStackClues.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 pt-2">
+          <span className="text-xs text-[#a0aec0] font-bold uppercase tracking-widest flex items-center gap-2">
+            <Server className="w-3.5 h-3.5 text-[#00d4ff]" /> Intelligence:
           </span>
           {result.techStackClues.map((t) => (
-            <span key={t} className="px-2 py-1 bg-surface-hover border border-border-subtle text-[11px] font-mono text-text-secondary">{t}</span>
+            <span key={t} className="px-2.5 py-1 bg-[#070b1e] border border-[#00d4ff]/30 text-[11px] font-mono text-[#00d4ff] rounded">
+              {t}
+            </span>
           ))}
         </div>
       )}
 
-              {/* Family filter */}
-              <div className="flex gap-2 flex-wrap">
-                {families.map((fam) => (
-                  <button
-                    key={fam}
-                    onClick={() => setFilterFamily(fam)}
-                    className={`px-3.5 py-2 rounded-md text-xs font-medium border transition-all ${filterFamily === fam
-                      ? 'bg-brand-primary/10 text-brand-primary border-brand-primary/20 '
-                      : 'bg-transparent text-text-secondary border-border-subtle hover:bg-surface-base hover:text-text-primary'
-                    }`}
-                  >
-                    {fam === 'All' ? `All (${result.findings.length})` : `${fam.split(' / ')[0]} (${result.summary.injectionFamilyCounts[fam] || 0})`}
-                  </button>
-                ))}
-              </div>
+      {/* Detailed Findings Section */}
+      <div className="space-y-6 pt-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#00d4ff]/20 pb-4">
+          <h2 className="text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-[#00d4ff]" /> Detailed Findings ({result.findings.length})
+          </h2>
 
-              {/* Finding Groupings — grouped by family only */}
-              <div className="space-y-6 mt-6">
-                {Object.entries(groupedFindings).map(([family, familyFindings], familyIdx) => {
-                  const isFamilyExpanded = expandedFamily === family || (expandedFamily === null && familyIdx === 0);
-                  const familySeverity = getFamilySeverity(familyFindings);
-                  const textColorClass = getSeverityTextColor(familySeverity);
-                  
-                  return (
-                  <div key={family} className="cyber-card overflow-hidden !p-0">
-                    <button
-                      onClick={() => setExpandedFamily(isFamilyExpanded ? '' : family)}
-                      className="w-full px-6 py-5 bg-surface-hover flex items-center justify-between transition-colors border-b border-border-strong"
-                    >
-                      <h3 className={`text-sm font-bold uppercase tracking-widest flex items-center gap-3 ${textColorClass}`}>
-                        <FamilySeverityIcon severity={familySeverity} className="w-5 h-5" /> {family}
-                      </h3>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-semibold text-text-secondary bg-surface-base px-2 py-1 rounded-md border border-border-strong">{familyFindings.length} Finding{familyFindings.length !== 1 ? 's' : ''}</span>
-                        {isFamilyExpanded ? <ChevronUp className="w-5 h-5 text-text-secondary" /> : <ChevronDown className="w-5 h-5 text-text-secondary" />}
-                      </div>
-                    </button>
-                    
-                    <AnimatePresence>
-                      {isFamilyExpanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="p-6 space-y-4"
-                        >
-                          {familyFindings.map((finding, idx) => {
-                            const globalId = `${family}-${idx}`;
-                            const isExpanded = expandedFinding === globalId;
-                            const evidence = parseEvidence(finding.evidence);
+          {/* Family Filter Tabs */}
+          <div className="flex gap-2 flex-wrap">
+            {families.map((fam) => (
+              <button
+                key={fam}
+                onClick={() => setFilterFamily(fam)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all border ${
+                  filterFamily === fam
+                    ? 'bg-[#00d4ff]/15 text-[#00d4ff] border-[#00d4ff]'
+                    : 'bg-[#070b1e] text-[#a0aec0] border-[#00d4ff]/20 hover:text-white hover:border-[#00d4ff]/50'
+                }`}
+              >
+                {fam === 'All' ? `All (${result.findings.length})` : `${fam.split(' / ')[0]} (${result.summary.injectionFamilyCounts[fam] || 0})`}
+              </button>
+            ))}
+          </div>
+        </div>
 
-                            return (
-                              <div key={idx} className="cyber-card overflow-hidden">
-                                <button
-                                  onClick={() => setExpandedFinding(isExpanded ? null : globalId)}
-                                  className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-bg-base/50 transition-colors gap-4"
-                                  aria-expanded={isExpanded}
-                                >
-                                  <div className="space-y-1.5 min-w-0">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      <span className={`severity-badge ${getSeverityBadgeClass(finding.severity)}`}>
-                                        {finding.severity}
-                                      </span>
-                                      <span className={`text-[10px] font-mono px-2 py-0.5 border rounded ${getConfidenceBadgeClass(finding.confidence)}`}>
-                                        {finding.confidence}
-                                      </span>
-                                      <span className="text-sm font-semibold text-text-primary">
-                                        {finding.parameter ? `Param: ${finding.parameter}` : family}
-                                      </span>
-                                    </div>
-                                    <p className="text-[11px] font-mono text-text-secondary truncate">{finding.location}</p>
-                                  </div>
-                                  {isExpanded ? <ChevronUp className="w-4 h-4 text-text-secondary shrink-0" /> : <ChevronDown className="w-4 h-4 text-text-secondary shrink-0" />}
-                                </button>
+        {/* Grouped Findings Accordion */}
+        <div className="space-y-4">
+          {Object.entries(groupedFindings).map(([family, familyFindings], familyIdx) => {
+            const isFamilyExpanded = expandedFamily === family || (expandedFamily === null && familyIdx === 0);
+            const familySeverity = getFamilySeverity(familyFindings);
+            const textColorClass = getSeverityTextColor(familySeverity);
 
-                                <AnimatePresence>
-                                  {isExpanded && (
-                                    <motion.div 
-                                      initial={{ opacity: 0, height: 0 }}
-                                      animate={{ opacity: 1, height: 'auto' }}
-                                      exit={{ opacity: 0, height: 0 }}
-                                      className="px-5 pb-5 pt-4 border-t border-border-strong space-y-5 text-xs"
-                                    >
-                                      {/* Metadata badges */}
-                                      <div className="flex flex-wrap gap-2">
-                                        <span className="font-mono text-[10px] px-2.5 py-1 rounded-md inner-cell text-text-secondary">CVSS {finding.cvss}</span>
-                                        <span className="font-mono text-[10px] px-2.5 py-1 rounded-md inner-cell text-text-secondary">{finding.cwe}</span>
-                                        <span className="font-mono text-[10px] px-2.5 py-1 rounded-md inner-cell text-text-secondary">{finding.owasp}</span>
-                                        {evidence?.http_method && (
-                                          <span className="font-mono text-[10px] px-2.5 py-1 rounded-md inner-cell text-text-secondary">{evidence.http_method}</span>
-                                        )}
-                                        {evidence?.parameter_location && (
-                                          <span className="font-mono text-[10px] px-2.5 py-1 rounded-md inner-cell text-text-secondary capitalize">{evidence.parameter_location}</span>
-                                        )}
-                                      </div>
-
-                                      {/* Parameter & Location */}
-                                      {finding.parameter && (
-                                        <div>
-                                          <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest block mb-2">
-                                            <Crosshair className="w-3 h-3 inline mr-1" />
-                                            Tested Parameter
-                                          </span>
-                                          <div className="inner-cell p-3 space-y-1">
-                                            <p className="text-sm font-mono text-brand-primary break-all">
-                                              {finding.parameter}
-                                              {evidence?.parameter_location && (
-                                                <span className="text-text-secondary ml-2 text-[10px] capitalize">({evidence.parameter_location})</span>
-                                              )}
-                                            </p>
-                                          </div>
-                                        </div>
-                                      )}
-
-                                      {/* Successful Payload / Tested Value */}
-                                      {evidence?.tested_value && (
-                                        <div>
-                                          <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest flex items-center gap-1.5 mb-2">
-                                            <Code2 className="w-3 h-3" /> Successful Test Payload
-                                          </span>
-                                          <div className="inner-cell p-3 font-mono text-[11px] text-text-primary break-all">
-                                            {evidence.tested_value}
-                                          </div>
-                                        </div>
-                                      )}
-
-                                      {/* Evidence / Detection Signals */}
-                                      {evidence?.reasons && evidence.reasons.length > 0 && (
-                                        <div className="inner-cell p-4 font-mono">
-                                          <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest block mb-2">
-                                            <Eye className="w-3 h-3 inline mr-1" />
-                                            Detection Evidence
-                                          </span>
-                                          <div className="space-y-1">
-                                            {evidence.reasons.map((reason: string, ri: number) => (
-                                              <p key={ri} className="text-text-primary text-[11px] leading-relaxed">
-                                                • {reason.replace(/_/g, ' ')}
-                                              </p>
-                                            ))}
-                                          </div>
-                                          {evidence.status_code > 0 && (
-                                            <p className="text-text-secondary text-[10px] mt-2">Response: HTTP {evidence.status_code} ({evidence.response_time}s)</p>
-                                          )}
-                                        </div>
-                                      )}
-
-                                      {/* Subtypes detected */}
-                                      {evidence?.subtypes_detected && evidence.subtypes_detected.length > 1 && (
-                                        <div>
-                                          <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest block mb-2">
-                                            Subtypes Confirmed
-                                          </span>
-                                          <div className="flex flex-wrap gap-1.5">
-                                            {evidence.subtypes_detected.map((st: string, si: number) => (
-                                              <span key={si} className="px-2 py-0.5 bg-surface-hover border border-border-subtle text-[10px] font-mono text-text-secondary rounded">
-                                                {st}
-                                              </span>
-                                            ))}
-                                          </div>
-                                        </div>
-                                      )}
-
-                                      {/* Business impact */}
-                                      <div>
-                                        <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest flex items-center gap-1.5 mb-2">
-                                          <BookOpen className="w-3 h-3" /> Business impact
-                                        </span>
-                                        <p className="text-text-primary leading-relaxed font-sans">
-                                          {finding.severity === 'Critical' || finding.severity === 'High'
-                                            ? 'This flaw could let an attacker compromise sensitive data, take over accounts, or access underlying systems. Immediate remediation is required.'
-                                            : 'This issue could help an attacker gather system information or chain with other vulnerabilities. Address it to maintain defense in depth.'}
-                                        </p>
-                                      </div>
-
-                                      {/* Technical details */}
-                                      <div>
-                                        <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest flex items-center gap-1.5 mb-2">
-                                          <Eye className="w-3 h-3" /> Technical details
-                                        </span>
-                                        <p className="text-text-primary leading-relaxed font-sans">{finding.description}</p>
-                                      </div>
-
-                                      {/* Successful Tests summary (collapsed) */}
-                                      {evidence?.successful_tests && evidence.successful_tests.length > 1 && (
-                                        <details className="inner-cell p-3">
-                                          <summary className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest cursor-pointer select-none">
-                                            Additional Tests Performed ({evidence.successful_tests.length})
-                                          </summary>
-                                          <div className="mt-3 space-y-2">
-                                            {evidence.successful_tests.map((test: any, ti: number) => (
-                                              <div key={ti} className="text-[10px] font-mono text-text-secondary border-b border-border-subtle/30 pb-2">
-                                                <span className="text-text-primary">{test.subtype}</span>
-                                                <span className="mx-1">→</span>
-                                                <span className="break-all">{test.payload?.substring(0, 150)}{test.payload?.length > 150 ? '…' : ''}</span>
-                                                {test.status_code > 0 && <span className="ml-2 text-text-secondary">(HTTP {test.status_code})</span>}
-                                              </div>
-                                            ))}
-                                          </div>
-                                        </details>
-                                      )}
-
-                                      {/* PoC payload (fallback for passive findings) */}
-                                      {!evidence?.tested_value && finding.pocPayload && (
-                                        <div>
-                                          <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest flex items-center gap-1.5 mb-2">
-                                            <Code2 className="w-3 h-3" /> PoC payload
-                                          </span>
-                                          <div className="inner-cell p-3 font-mono text-[11px] text-text-primary break-all">
-                                            {finding.pocPayload}
-                                          </div>
-                                        </div>
-                                      )}
-
-                                      {/* Remediation */}
-                                      <div className="p-4 rounded-md bg-surface-base border border-border-strong">
-                                        <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest flex items-center gap-1.5 mb-2">
-                                          <Shield className="w-3 h-3" /> Remediation
-                                        </span>
-                                        <p className="text-text-primary leading-relaxed font-sans">{finding.recommendation}</p>
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </div>
-                            );
-                          })}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+            return (
+              <div key={family} className="rounded-xl bg-[#070b1e] border border-[#00d4ff]/25 overflow-hidden">
+                <button
+                  onClick={() => setExpandedFamily(isFamilyExpanded ? '' : family)}
+                  className="w-full px-6 py-4 bg-[#080d24] flex items-center justify-between transition-colors border-b border-[#00d4ff]/20 hover:bg-[#0c1334]"
+                >
+                  <h3 className={`text-sm font-bold uppercase tracking-wider flex items-center gap-3 ${textColorClass}`}>
+                    <FamilySeverityIcon severity={familySeverity} className="w-5 h-5" /> {family}
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-mono text-[#00d4ff] bg-[#00d4ff]/10 px-2.5 py-1 rounded border border-[#00d4ff]/30">
+                      {familyFindings.length} Finding{familyFindings.length !== 1 ? 's' : ''}
+                    </span>
+                    {isFamilyExpanded ? <ChevronUp className="w-5 h-5 text-[#a0aec0]" /> : <ChevronDown className="w-5 h-5 text-[#a0aec0]" />}
                   </div>
-                );
-              })}
+                </button>
+
+                <AnimatePresence>
+                  {isFamilyExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="p-6 space-y-4"
+                    >
+                      {familyFindings.map((finding, idx) => {
+                        const globalId = `${family}-${idx}`;
+                        const isExpanded = expandedFinding === globalId;
+
+                        return (
+                          <div key={idx} className="rounded-lg bg-[#0a0f2c] border border-[#00d4ff]/20 overflow-hidden">
+                            <button
+                              onClick={() => setExpandedFinding(isExpanded ? null : globalId)}
+                              className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-[#0e163d] transition-colors gap-4"
+                              aria-expanded={isExpanded}
+                            >
+                              <div className="space-y-1.5 min-w-0">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className={`severity-badge ${getSeverityBadgeClass(finding.severity)}`}>
+                                    {finding.severity}
+                                  </span>
+                                  {finding.confidence && (
+                                    <span className={`text-[10px] font-mono px-2 py-0.5 border rounded ${getConfidenceBadgeClass(finding.confidence)}`}>
+                                      {finding.confidence}
+                                    </span>
+                                  )}
+                                  <span className="text-sm font-bold text-white">
+                                    {finding.type}
+                                  </span>
+                                  <span className="text-[10px] px-2 py-0.5 rounded border border-[#00d4ff]/30 text-[#00d4ff] font-mono">
+                                    {finding.cwe}
+                                  </span>
+                                  <span className="text-[10px] px-2 py-0.5 rounded border border-[#00d4ff]/30 text-[#a0aec0] font-mono">
+                                    {finding.owasp}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-[#a0aec0] font-mono truncate">
+                                  {finding.location}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3 shrink-0">
+                                <span className="text-xs font-mono font-bold text-[#00d4ff]">CVSS: {finding.cvss}</span>
+                                {isExpanded ? <ChevronUp className="w-4 h-4 text-[#a0aec0]" /> : <ChevronDown className="w-4 h-4 text-[#a0aec0]" />}
+                              </div>
+                            </button>
+
+                            <AnimatePresence>
+                              {isExpanded && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  className="p-5 border-t border-[#00d4ff]/20 space-y-4 bg-[#070b1e]/95"
+                                >
+                                  {/* Parameter & Location */}
+                                  {finding.parameter && (
+                                    <div>
+                                      <span className="text-[10px] font-mono font-bold text-[#a0aec0] uppercase tracking-widest block mb-1 flex items-center gap-1.5">
+                                        <Crosshair className="w-3 h-3 text-[#00d4ff]" /> Tested Parameter
+                                      </span>
+                                      <div className="p-3 rounded bg-[#040714] border border-[#00d4ff]/20 font-mono text-sm text-[#00d4ff] break-all">
+                                        {finding.parameter}
+                                        {finding.paramValue && (
+                                          <span className="text-xs text-[#a0aec0] block mt-1">Value: {finding.paramValue}</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Evidence / Detection Signals */}
+                                  <div>
+                                    <span className="text-[10px] font-mono font-bold text-[#a0aec0] uppercase tracking-widest block mb-1 flex items-center gap-1.5">
+                                      <Eye className="w-3 h-3 text-[#00d4ff]" /> Detection Evidence
+                                    </span>
+                                    <div className="p-3 rounded bg-[#040714] border border-[#00d4ff]/20 font-mono text-xs text-[#e2e8f0] whitespace-pre-wrap break-all leading-relaxed">
+                                      {finding.evidence}
+                                    </div>
+                                  </div>
+
+                                  {/* PoC Payload */}
+                                  {finding.pocPayload && (
+                                    <div>
+                                      <span className="text-[10px] font-mono font-bold text-[#a0aec0] uppercase tracking-widest block mb-1 flex items-center gap-1.5">
+                                        <Code2 className="w-3 h-3 text-[#00d4ff]" /> Proof of Concept (PoC)
+                                      </span>
+                                      <div className="p-3 rounded bg-[#040714] border border-[#00d4ff]/20 font-mono text-xs text-amber-400 break-all">
+                                        {finding.pocPayload}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Business Impact */}
+                                  <div>
+                                    <span className="text-[10px] font-mono font-bold text-[#a0aec0] uppercase tracking-widest block mb-1 flex items-center gap-1.5">
+                                      <BookOpen className="w-3 h-3 text-[#00d4ff]" /> Business Impact
+                                    </span>
+                                    <p className="text-xs text-[#cbd5e1] leading-relaxed font-sans">
+                                      {finding.severity === 'Critical' || finding.severity === 'High'
+                                        ? 'This flaw allows an attacker to manipulate backend queries, bypass authentication, or infer sensitive database contents through conditional differential logic. Immediate remediation is required.'
+                                        : 'This issue exposes structural or behavioral application logic that can be chained by an attacker. Remediate to enforce defense-in-depth.'}
+                                    </p>
+                                  </div>
+
+                                  {/* Technical Details */}
+                                  <div>
+                                    <span className="text-[10px] font-mono font-bold text-[#a0aec0] uppercase tracking-widest block mb-1 flex items-center gap-1.5">
+                                      <Eye className="w-3 h-3 text-[#00d4ff]" /> Technical Details
+                                    </span>
+                                    <p className="text-xs text-[#cbd5e1] leading-relaxed font-sans">{finding.description}</p>
+                                  </div>
+
+                                  {/* Remediation */}
+                                  <div className="p-4 rounded-lg bg-[#00d4ff]/5 border border-[#00d4ff]/30">
+                                    <span className="text-[10px] font-mono font-bold text-[#00d4ff] uppercase tracking-widest block mb-1 flex items-center gap-1.5">
+                                      <Shield className="w-3 h-3" /> Remediation Guidance
+                                    </span>
+                                    <p className="text-xs text-[#e2e8f0] leading-relaxed font-sans">{finding.recommendation}</p>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

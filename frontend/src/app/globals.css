@@ -32,7 +32,7 @@
 }
 
 html {
-  font-size: 16px;
+  font-size: 17px;
   color-scheme: dark;
   scroll-behavior: smooth;
   font-family: "Cambria", "Georgia", serif;
@@ -72,6 +72,11 @@ body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, p, span, div, a, 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.015em;
 }
 
 /* Ensure ultra-sharp text: keep glow on container box-shadows, NOT text glyphs */
