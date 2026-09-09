@@ -1,0 +1,92 @@
+<div class="finding-block" id="finding-{{ index }}">
+  <div class="finding-header">
+    <div class="finding-title">
+      <span class="severity-dot severity-{{ finding.severity | lower }}"></span>
+      {{ finding.title }}
+      {% if finding.verified %}
+      <span class="verified-badge">Verified</span>
+      {% endif %}
+    </div>
+    <div>
+      <span class="cvss-badge" style="background:{{ severity_colors[finding.severity | lower] | default('#95a5a6') }};">
+        CVSS {{ finding.cvss_score }}
+      </span>
+      <span class="cwe-badge">{{ finding.cwe_id }}</span>
+    </div>
+  </div>
+  <div class="finding-body">
+    <h4>Description</h4>
+    <p>{{ finding.description }}</p>
+
+    <h4>Affected Endpoint</h4>
+    <p><strong>URL:</strong> <code>{{ finding.affected_url }}</code></p>
+    <p><strong>Parameter:</strong> <code>{{ finding.affected_parameter }}</code></p>
+
+    <h4>Payload</h4>
+    <pre><code>{{ finding.payload }}</code></pre>
+
+    <h4>Request Evidence</h4>
+    {{ format_request_block(finding.request_data) | safe }}
+
+    <h4>Response Evidence</h4>
+    {{ format_response_block(finding.response_data) | safe }}
+
+    <h4>CVSS Vector</h4>
+    <p><code>{{ finding.cvss_vector }}</code></p>
+
+    <h4>Confidence Level</h4>
+    <p>{{ finding.confidence | upper }}</p>
+
+    <h4>Compliance Mapping</h4>
+    {% if finding.compliance.owasp_top10.category != 'N/A' %}
+    <p><strong>OWASP Top 10 2021:</strong> {{ finding.compliance.owasp_top10.category }} - {{ finding.compliance.owasp_top10.title }}</p>
+    {% endif %}
+    {% if finding.compliance.pci_dss_v4.requirement != 'N/A' %}
+    <p><strong>PCI-DSS v4.0:</strong> Req {{ finding.compliance.pci_dss_v4.requirement }} - {{ finding.compliance.pci_dss_v4.title }}</p>
+    {% endif %}
+    {% for cwe in finding.compliance.cwe %}
+    <p><strong>{{ cwe.cwe }}:</strong> {{ cwe.name }}</p>
+    {% endfor %}
+
+    <h4>Remediation</h4>
+    <p>{{ finding.mitigation.remediation | default('Refer to general injection prevention guidelines.') }}</p>
+
+    {% if finding.mitigation.code_examples %}
+    <h4>Code Examples</h4>
+    {% for lang, examples in finding.mitigation.code_examples.items() %}
+    <div class="code-block">
+      <strong>{{ lang | upper }}</strong>
+      {% if examples.vulnerable %}
+      <div class="code-block vulnerable">
+        <div class="label">Vulnerable:</div>
+        <pre><code>{{ examples.vulnerable }}</code></pre>
+      </div>
+      {% endif %}
+      {% if examples.fixed %}
+      <div class="code-block fixed">
+        <div class="label">Fixed:</div>
+        <pre><code>{{ examples.fixed }}</code></pre>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if finding.mitigation.waf_rules.modsecurity %}
+    <h4>ModSecurity WAF Rules</h4>
+    {% for rule in finding.mitigation.waf_rules.modsecurity %}
+    <div class="waf-rule"><code>{{ rule }}</code></div>
+    {% endfor %}
+    {% endif %}
+
+    {% set all_refs = finding.references if finding.references else finding.mitigation.references %}
+    {% if all_refs %}
+    <h4>References</h4>
+    <ul class="reference-list">
+      {% for ref in all_refs %}
+      <li>{{ ref }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</div>

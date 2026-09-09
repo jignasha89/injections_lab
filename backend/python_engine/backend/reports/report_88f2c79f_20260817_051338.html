@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Vulnerability Report - http://127.0.0.1:18899</title></head>
+<body style="font-family:system-ui,-apple-system,sans-serif;max-width:1000px;margin:0 auto;padding:32px;color:#111">
+<h1 style="border-bottom:2px solid #3b82f6;padding-bottom:8px">Vulnerability Report - http://127.0.0.1:18899</h1>
+
+<h2>Executive Summary</h2>
+<table style="width:100%;border-collapse:collapse;margin:16px 0">
+<tr><td style="padding:8px;background:#f3f4f6;font-weight:600">Risk Level</td><td style="padding:8px;background:#f3f4f6">Critical</td>
+<td style="padding:8px;background:#f3f4f6;font-weight:600">Total Findings</td><td style="padding:8px;background:#f3f4f6">42</td></tr>
+<tr><td style="padding:8px;font-weight:600">Target</td><td style="padding:8px">http://127.0.0.1:18899</td>
+<td style="padding:8px;font-weight:600">Scan Duration</td><td style="padding:8px">10.5s</td></tr>
+</table>
+
+<h3>Severity Distribution</h3>
+<ul><li>Critical: 4</li><li>High: 6</li><li>Low: 32</li></ul>
+
+<h2>Vulnerability Findings</h2>
+<table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:13px">
+<tr style="background:#f3f4f6"><th style="padding:8px;text-align:left">Severity</th><th style="padding:8px;text-align:left">Type</th><th style="padding:8px;text-align:left">URL</th><th style="padding:8px;text-align:left">Parameter</th><th style="padding:8px;text-align:left">CVSS</th><th style="padding:8px;text-align:left">Confidence</th></tr>
+
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/error-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/user?id=1</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">id</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/blind</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/user?id=1</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">id</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/time-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/user?id=1</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">id</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/union</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/user?id=1</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">id</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#f59e0b;font-weight:600;text-transform:uppercase">high</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/reflected</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.1</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#f59e0b;font-weight:600;text-transform:uppercase">high</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/stored</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.1</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#f59e0b;font-weight:600;text-transform:uppercase">high</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/dom</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.1</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#f59e0b;font-weight:600;text-transform:uppercase">high</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/reflected</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/user?id=1</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">id</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.1</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#f59e0b;font-weight:600;text-transform:uppercase">high</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/stored</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/user?id=1</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">id</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#f59e0b;font-weight:600;text-transform:uppercase">high</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/dom</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/user?id=1</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">id</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.1</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/error-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.1</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/blind</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.1</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/time-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/union</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">path_traversal/basic</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/user?id=1</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">id</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.1</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">path_traversal/encoded</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/user?id=1</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">id</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.1</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">path_traversal/double_encoded</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/user?id=1</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">id</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.1</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">path_traversal/null_byte</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/user?id=1</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">id</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.1</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">path_traversal/unicode</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/user?id=1</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">id</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.1</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/reflected</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/stored</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/dom</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/error-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/blind</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/time-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/union</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/error-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/blind</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/time-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/union</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">cmdi/os_command</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">5.3</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">cmdi/os_command</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">5.3</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">cmdi/os_command</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">5.3</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">cmdi/os_command</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">5.3</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">cmdi/os_command</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">5.3</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">cmdi/blind</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">5.3</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">cmdi/blind</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">5.3</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">cmdi/os_command</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/search</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">q</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">5.3</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">cmdi/os_command</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">cmdi/blind</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">cmdi/os_command</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">cmdi/blind</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>http://127.0.0.1:18899/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+</table>
+
+<h2>Remediation</h2>
+
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>error-based</strong> (sqli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>blind</strong> (sqli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>time-based</strong> (sqli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>union</strong> (sqli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>reflected</strong> (xss)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>stored</strong> (xss)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>dom</strong> (xss)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>basic</strong> (path_traversal)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>encoded</strong> (path_traversal)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>double_encoded</strong> (path_traversal)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>null_byte</strong> (path_traversal)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>unicode</strong> (path_traversal)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>os_command</strong> (cmdi)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+
+<hr style="margin-top:32px;border:none;border-top:1px solid #e5e7eb">
+<p style="font-size:12px;color:#6b7280">Generated by InjectGuard Pro on 2026-08-17T05:13:38.660288</p>
+</body></html>

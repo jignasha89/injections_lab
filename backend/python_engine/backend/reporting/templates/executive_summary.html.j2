@@ -1,0 +1,71 @@
+<div class="section" id="exec-summary">
+  <h2>Executive Summary</h2>
+  <div class="severity-grid">
+    <div class="severity-box severity-critical">
+      <span class="count">{{ severity_counts.critical | default(0) }}</span>
+      <span class="label">Critical</span>
+    </div>
+    <div class="severity-box severity-high">
+      <span class="count">{{ severity_counts.high | default(0) }}</span>
+      <span class="label">High</span>
+    </div>
+    <div class="severity-box severity-medium">
+      <span class="count">{{ severity_counts.medium | default(0) }}</span>
+      <span class="label">Medium</span>
+    </div>
+    <div class="severity-box severity-low">
+      <span class="count">{{ severity_counts.low | default(0) }}</span>
+      <span class="label">Low</span>
+    </div>
+    <div class="severity-box severity-info">
+      <span class="count">{{ severity_counts.info | default(0) }}</span>
+      <span class="label">Info</span>
+    </div>
+  </div>
+
+  <table>
+    <tr><td><strong>Overall Risk Level</strong></td><td>{{ risk_level | default('N/A') }}</td></tr>
+    <tr><td><strong>Total Findings</strong></td><td>{{ total_findings | default(0) }}</td></tr>
+    <tr><td><strong>Target URL</strong></td><td>{{ target_url | default('N/A') }}</td></tr>
+    <tr><td><strong>Scan Duration</strong></td><td>{{ scan_duration | default('N/A') }}</td></tr>
+    <tr><td><strong>Families Detected</strong></td><td>{{ families_detected | join(', ') if families_detected else 'None' }}</td></tr>
+  </table>
+
+  {% if key_findings %}
+  <h3>Key Findings</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Severity</th>
+        <th>Affected URL</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for kf in key_findings %}
+      <tr>
+        <td>{{ kf.title }}</td>
+        <td>
+          <span class="severity-dot severity-{{ kf.severity | lower }}"></span>
+          {{ kf.severity | upper }}
+        </td>
+        <td><code>{{ kf.affected_url }}</code></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <h3>Risk Assessment</h3>
+  {% if risk_level == 'Critical' %}
+  <p>The scan identified <strong>critical severity</strong> injection vulnerabilities that could lead to complete system compromise. Immediate remediation is required.</p>
+  {% elif risk_level == 'High' %}
+  <p>The scan identified <strong>high severity</strong> injection vulnerabilities that could result in significant data exposure or unauthorized access. Remediation should be prioritized.</p>
+  {% elif risk_level == 'Medium' %}
+  <p>The scan identified <strong>medium severity</strong> injection vulnerabilities. While exploitation may require specific conditions, these should be addressed.</p>
+  {% elif risk_level == 'Low' %}
+  <p>The scan identified <strong>low severity</strong> findings with limited direct impact. Remediation is recommended as part of defense-in-depth.</p>
+  {% else %}
+  <p>No significant injection vulnerabilities were identified in this scan.</p>
+  {% endif %}
+</div>

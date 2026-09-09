@@ -1,0 +1,62 @@
+[
+  {
+    "id": "unicode-001", "family": "unicode_injection", "subtype": "homograph",
+    "payload_string": "admin\u1d00", "context": "string",
+    "description": "Unicode Injection - Homograph (admin + a)",
+    "references": ["https://owasp.org/www-community/attacks/Unicode_Encoding"], "platform_specific": {}
+  },
+  {
+    "id": "unicode-002", "family": "unicode_injection", "subtype": "homograph",
+    "payload_string": "adm\u0131n", "context": "string",
+    "description": "Unicode Injection - Homograph (dotless i)",
+    "references": ["https://owasp.org/www-community/attacks/Unicode_Encoding"], "platform_specific": {}
+  },
+  {
+    "id": "unicode-003", "family": "unicode_injection", "subtype": "normalization",
+    "payload_string": "\uFF33\uFF31\uFF2C", "context": "string",
+    "description": "Unicode Injection - Fullwidth SQL",
+    "references": ["https://owasp.org/www-community/attacks/Unicode_Encoding"], "platform_specific": {}
+  },
+  {
+    "id": "unicode-004", "family": "unicode_injection", "subtype": "normalization",
+    "payload_string": "\uFF1C\uFF53\uFF43\uFF52\uFF49\uFF50\uFF54\uFF1E", "context": "string",
+    "description": "Unicode Injection - Fullwidth <script>",
+    "references": ["https://owasp.org/www-community/attacks/Unicode_Encoding"], "platform_specific": {}
+  },
+  {
+    "id": "unicode-005", "family": "unicode_injection", "subtype": "rtl_override",
+    "payload_string": "admin\u202E", "context": "string",
+    "description": "Unicode Injection - Right-to-Left Override",
+    "references": ["https://owasp.org/www-community/attacks/Unicode_Encoding"], "platform_specific": {}
+  },
+  {
+    "id": "unicode-006", "family": "unicode_injection", "subtype": "rtl_override",
+    "payload_string": "test.txt\u202Eexe.jpg", "context": "string",
+    "description": "Unicode Injection - RTL Override file extension spoofing",
+    "references": ["https://owasp.org/www-community/attacks/Unicode_Encoding"], "platform_specific": {}
+  },
+  {
+    "id": "unicode-007", "family": "unicode_injection", "subtype": "overlong",
+    "payload_string": "%C0%AE", "context": "string",
+    "description": "Unicode Injection - Overlong dot",
+    "references": ["https://owasp.org/www-community/attacks/Unicode_Encoding"], "platform_specific": {}
+  },
+  {
+    "id": "unicode-008", "family": "unicode_injection", "subtype": "overlong",
+    "payload_string": "%C0%AF", "context": "string",
+    "description": "Unicode Injection - Overlong slash",
+    "references": ["https://owasp.org/www-community/attacks/Unicode_Encoding"], "platform_specific": {}
+  },
+  {
+    "id": "unicode-009", "family": "unicode_injection", "subtype": "case_folding",
+    "payload_string": "\u017F", "context": "string",
+    "description": "Unicode Injection - Long S (case folds to s)",
+    "references": ["https://owasp.org/www-community/attacks/Unicode_Encoding"], "platform_specific": {}
+  },
+  {
+    "id": "unicode-010", "family": "unicode_injection", "subtype": "case_folding",
+    "payload_string": "\u212A", "context": "string",
+    "description": "Unicode Injection - Kelvin sign (case folds to k)",
+    "references": ["https://owasp.org/www-community/attacks/Unicode_Encoding"], "platform_specific": {}
+  }
+]

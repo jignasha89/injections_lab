@@ -1,0 +1,102 @@
+[
+  {
+    "id": "hdr-001",
+    "family": "header_injection",
+    "subtype": "host_header",
+    "payload_string": "evil.com",
+    "context": "header",
+    "description": "Host header injection for password reset poisoning",
+    "references": ["https://portswigger.net/web-security/host-header"],
+    "platform_specific": {}
+  },
+  {
+    "id": "hdr-002",
+    "family": "header_injection",
+    "subtype": "host_header",
+    "payload_string": "evil.com:80",
+    "context": "header",
+    "description": "Host header injection with explicit port",
+    "references": ["https://portswigger.net/web-security/host-header"],
+    "platform_specific": {}
+  },
+  {
+    "id": "hdr-003",
+    "family": "header_injection",
+    "subtype": "host_header",
+    "payload_string": "evil.com%0d%0aX-Injected:true",
+    "context": "header",
+    "description": "Host header injection combined with CRLF",
+    "references": ["https://portswigger.net/web-security/host-header"],
+    "platform_specific": {}
+  },
+  {
+    "id": "hdr-004",
+    "family": "header_injection",
+    "subtype": "cookie_injection",
+    "payload_string": "session=admin; path=/; domain=.evil.com",
+    "context": "cookie",
+    "description": "Cookie parameter injection for session manipulation",
+    "references": ["https://owasp.org/www-community/attacks/Session_Hijacking"],
+    "platform_specific": {}
+  },
+  {
+    "id": "hdr-005",
+    "family": "header_injection",
+    "subtype": "mass_assignment",
+    "payload_string": "{\"role\":\"admin\"}",
+    "context": "json",
+    "description": "Mass assignment via JSON body to escalate privileges",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_Mass_Assignment"],
+    "platform_specific": {}
+  },
+  {
+    "id": "hdr-006",
+    "family": "header_injection",
+    "subtype": "host_header",
+    "payload_string": "127.0.0.1",
+    "context": "header",
+    "description": "Host header injection using IP address",
+    "references": ["https://portswigger.net/web-security/host-header"],
+    "platform_specific": {}
+  },
+  {
+    "id": "hdr-007",
+    "family": "header_injection",
+    "subtype": "log_injection",
+    "payload_string": "INJECTED\\u0000LOG",
+    "context": "header",
+    "description": "Header injection with null byte for log corruption",
+    "references": ["https://cwe.mitre.org/data/definitions/117.html"],
+    "platform_specific": {}
+  },
+  {
+    "id": "hdr-008",
+    "family": "header_injection",
+    "subtype": "mass_assignment",
+    "payload_string": "{\"admin\":true,\"is_superuser\":true}",
+    "context": "json",
+    "description": "Mass assignment attempting to set admin and superuser flags",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_Mass_Assignment"],
+    "platform_specific": {}
+  },
+  {
+    "id": "hdr-009",
+    "family": "header_injection",
+    "subtype": "host_header",
+    "payload_string": "evil.com%250d%250aInjected-Header:true",
+    "context": "header",
+    "description": "Host header injection with double-encoded CRLF",
+    "references": ["https://portswigger.net/web-security/host-header"],
+    "platform_specific": {}
+  },
+  {
+    "id": "hdr-010",
+    "family": "header_injection",
+    "subtype": "cookie_injection",
+    "payload_string": "session=administrators_token; HttpOnly; Secure",
+    "context": "cookie",
+    "description": "Cookie injection to steal session with security attributes",
+    "references": ["https://owasp.org/www-community/attacks/Session_Hijacking"],
+    "platform_specific": {}
+  }
+]

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NessusClientData_v2>
+  <Report name="{{ report_name | default('InjectSentinel Scan Report') }}">
+    <ReportHost name="{{ hostname }}">
+      <HostProperties>
+        <tag name="host">{{ target_url }}</tag>
+        <tag name="scan_id">{{ scan_id }}</tag>
+        <tag name="scan_start">{{ scan_start }}</tag>
+        <tag name="scan_end">{{ scan_end }}</tag>
+        <tag name="scanner">InjectSentinel</tag>
+        <tag name="total_findings">{{ total_findings }}</tag>
+        <tag name="critical_count">{{ severity_counts.critical | default(0) }}</tag>
+        <tag name="high_count">{{ severity_counts.high | default(0) }}</tag>
+        <tag name="medium_count">{{ severity_counts.medium | default(0) }}</tag>
+        <tag name="low_count">{{ severity_counts.low | default(0) }}</tag>
+        <tag name="info_count">{{ severity_counts.info | default(0) }}</tag>
+      </HostProperties>
+      {% for finding in findings %}
+      <ReportItem
+        pluginID="{{ plugin_id_base + loop.index0 }}"
+        pluginName="{{ finding.title }}"
+        pluginFamily="Web Application Testing"
+        severity="{{ nessus_severity_map[finding.severity | lower] | default('0') }}"
+        port="443"
+        svc_name="https"
+        protocol="tcp">
+        <plugin_output><![CDATA[
+Title: {{ finding.title }}
+Severity: {{ finding.severity }}
+CVSS Score: {{ finding.cvss_score }}
+CVSS Vector: {{ finding.cvss_vector }}
+CWE: {{ finding.cwe_id }}
+Confidence: {{ finding.confidence }}
+Affected URL: {{ finding.affected_url }}
+Parameter: {{ finding.affected_parameter }}
+
+Description:
+{{ finding.description }}
+
+Payload:
+{{ finding.payload }}
+
+Mitigation:
+{{ finding.mitigation.remediation | default('Apply input validation and output encoding.') }}
+]]></plugin_output>
+        <solution><![CDATA[{{ finding.mitigation.remediation | default('Apply input validation and output encoding.') }}]]></solution>
+        <risk_information>
+          <cvss_base_score>{{ finding.cvss_score }}</cvss_base_score>
+          <cvss_temporal_score>{{ finding.cvss_score }}</cvss_temporal_score>
+          <cvss_vector>{{ finding.cvss_vector }}</cvss_vector>
+        </risk_information>
+        {% if finding.compliance.owasp_top10.category != 'N/A' %}
+        <compliance>
+          <check><![CDATA[OWASP Top 10 2021: {{ finding.compliance.owasp_top10.category }} - {{ finding.compliance.owasp_top10.title }}]]></check>
+        </compliance>
+        {% endif %}
+        {% if finding.compliance.pci_dss_v4.requirement != 'N/A' %}
+        <compliance>
+          <check><![CDATA[PCI-DSS v4.0 Req {{ finding.compliance.pci_dss_v4.requirement }} - {{ finding.compliance.pci_dss_v4.title }}]]></check>
+        </compliance>
+        {% endif %}
+        {% if finding.references %}
+        <references>
+          {% for ref in finding.references %}
+          <reference source="InjectSentinel" url="{{ ref }}"/>
+          {% endfor %}
+        </references>
+        {% endif %}
+        <synopsis>InjectSentinel detected a {{ finding.severity | lower }} severity injection vulnerability: {{ finding.title }}</synopsis>
+        <description><![CDATA[{{ finding.description }}]]></description>
+        <see_also>https://owasp.org/www-community/attacks/</see_also>
+        {% if finding.cwe_id %}
+        <cwe>{{ finding.cwe_id }}</cwe>
+        {% endif %}
+        {% if finding.vulnerability_id %}
+        <cve>{{ finding.vulnerability_id }}</cve>
+        {% endif %}
+      </ReportItem>
+      {% endfor %}
+    </ReportHost>
+  </Report>
+</NessusClientData_v2>

