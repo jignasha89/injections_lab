@@ -12,7 +12,8 @@ import {
   HelpCircle,
   LogOut,
   X,
-
+  Bot,
+  ShieldCheck,
  } from 'lucide-react';
 import ShieldSyringeIcon from './ShieldSyringeIcon';
 import { clsx } from 'clsx';
@@ -20,6 +21,7 @@ import { clsx } from 'clsx';
 const menuItems = [
   { name: 'Workspace', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Scanner', href: '/scanner', icon: ScanLine, badge: '55 RULES' },
+  { name: 'AI Chat Board', href: '/chat-board', icon: Bot, badge: 'PROMPT INJ' },
   { name: 'Reports', href: '/reports', icon: FileBarChart2 },
   { name: 'History', href: '/history', icon: History },
   { name: 'Injection Details', href: '/injection-details', icon: Info },
@@ -33,7 +35,12 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { logout } = useStore();
+  const { user, logout } = useStore();
+
+  const navItems = [
+    ...menuItems,
+    ...(user?.role === 'admin' ? [{ name: 'Admin Security', href: '/admin', icon: ShieldCheck, badge: 'ADMIN' }] : []),
+  ];
 
   const handleLinkClick = () => {
     if (onClose) onClose();
@@ -74,7 +81,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Navigation Items */}
       <nav className="flex-1 space-y-1 overflow-y-auto">
-        {menuItems.map((item) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
           const Icon = item.icon;
           return (

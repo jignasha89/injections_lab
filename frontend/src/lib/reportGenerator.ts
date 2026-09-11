@@ -33,6 +33,11 @@ interface Finding {
   recommendation: string;
   httpMethod?: string;
   paramLocation?: string;
+  simpleSummary?: string;
+  simpleExplanation?: string;
+  simpleFix?: string[];
+  screenshot?: string;
+  screenshotCaption?: string;
 }
 
 /** Normalise URL for dedup: strip query/fragment/trailing-slash */
@@ -69,6 +74,8 @@ interface ReportSummary {
   riskScore: number;
   highestSeverity?: string;
   owaspCoverage: string[];
+  overallRiskRating?: string;
+  plainSummary?: string;
 }
 
 interface Report {
@@ -101,6 +108,11 @@ interface EnrichedFinding extends Finding {
   remediationPriority: string;
   attackMappings: AttackMapping[];
   refs: { label: string; url: string }[];
+  simpleSummary: string;
+  simpleExplanation: string;
+  simpleFix: string[];
+  screenshot?: string;
+  screenshotCaption: string;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -323,6 +335,11 @@ function enrichFinding(f: Finding, index: number): EnrichedFinding {
     remediationPriority,
     attackMappings,
     refs,
+    simpleSummary: f.simpleSummary || `Weak spot identified in "${param}" that could allow unauthorized data manipulation or exposure.`,
+    simpleExplanation: f.simpleExplanation || businessRisks[cat],
+    simpleFix: f.simpleFix && f.simpleFix.length > 0 ? f.simpleFix : remediations[cat].split('\n').map(s => s.replace(/^\d+\.\s*/, '')),
+    screenshot: f.screenshot,
+    screenshotCaption: f.screenshotCaption || `Proof of concept verifying payload execution and anomalous server response for parameter "${param}".`,
   };
 }
 
@@ -598,15 +615,56 @@ export function generatePDF(report: Report): void {
      SECTION 3 — EXECUTIVE SUMMARY
      ══════════════════════════════════════════════════════ */
   secHead('2. Executive Summary');
-  const posture = (report.summary?.riskScore || 0) >= 7 ? 'Critical' : (report.summary?.riskScore || 0) >= 4 ? 'Elevated' : 'Moderate';
-  wt(`This report presents the results of an authorized security assessment performed against ${report.targetUrl || 'the target'} on ${assessDate}. The assessment identified ${total} security finding${total !== 1 ? 's' : ''} across the tested attack surface. The overall security posture is assessed as ${posture} Risk.`, M, 10.5, 'helvetica', 'normal', INK);
+
+  // Overall Risk Rating Badge & Score Box
+  const rawRating = report.summary?.overallRiskRating;
+  const overallRisk = rawRating || (critCount > 0 || (report.summary?.riskScore || 0) >= 8.5 ? 'Critical' : highCount > 0 || (report.summary?.riskScore || 0) >= 6.0 ? 'High' : (report.summary?.riskScore || 0) >= 3.5 ? 'Medium' : 'Low');
+  const riskColor = SEV[overallRisk] || SEV.Info;
+  
+  chk(45);
+  doc.setFillColor(...CBG); doc.rect(M, y, CW, 38, 'F');
+  doc.setDrawColor(...BDR); doc.setLineWidth(0.5); doc.rect(M, y, CW, 38, 'S');
+  doc.setFillColor(...riskColor); doc.rect(M, y, 4, 38, 'F');
+
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(...SEC);
+  doc.text('OVERALL RISK RATING', M + 14, y + 15);
+  drawBadge(overallRisk, M + 120, y + 16);
+
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(...SEC);
+  doc.text('RISK INDEX', M + 240, y + 15);
+  doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(...INK);
+  doc.text(`${(report.summary?.riskScore || 0).toFixed(1)} / 10.0`, M + 295, y + 16);
+
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(...SEC);
+  doc.text('TOTAL FINDINGS', M + 380, y + 15);
+  doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(...INK);
+  doc.text(String(total), M + 458, y + 16);
+  y += 48;
+
+  // Plain-Language Narrative Summary Box
+  chk(70);
+  const plainSummaryText = report.summary?.plainSummary || `Attention needed: We completed a security review of ${report.targetUrl || 'the target website'} and identified ${total} security weak spot(s). Most notably, input parameters accept unverified queries which could allow an attacker to read private database records or inject unauthorized browser scripts. We recommend sharing the action steps below with your web development team to patch these issues promptly.`;
+  const sumLines = doc.splitTextToSize(safeText(plainSummaryText), CW - 24);
+  const sumH = sumLines.length * 11.5 + 24;
+
+  chk(sumH);
+  doc.setFillColor(248, 250, 252); doc.rect(M, y, CW, sumH, 'F');
+  doc.setDrawColor(...BDR); doc.setLineWidth(0.5); doc.rect(M, y, CW, sumH, 'S');
+  doc.setFillColor(...ACC); doc.rect(M, y, 3, sumH, 'F');
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(...ACC);
+  doc.text('IN SIMPLE TERMS (EXECUTIVE OVERVIEW)', M + 12, y + 14);
+  doc.setFontSize(8.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(...INK);
+  doc.text(sumLines, M + 12, y + 27);
+  y += sumH + 12;
+
+  wt(`This report presents the results of an authorized security assessment performed against ${report.targetUrl || 'the target'} on ${assessDate}. The assessment identified ${total} security finding${total !== 1 ? 's' : ''} across the tested attack surface. The overall security posture is assessed as ${overallRisk} Risk.`, M, 10, 'helvetica', 'normal', INK);
   y += 8;
 
   if (total > 0) {
     const top3 = sorted.slice(0, 3);
     subHead('Top Priorities');
     for (let i = 0; i < top3.length; i++) {
-      wt(`${i + 1}. ${top3[i].type} (${top3[i].severity}, CVSS ${top3[i].cvss}) at ${top3[i].location.split('?')[0]}`, M + 8, 10, 'helvetica', 'normal', INK);
+      wt(`${i + 1}. ${top3[i].type} (${top3[i].severity}, CVSS ${top3[i].cvss}) at ${top3[i].location.split('?')[0]}`, M + 8, 9.5, 'helvetica', 'normal', INK);
       y += 2;
     }
     y += 8;
@@ -768,6 +826,53 @@ export function generatePDF(report: Report): void {
     doc.text('RISK SCORE', M, y + 6);
     drawGauge(ef.cvss, ef.severity, M + 65, y, 170);
     y += 18;
+
+    // ── In Simple Terms Box ──
+    chk(65);
+    const simpleText = `${ef.simpleSummary}\n\n${ef.simpleExplanation}`;
+    const simpleLines = doc.splitTextToSize(safeText(simpleText), CW - 24);
+    const boxH = simpleLines.length * 11 + 22;
+    chk(boxH);
+    doc.setFillColor(240, 249, 255); doc.rect(M, y, CW, boxH, 'F');
+    doc.setDrawColor(...BDR); doc.setLineWidth(0.5); doc.rect(M, y, CW, boxH, 'S');
+    doc.setFillColor(...ACC); doc.rect(M, y, 3, boxH, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(...ACC);
+    doc.text('IN SIMPLE TERMS (NON-TECHNICAL SUMMARY)', M + 12, y + 13);
+    doc.setFontSize(8.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(...INK);
+    doc.text(simpleLines, M + 12, y + 25);
+    y += boxH + 8;
+
+    // ── How to Fix This Checklist ──
+    if (ef.simpleFix && ef.simpleFix.length > 0) {
+      chk(40);
+      subHead('How to Fix This (Action Checklist)');
+      for (let s = 0; s < ef.simpleFix.length; s++) {
+        const step = `${s + 1}. ${ef.simpleFix[s]}`;
+        wt(step, M + 8, 9, 'helvetica', 'normal', INK);
+        y += 2;
+      }
+      y += 6;
+    }
+
+    // ── Proof of Concept Screenshot ──
+    if (ef.screenshot && (ef.screenshot.startsWith('data:image/png') || ef.screenshot.startsWith('data:image/jpeg'))) {
+      try {
+        subHead('Verified Proof of Concept (Screenshot)');
+        const imgW = CW - 40;
+        const imgH = (imgW * 480) / 800; // maintain 800x480 aspect ratio (~273 pt)
+        chk(imgH + 40);
+        doc.setDrawColor(...BDR); doc.setLineWidth(0.5);
+        doc.rect(M + 20, y, imgW, imgH, 'S');
+        doc.addImage(ef.screenshot, 'PNG', M + 20, y, imgW, imgH);
+        y += imgH + 8;
+        doc.setFontSize(7.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(...SEC);
+        const capLines = doc.splitTextToSize(`Verified Proof: ${safeText(ef.screenshotCaption)}`, CW - 40);
+        for (const cln of capLines) { chk(10); doc.text(cln, M + 20, y); y += 10; }
+        y += 6;
+      } catch (imgErr) {
+        console.warn('Could not embed screenshot into PDF:', imgErr);
+      }
+    }
 
     // Business Risk
     subHead('Business Risk');

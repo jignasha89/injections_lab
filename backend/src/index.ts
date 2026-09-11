@@ -13,6 +13,9 @@ import labRoutes from './routes/labs';
 import scannerRoutes from './routes/scanner';
 import reportRoutes from './routes/reports';
 import userRoutes from './routes/user';
+import chatRoutes from './routes/chat';
+import securityRoutes from './routes/security';
+import adminRoutes from './routes/admin';
 
 dotenv.config();
 
@@ -20,11 +23,44 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/injectionlab';
 
-// Security middleware
-app.use(helmet({
-  crossOriginEmbedderPolicy: false,
-  contentSecurityPolicy: false,
-}));
+// HTTPS Enforcement Middleware (for production deployments)
+app.use((req, res, next) => {
+  if (
+    process.env.NODE_ENV === 'production' &&
+    req.headers['x-forwarded-proto'] &&
+    req.headers['x-forwarded-proto'] !== 'https'
+  ) {
+    return res.redirect(301, `https://${req.headers.host}${req.url}`);
+  }
+  next();
+});
+
+// Comprehensive Security Headers via Helmet
+app.use(
+  helmet({
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+        connectSrc: ["'self'", 'http:', 'https:', 'ws:', 'wss:'],
+        fontSrc: ["'self'", 'data:', 'https:'],
+        objectSrc: ["'none'"],
+        frameAncestors: ["'self'"],
+      },
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+    frameguard: { action: 'deny' },
+    noSniff: true,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  })
+);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -52,6 +88,9 @@ app.use('/api/labs', labRoutes);
 app.use('/api/scanner', scannerRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/security', securityRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

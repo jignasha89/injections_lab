@@ -44,6 +44,11 @@ interface MemoryFinding {
   owasp: string;
   description: string;
   recommendation: string;
+  simpleSummary?: string;
+  simpleExplanation?: string;
+  simpleFix?: string[];
+  screenshot?: string;
+  screenshotCaption?: string;
 }
 
 interface MemoryReport {
@@ -63,11 +68,15 @@ interface MemoryReport {
     jsonInputs: number;
     riskScore: number;
     owaspCoverage: string[];
+    overallRiskRating?: string;
+    plainSummary?: string;
   };
   findings: MemoryFinding[];
   techStack: string[];
   isHiddenFromReports?: boolean;
   isHiddenFromHistory?: boolean;
+  isEncrypted?: boolean;
+  encryptedPayload?: string;
   createdAt: Date;
 }
 
@@ -189,3 +198,52 @@ export const reportsStore: MemoryReport[] = [
     createdAt: new Date(),
   },
 ];
+
+// Chat Session structure
+export interface MemoryChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+  leaked?: boolean;
+}
+
+export interface MemoryChatSession {
+  _id: string;
+  sessionId: string;
+  userId?: string;
+  messages: MemoryChatMessage[];
+  messageCount: number;
+  injectionsSucceeded: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MemoryInjectionAttempt {
+  _id: string;
+  sessionId: string;
+  userId?: string;
+  userMessage: string;
+  aiResponse: string;
+  success: boolean;
+  leakType: string[];
+  ip?: string;
+  timestamp: Date;
+}
+
+export const chatSessionsStore: MemoryChatSession[] = [];
+export const injectionAttemptsStore: MemoryInjectionAttempt[] = [];
+
+export interface MemoryAuditLog {
+  _id: string;
+  adminId: string;
+  adminUsername: string;
+  action: string;
+  targetResource: string;
+  details?: Record<string, any>;
+  ip: string;
+  userAgent: string;
+  timestamp: Date;
+}
+
+export const auditLogsStore: MemoryAuditLog[] = [];
+

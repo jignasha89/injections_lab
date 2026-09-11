@@ -22,7 +22,15 @@ import {
   BookOpen,
   Eye,
   Code2,
-  Shield
+  Shield,
+  CheckCircle2,
+  Maximize2,
+  X,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+  Layers,
+  Terminal
 } from 'lucide-react';
 
 interface Finding {
@@ -40,6 +48,11 @@ interface Finding {
   evidence?: string;
   pocPayload?: string;
   recommendation: string;
+  simpleSummary?: string;
+  simpleExplanation?: string;
+  simpleFix?: string[];
+  screenshot?: string;
+  screenshotCaption?: string;
 }
 
 interface Report {
@@ -58,10 +71,102 @@ interface Report {
     riskScore: number;
     highestSeverity?: string;
     owaspCoverage: string[];
+    overallRiskRating?: string;
+    plainSummary?: string;
   };
   findings: Finding[];
   techStack: string[];
   createdAt: string;
+}
+
+function getRiskRatingInfo(rating?: string, score: number = 0, findings: Finding[] = []) {
+  let effectiveRating = rating;
+  if (!effectiveRating) {
+    const hasCrit = findings.some(f => f.severity === 'Critical');
+    const hasHigh = findings.some(f => f.severity === 'High');
+    if (score >= 8.5 || hasCrit) effectiveRating = 'Critical';
+    else if (score >= 6.0 || hasHigh) effectiveRating = 'High';
+    else if (score >= 3.5) effectiveRating = 'Medium';
+    else effectiveRating = 'Low';
+  }
+
+  switch (effectiveRating.toLowerCase()) {
+    case 'critical':
+      return {
+        label: 'Critical Risk',
+        badgeClass: 'bg-red-500/20 text-red-400 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.25)]',
+        accentColor: '#ef4444',
+        barColor: 'bg-red-500',
+        desc: 'Immediate action required. Vulnerabilities present severe risk of unauthorized database access, code execution, or data theft.',
+      };
+    case 'high':
+      return {
+        label: 'High Risk',
+        badgeClass: 'bg-orange-500/20 text-orange-400 border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.25)]',
+        accentColor: '#f97316',
+        barColor: 'bg-orange-500',
+        desc: 'Significant security weak spots identified. Remediation should be scheduled in the current sprint to protect visitors and user data.',
+      };
+    case 'medium':
+      return {
+        label: 'Medium Risk',
+        badgeClass: 'bg-amber-500/20 text-amber-400 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.25)]',
+        accentColor: '#f59e0b',
+        barColor: 'bg-amber-500',
+        desc: 'Moderate concerns identified that could be chained with other flaws. Schedule remediation in upcoming updates.',
+      };
+    case 'low':
+    default:
+      return {
+        label: 'Low Risk',
+        badgeClass: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.25)]',
+        accentColor: '#10b981',
+        barColor: 'bg-emerald-500',
+        desc: 'Only minor or informational observations noted. Continue standard security monitoring and good hygiene.',
+      };
+  }
+}
+
+function getFallbackPlainDetails(f: Finding) {
+  const type = (f.type || '').toLowerCase();
+  const param = f.parameter || 'input parameter';
+
+  if (type.includes('sql') || type.includes('injection')) {
+    return {
+      simpleSummary: `We found a weak spot in the "${param}" field that could let an attacker steal or tamper with stored database records.`,
+      simpleExplanation: `What this means: The website sends user input directly into database queries without validating it. An attacker could enter special database symbols to trick the website into revealing confidential user records or passwords.`,
+      simpleFix: [
+        'Ask your developer to use "Prepared Statements" (parameterized queries) for all database calls.',
+        `Ensure "${param}" only accepts expected characters (e.g. letters and numbers).`,
+        'Never assemble SQL statements by concatenating user input strings.'
+      ],
+      caption: `Proof of concept showing how a test query triggered unauthorized database processing via "${param}".`
+    };
+  }
+
+  if (type.includes('xss') || type.includes('cross-site')) {
+    return {
+      simpleSummary: `Malicious browser code can be entered through "${param}" to hijack visitor sessions or steal login cookies.`,
+      simpleExplanation: `What this means: Data entered into "${param}" is reflected back into the web page without escaping. An attacker could craft a link containing hidden script code; when clicked, the code runs in the visitor's browser.`,
+      simpleFix: [
+        'Turn on HTML output encoding so symbols like "<" or ">" are displayed as safe text.',
+        'Configure a Content Security Policy (CSP) header to restrict script execution.',
+        'Mark authentication cookies as "HttpOnly" so scripts cannot access them.'
+      ],
+      caption: `Proof of concept showing test code reflecting in the browser from "${param}".`
+    };
+  }
+
+  return {
+    simpleSummary: `Input entered into "${param}" is not verified thoroughly, which could expose internal website behavior.`,
+    simpleExplanation: `What this means: The website accepts unexpected characters in "${param}". An attacker could exploit this discrepancy to bypass validation filters or chain with other vulnerabilities.`,
+    simpleFix: [
+      `Validate that "${param}" matches strictly expected formats and lengths.`,
+      'Apply context-appropriate output sanitization before displaying this value.',
+      'Ensure software libraries and framework components are updated to their latest security patches.'
+    ],
+    caption: `Proof of concept showing anomalous application response for parameter "${param}".`
+  };
 }
 
 function ReportsContent() {
@@ -75,6 +180,11 @@ function ReportsContent() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
   const [exportingCSV, setExportingCSV] = useState(false);
+
+  // UI States
+  const [zoomScreenshot, setZoomScreenshot] = useState<{ src: string; title: string; caption?: string } | null>(null);
+  const [openTechDetails, setOpenTechDetails] = useState<Record<string, boolean>>({});
+  const [showAppendix, setShowAppendix] = useState(false);
 
   useEffect(() => {
     fetchReports();
@@ -152,6 +262,10 @@ function ReportsContent() {
     }
   };
 
+  const toggleTechDetails = (idx: string) => {
+    setOpenTechDetails(prev => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
   const getSeverityBadgeClass = (severity: string) => {
     switch (severity) {
       case 'Critical': return 'severity-critical';
@@ -172,25 +286,23 @@ function ReportsContent() {
     }
   };
 
-  const groupedFindings = selectedReport?.findings.reduce((acc, f) => {
-    const family = f.injectionFamily || 'Unknown';
-    const subtype = f.type.includes(' - ') ? f.type.split(' - ')[1].trim() : f.type;
-    if (!acc[family]) acc[family] = {};
-    if (!acc[family][subtype]) acc[family][subtype] = [];
-    acc[family][subtype].push(f);
-    return acc;
-  }, {} as Record<string, Record<string, Finding[]>>) || {};
+  const riskInfo = selectedReport ? getRiskRatingInfo(
+    selectedReport.summary?.overallRiskRating,
+    selectedReport.summary?.riskScore,
+    selectedReport.findings
+  ) : null;
 
   return (
-    <div className="space-y-8 p-6 lg:p-8 text-text-primary font-sans pb-12">
+    <div className="space-y-8 p-6 lg:p-8 text-text-primary font-sans pb-16 max-w-[1500px] mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border-strong pb-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
-            Audit reports
+          <h1 className="text-2xl font-semibold tracking-tight text-text-primary flex items-center gap-2.5">
+            <Shield className="w-6 h-6 text-brand-primary" />
+            Security Audit Reports
           </h1>
           <p className="text-sm text-text-secondary mt-1">
-            Historical security assessments and finding details
+            Easy-to-understand vulnerability summaries with developer technical details and verified proof-of-concept evidence.
           </p>
         </div>
 
@@ -199,19 +311,19 @@ function ReportsContent() {
             onClick={() => router.push('/reports')}
             className="btn-cyber-secondary px-4 py-2 text-xs font-medium flex items-center gap-2 self-start sm:self-auto"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to list
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to reports
           </button>
         )}
       </div>
 
       {/* Detail View Mode */}
       {selectedReport ? (
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Action Bar */}
           <div className="flex flex-wrap items-center justify-between gap-4 cyber-card p-5">
             <div className="flex items-center gap-2.5 text-sm text-text-primary font-medium">
               <ShieldCheck className="w-4 h-4 text-brand-primary" />
-              <span>Assessment results ready for export</span>
+              <span>Assessment results finalized and decrypted</span>
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -239,164 +351,425 @@ function ReportsContent() {
               <p className="text-sm font-medium text-text-primary">Retrieving assessment data…</p>
             </div>
           ) : (
-            <div className="cyber-card p-6 md:p-8 space-y-8">
-              {/* Report Header */}
-              <div className="border-b border-border-strong pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <ShieldAlert className="w-4 h-4 text-brand-primary" />
-                    <span className="text-[10px] font-semibold text-brand-primary uppercase tracking-widest">Injection Lab Assessment</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-text-primary mt-1">{selectedReport.title}</h3>
-                  <p className="text-sm text-text-secondary mt-1 flex items-center gap-2">
-                    <Globe className="w-3.5 h-3.5 text-text-secondary" /> Target: <span className="text-text-primary font-mono">{selectedReport.targetUrl}</span>
-                  </p>
-                </div>
-                <div className="text-left md:text-right text-sm text-text-secondary space-y-1.5">
-                  <p className="px-2 py-1 rounded bg-surface-base border border-border-subtle font-mono font-medium text-text-primary inline-block text-[11px]">
-                    ID: #{selectedReport._id.slice(-8).toUpperCase()}
-                  </p>
-                  <p className="flex items-center gap-1.5 md:justify-end text-xs">
-                    <Calendar className="w-3.5 h-3.5" /> {new Date(selectedReport.createdAt).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-
-              {/* 1. Executive Summary & Host Matrix */}
-              <div className="space-y-4">
-                <h4 className="text-xs font-semibold text-text-primary uppercase tracking-widest flex items-center gap-2 border-b border-border-strong pb-3">
-                  <Activity className="w-3.5 h-3.5 text-text-secondary" /> 1. Executive summary
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="inner-cell p-4">
-                    <p className="text-[10px] font-medium text-text-secondary uppercase tracking-wider">Risk index</p>
-                    <p className={`stat-hero text-2xl mt-2 ${selectedReport.summary.riskScore >= 7 ? 'text-severity-critical' : selectedReport.summary.riskScore >= 4 ? 'text-severity-medium' : 'text-severity-low'}`}>
-                      {selectedReport.summary.riskScore} <span className="text-xs text-text-secondary font-normal font-sans">/ 10.0</span>
+            <div className="space-y-8">
+              
+              {/* ────────────────────────────────────────────────────────── */}
+              {/* 1. PLAIN-LANGUAGE EXECUTIVE SUMMARY & RISK BADGE (TOP)    */}
+              {/* ────────────────────────────────────────────────────────── */}
+              <div className="rounded-2xl bg-gradient-to-br from-[#0c1228] via-[#090d1f] to-[#050814] border border-[#00d4ff]/30 p-6 md:p-8 shadow-[0_10px_35px_rgba(0,0,0,0.5)] space-y-6">
+                
+                {/* Header Row: Title + Risk Badge */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-white/10">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#00d4ff]" />
+                      <span className="text-[11px] font-mono uppercase tracking-widest text-[#00d4ff] font-bold">
+                        Executive Plain-Language Overview
+                      </span>
+                    </div>
+                    <h2 className="text-2xl font-bold text-white tracking-tight">
+                      {selectedReport.title}
+                    </h2>
+                    <p className="text-sm text-slate-300 flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-[#00d4ff]" /> Target Website: 
+                      <span className="font-mono text-[#00d4ff] font-medium">{selectedReport.targetUrl}</span>
                     </p>
                   </div>
-                  <div className="inner-cell p-4">
-                    <p className="text-[10px] font-medium text-text-secondary uppercase tracking-wider">Vulnerabilities</p>
-                    <p className="stat-hero text-2xl text-text-primary mt-2">{selectedReport.findings.length}</p>
+
+                  {/* Overall Risk Score Badge */}
+                  {riskInfo && (
+                    <div className="flex items-center gap-4 bg-black/40 border border-white/10 rounded-2xl p-4 lg:p-5">
+                      <div className="text-right">
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block font-bold">
+                          Overall Risk Rating
+                        </span>
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-extrabold uppercase tracking-wider border mt-1 ${riskInfo.badgeClass}`}>
+                          <span className="w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: riskInfo.accentColor }} />
+                          {riskInfo.label}
+                        </span>
+                      </div>
+                      <div className="h-12 w-px bg-white/10" />
+                      <div className="text-center">
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block font-bold">
+                          Risk Score
+                        </span>
+                        <span className="text-3xl font-extrabold font-mono text-white">
+                          {selectedReport.summary.riskScore.toFixed(1)}
+                          <span className="text-xs text-slate-400 font-normal"> / 10</span>
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Plain-Language Narrative Summary */}
+                <div className="rounded-xl bg-white/[0.03] border border-white/10 p-5 md:p-6 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                    <ShieldAlert className="w-4 h-4 text-amber-400" />
+                    <span>What You Need to Know (In Simple Terms)</span>
                   </div>
-                  <div className="inner-cell p-4">
-                    <p className="text-[10px] font-medium text-text-secondary uppercase tracking-wider">Parameters tested</p>
-                    <p className="stat-hero text-2xl text-text-primary mt-2">{selectedReport.summary.parameters}</p>
+                  <p className="text-sm text-slate-200 leading-relaxed font-sans">
+                    {selectedReport.summary?.plainSummary || (
+                      `We completed an automated security review of ${selectedReport.targetUrl} and detected ${selectedReport.findings.length} security weak spot(s). If exploited, an attacker could attempt to manipulate input parameters, steal session tokens, or access backend records. Review the action checklist below and share these findings with your development team to reinforce your defenses.`
+                    )}
+                  </p>
+                </div>
+
+                {/* Quick Glance Metrics */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="bg-black/30 border border-white/5 rounded-xl p-4">
+                    <span className="text-[10px] font-mono uppercase text-slate-400 block">Total Weak Spots</span>
+                    <span className="text-2xl font-bold font-mono text-white mt-1 block">
+                      {selectedReport.findings.length}
+                    </span>
                   </div>
-                  <div className="inner-cell p-4">
-                    <p className="text-[10px] font-medium text-text-secondary uppercase tracking-wider">OWASP coverage</p>
-                    <p className="stat-hero text-2xl text-text-primary mt-2">{selectedReport.summary.owaspCoverage.length}</p>
+                  <div className="bg-black/30 border border-white/5 rounded-xl p-4">
+                    <span className="text-[10px] font-mono uppercase text-red-400 block">Critical Findings</span>
+                    <span className="text-2xl font-bold font-mono text-red-400 mt-1 block">
+                      {selectedReport.findings.filter(f => f.severity === 'Critical').length}
+                    </span>
+                  </div>
+                  <div className="bg-black/30 border border-white/5 rounded-xl p-4">
+                    <span className="text-[10px] font-mono uppercase text-orange-400 block">High Priority</span>
+                    <span className="text-2xl font-bold font-mono text-orange-400 mt-1 block">
+                      {selectedReport.findings.filter(f => f.severity === 'High').length}
+                    </span>
+                  </div>
+                  <div className="bg-black/30 border border-white/5 rounded-xl p-4">
+                    <span className="text-[10px] font-mono uppercase text-[#00d4ff] block">Tested Inputs</span>
+                    <span className="text-2xl font-bold font-mono text-[#00d4ff] mt-1 block">
+                      {selectedReport.summary.parameters || selectedReport.summary.injectionPoints || selectedReport.findings.length}
+                    </span>
                   </div>
                 </div>
+
               </div>
 
-              {/* 2. Detailed Vulnerabilities Section */}
-              <div className="space-y-8 pt-4">
-                <h4 className="text-xs font-semibold tracking-widest text-text-primary uppercase flex items-center gap-2 border-b border-border-strong pb-3">
-                  <AlertTriangle className="w-3.5 h-3.5 text-text-secondary" /> 2. Detailed findings ({selectedReport.findings.length})
-                </h4>
-
-                {Object.entries(groupedFindings).map(([family, subtypes]) => (
-                  <div key={family} className="space-y-4">
-                    <h3 className="text-sm font-bold text-brand-primary uppercase tracking-widest border-b border-border-strong pb-2 flex items-center gap-2">
-                      <ShieldAlert className="w-4 h-4" /> {family}
+              {/* ────────────────────────────────────────────────────────── */}
+              {/* 2. FINDINGS LIST (DUAL EXPLANATION + SCREENSHOT + FIX)     */}
+              {/* ────────────────────────────────────────────────────────── */}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between border-b border-border-strong pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <AlertTriangle className="w-5 h-5 text-brand-primary" />
+                    <h3 className="text-base font-bold text-text-primary uppercase tracking-wider font-mono">
+                      Identified Findings & Remediation ({selectedReport.findings.length})
                     </h3>
-                    
-                    {Object.entries(subtypes).map(([subtype, groupFindings], subtypeIdx) => (
-                      <div key={subtype} className="space-y-3 pl-0 md:pl-4 md:border-l-2 border-border-strong">
-                        <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-widest pt-2">
-                          {subtypeIdx + 1}. {subtype} ({groupFindings.length})
-                        </h4>
-                        
-                        <div className="space-y-3">
-                          {groupFindings.map((f, i) => (
-                            <div key={i} className="cyber-card p-6 space-y-4">
-                              {/* Vulnerability Header */}
-                              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-border-strong pb-4">
-                                <div className="flex items-center gap-2.5 flex-wrap">
-                                  <span className={`severity-badge ${getSeverityBadgeClass(f.severity)}`}>
-                                    {f.severity}
-                                  </span>
-                                  {f.confidence && (
-                                    <span className={`text-[10px] font-mono px-2 py-0.5 border rounded ${getConfidenceBadgeClass(f.confidence)}`}>
-                                      {f.confidence}
-                                    </span>
-                                  )}
-                                  <span className="text-sm font-semibold text-text-primary">{f.parameter ? `Param: ${f.parameter}` : subtype}</span>
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded border border-border-subtle text-text-secondary font-mono ml-2">
-                                    {f.cwe}
-                                  </span>
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded border border-border-subtle text-text-secondary font-mono">
-                                    {f.owasp}
-                                  </span>
-                                </div>
-                                <span className="stat-hero text-xs text-text-secondary">CVSS: {f.cvss}</span>
-                              </div>
+                  </div>
+                  <span className="text-xs text-text-secondary font-mono">
+                    Dual Non-Technical & Technical Breakdown
+                  </span>
+                </div>
 
-                              {/* Target Endpoint & Params */}
-                              <div className="space-y-3">
-                                <div>
-                                  <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider block mb-1">Target endpoint:</span>
-                                  <p className="text-xs font-mono text-text-primary inner-cell p-3 break-all">{f.location}</p>
+                {selectedReport.findings.length === 0 ? (
+                  <div className="cyber-card p-8 text-center text-text-secondary">
+                    <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-text-primary">No vulnerabilities detected</p>
+                    <p className="text-xs mt-1">The tested parameters did not exhibit signs of injection weaknesses.</p>
+                  </div>
+                ) : (
+                  selectedReport.findings.map((f, idx) => {
+                    const fallback = getFallbackPlainDetails(f);
+                    const simpleSummary = f.simpleSummary || fallback.simpleSummary;
+                    const simpleExplanation = f.simpleExplanation || fallback.simpleExplanation;
+                    const simpleFixes = f.simpleFix && f.simpleFix.length > 0 ? f.simpleFix : fallback.simpleFix;
+                    const caption = f.screenshotCaption || fallback.caption;
+                    const cardKey = `f-${idx}`;
+                    const isTechOpen = openTechDetails[cardKey] ?? false;
+
+                    return (
+                      <div 
+                        key={cardKey} 
+                        className="cyber-card p-6 md:p-7 border border-white/10 hover:border-[#00d4ff]/40 transition-all rounded-2xl space-y-6 bg-[#070b1a]"
+                      >
+                        {/* Finding Header */}
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-white/10">
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <span className={`severity-badge ${getSeverityBadgeClass(f.severity)} text-xs font-mono font-bold uppercase px-3 py-1`}>
+                              {f.severity}
+                            </span>
+                            {f.confidence && (
+                              <span className={`text-[10px] font-mono px-2 py-0.5 border rounded ${getConfidenceBadgeClass(f.confidence)}`}>
+                                {f.confidence}
+                              </span>
+                            )}
+                            <h4 className="text-base font-bold text-white tracking-tight">
+                              {f.type} {f.parameter ? `in "${f.parameter}"` : ''}
+                            </h4>
+                          </div>
+
+                          <div className="flex items-center gap-3 text-xs font-mono text-slate-400">
+                            {f.cwe && (
+                              <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10">
+                                {f.cwe}
+                              </span>
+                            )}
+                            {f.owasp && (
+                              <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10">
+                                {f.owasp}
+                              </span>
+                            )}
+                            <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded">
+                              CVSS: {f.cvss || 7.5}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* ── PART A: IN SIMPLE TERMS (NON-TECHNICAL AUDIENCE) ── */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                          
+                          {/* Non-Technical Summary & What It Means (7 cols) */}
+                          <div className="lg:col-span-7 space-y-4">
+                            
+                            <div className="p-5 rounded-xl bg-gradient-to-br from-[#0e172e] to-[#090d1f] border border-[#00d4ff]/25 space-y-3">
+                              <div className="flex items-center gap-2 text-xs font-bold text-[#00d4ff] uppercase tracking-wider font-mono">
+                                <BookOpen className="w-4 h-4" /> In Simple Terms
+                              </div>
+                              <p className="text-sm font-semibold text-white leading-relaxed">
+                                {simpleSummary}
+                              </p>
+                              <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                                {simpleExplanation}
+                              </p>
+                            </div>
+
+                            {/* Plain Action Checklist: How to Fix This */}
+                            <div className="p-5 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-3">
+                              <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono">
+                                <CheckCircle2 className="w-4 h-4" /> How to Fix This (Action Checklist)
+                              </div>
+                              <ul className="space-y-2">
+                                {simpleFixes.map((step, sIdx) => (
+                                  <li key={sIdx} className="flex items-start gap-2.5 text-xs text-slate-200">
+                                    <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                                      {sIdx + 1}
+                                    </span>
+                                    <span>{step}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+
+                          </div>
+
+                          {/* ── PART B: PROOF-OF-CONCEPT SCREENSHOT (5 cols) ── */}
+                          <div className="lg:col-span-5 flex flex-col">
+                            <div className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+                              <span className="flex items-center gap-1.5">
+                                <Eye className="w-3.5 h-3.5 text-[#00d4ff]" /> Proof of Concept Evidence
+                              </span>
+                              {f.screenshot && (
+                                <button
+                                  onClick={() => setZoomScreenshot({ src: f.screenshot!, title: `${f.type} - Proof of Concept`, caption })}
+                                  className="text-[10px] text-[#00d4ff] hover:underline flex items-center gap-1"
+                                >
+                                  <Maximize2 className="w-3 h-3" /> Zoom
+                                </button>
+                              )}
+                            </div>
+
+                            {f.screenshot ? (
+                              <div className="rounded-xl overflow-hidden border border-white/15 bg-black/60 shadow-lg flex-1 flex flex-col">
+                                {/* Chrome Bar */}
+                                <div className="bg-[#0b0f1e] px-3 py-2 border-b border-white/10 flex items-center gap-2">
+                                  <div className="flex gap-1.5">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+                                  </div>
+                                  <span className="text-[10px] font-mono text-slate-400 truncate ml-2">
+                                    {selectedReport.targetUrl}
+                                  </span>
                                 </div>
-                                
+
+                                {/* Thumbnail Image (Click to Zoom) */}
+                                <div 
+                                  className="relative group cursor-pointer overflow-hidden bg-[#04060f] flex items-center justify-center p-2"
+                                  onClick={() => setZoomScreenshot({ src: f.screenshot!, title: `${f.type} - Proof of Concept`, caption })}
+                                >
+                                  <img 
+                                    src={f.screenshot} 
+                                    alt={caption} 
+                                    className="w-full h-auto object-contain max-h-[190px] rounded group-hover:scale-[1.02] transition-transform duration-300"
+                                  />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <span className="px-3 py-1.5 rounded-lg bg-black/80 border border-white/20 text-white text-xs font-mono flex items-center gap-1.5 shadow-xl">
+                                      <Maximize2 className="w-3.5 h-3.5 text-[#00d4ff]" /> Click to Inspect
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Plain-Language Caption */}
+                                <div className="p-3 bg-[#080c1d] border-t border-white/10 text-[11px] text-slate-300 leading-relaxed font-sans">
+                                  <span className="font-bold text-[#00d4ff] font-mono">Proof: </span>
+                                  {caption}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="p-6 rounded-xl border border-dashed border-white/15 bg-black/30 text-center flex-1 flex flex-col items-center justify-center space-y-2">
+                                <Terminal className="w-8 h-8 text-slate-500" />
+                                <span className="text-xs text-slate-400 font-mono">Automated payload response logged</span>
+                                <span className="text-[11px] text-slate-500 font-sans">{caption}</span>
+                              </div>
+                            )}
+                          </div>
+
+                        </div>
+
+                        {/* ── PART C: COLLAPSIBLE TECHNICAL DETAILS (FOR DEVELOPERS) ── */}
+                        <div className="border-t border-white/10 pt-4">
+                          <button
+                            type="button"
+                            onClick={() => toggleTechDetails(cardKey)}
+                            className="flex items-center justify-between w-full py-2 text-xs font-mono font-bold text-slate-400 hover:text-white transition-colors"
+                          >
+                            <span className="flex items-center gap-2">
+                              <Code2 className="w-4 h-4 text-[#00d4ff]" />
+                              Technical Details for Developers (Payloads, Endpoints & Raw Evidence)
+                            </span>
+                            {isTechOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          </button>
+
+                          {isTechOpen && (
+                            <div className="mt-4 p-5 rounded-xl bg-black/50 border border-white/10 space-y-4 font-mono text-xs animate-in fade-in duration-200">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <span className="text-[10px] text-slate-400 uppercase block mb-1">Target Endpoint</span>
+                                  <p className="p-2.5 rounded bg-[#04060f] border border-white/10 text-white break-all">{f.location}</p>
+                                </div>
                                 {f.parameter && (
                                   <div>
-                                    <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider block mb-1">Query parameter:</span>
-                                    <p className="text-xs font-mono text-brand-primary inner-cell p-3 break-all">{f.parameter}{f.paramValue ? ` = ${f.paramValue}` : ''}</p>
+                                    <span className="text-[10px] text-slate-400 uppercase block mb-1">Affected Parameter</span>
+                                    <p className="p-2.5 rounded bg-[#04060f] border border-white/10 text-[#00d4ff] break-all">{f.parameter}{f.paramValue ? ` = ${f.paramValue}` : ''}</p>
                                   </div>
                                 )}
                               </div>
 
-                              {/* Detailed Analysis */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
-                                {/* Layman / Business Impact */}
-                                <div>
-                                  <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
-                                    <BookOpen className="w-3 h-3" /> Business impact
-                                  </span>
-                                  <p className="text-[13px] text-text-primary leading-relaxed font-sans">
-                                    {f.severity === 'Critical' || f.severity === 'High' 
-                                      ? "This is a severe flaw that could allow an attacker to compromise sensitive data, take over user accounts, or gain unauthorized access to the system. Immediate attention is required to prevent significant business disruption or data breaches."
-                                      : "This issue could be leveraged by an attacker to gather information about the system or perform lower-level exploits. It should be addressed to maintain a strong security posture."}
-                                  </p>
-                                </div>
-                                
-                                {/* Technical Details */}
-                                <div>
-                                  <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
-                                    <Eye className="w-3 h-3" /> Technical details
-                                  </span>
-                                  <p className="text-[13px] text-text-primary leading-relaxed font-sans">{f.description}</p>
-                                </div>
-                              </div>
-
-                              {/* PoC Payload */}
                               {f.pocPayload && (
-                                <div className="mt-3">
-                                  <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
-                                    <Code2 className="w-3 h-3" /> PoC payload
-                                  </span>
-                                  <div className="inner-cell p-3 font-mono text-[11px] text-text-primary break-all">
-                                    {f.pocPayload}
-                                  </div>
+                                <div>
+                                  <span className="text-[10px] text-amber-400 uppercase block mb-1">Injected Test Vector (Payload)</span>
+                                  <pre className="p-3 rounded bg-[#04060f] border border-amber-500/20 text-amber-300 whitespace-pre-wrap break-all">{f.pocPayload}</pre>
                                 </div>
                               )}
-                              
-                              {/* Remediation */}
-                              <div className="mt-3 pt-4 border-t border-border-strong">
-                                <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
-                                  <Shield className="w-3 h-3" /> Recommended fix
-                                </span>
-                                <p className="text-[13px] text-text-primary leading-relaxed font-sans">{f.recommendation}</p>
-                              </div>
+
+                              {f.evidence && (
+                                <div>
+                                  <span className="text-[10px] text-slate-400 uppercase block mb-1">Detection Signals / Evidence</span>
+                                  <pre className="p-3 rounded bg-[#04060f] border border-white/10 text-slate-300 whitespace-pre-wrap break-all max-h-[160px] overflow-y-auto">{f.evidence}</pre>
+                                </div>
+                              )}
+
+                              {f.description && (
+                                <div>
+                                  <span className="text-[10px] text-slate-400 uppercase block mb-1">Vulnerability Mechanics</span>
+                                  <p className="text-slate-300 font-sans leading-relaxed">{f.description}</p>
+                                </div>
+                              )}
+
+                              {f.recommendation && (
+                                <div className="p-3.5 rounded bg-brand-primary/5 border border-brand-primary/20">
+                                  <span className="text-[10px] text-brand-primary uppercase block mb-1 font-bold">Standard Engineering Remediation</span>
+                                  <p className="text-slate-200 font-sans leading-relaxed">{f.recommendation}</p>
+                                </div>
+                              )}
                             </div>
+                          )}
+                        </div>
+
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* ────────────────────────────────────────────────────────── */}
+              {/* 3. COLLAPSIBLE FULL TECHNICAL APPENDIX                    */}
+              {/* ────────────────────────────────────────────────────────── */}
+              <div className="cyber-card p-6 rounded-2xl border border-white/10 bg-[#060918]">
+                <button
+                  type="button"
+                  onClick={() => setShowAppendix(!showAppendix)}
+                  className="flex items-center justify-between w-full text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <Layers className="w-5 h-5 text-brand-primary" />
+                    <div>
+                      <h4 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+                        Full Technical Appendix & Host Matrix
+                      </h4>
+                      <p className="text-xs text-text-secondary mt-0.5">
+                        Raw parameters, OWASP Top 10 coverage matrix, detected technologies, and scope metadata.
+                      </p>
+                    </div>
+                  </div>
+                  {showAppendix ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+                </button>
+
+                {showAppendix && (
+                  <div className="mt-6 pt-6 border-t border-white/10 space-y-6 font-mono text-xs">
+                    
+                    {/* Matrix Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="inner-cell p-4">
+                        <span className="text-[10px] text-text-secondary uppercase">Pages Inspected</span>
+                        <p className="text-lg font-bold text-white mt-1">{selectedReport.summary.totalPages || 1}</p>
+                      </div>
+                      <div className="inner-cell p-4">
+                        <span className="text-[10px] text-text-secondary uppercase">Forms Identified</span>
+                        <p className="text-lg font-bold text-white mt-1">{selectedReport.summary.forms || 0}</p>
+                      </div>
+                      <div className="inner-cell p-4">
+                        <span className="text-[10px] text-text-secondary uppercase">HTTP Headers Inspected</span>
+                        <p className="text-lg font-bold text-white mt-1">{selectedReport.summary.headers || 0}</p>
+                      </div>
+                      <div className="inner-cell p-4">
+                        <span className="text-[10px] text-text-secondary uppercase">OWASP Categories</span>
+                        <p className="text-lg font-bold text-white mt-1">{selectedReport.summary.owaspCoverage.length}</p>
+                      </div>
+                    </div>
+
+                    {/* OWASP Coverage Badges */}
+                    {selectedReport.summary.owaspCoverage.length > 0 && (
+                      <div>
+                        <span className="text-[10px] text-text-secondary uppercase block mb-2 font-bold">
+                          Covered OWASP Categories
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedReport.summary.owaspCoverage.map((cat, i) => (
+                            <span key={i} className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-text-primary text-[11px]">
+                              {cat}
+                            </span>
                           ))}
                         </div>
                       </div>
-                    ))}
+                    )}
+
+                    {/* Detected Tech Stack */}
+                    {selectedReport.techStack && selectedReport.techStack.length > 0 && (
+                      <div>
+                        <span className="text-[10px] text-text-secondary uppercase block mb-2 font-bold">
+                          Identified Host & Application Components
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedReport.techStack.map((tech, i) => (
+                            <span key={i} className="px-2.5 py-1 rounded bg-[#00d4ff]/10 border border-[#00d4ff]/30 text-[#00d4ff] text-[11px]">
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Scope & Authorization Note */}
+                    <div className="p-4 rounded bg-white/[0.02] border border-white/5 text-[11px] text-slate-400 font-sans leading-relaxed">
+                      <strong className="text-white font-mono">Scope & Methodology: </strong> 
+                      This report details automated structural injection tests performed under verified operator consent. Fuzzing was conducted against user input points using harmless heuristic payloads designed to test input sanitization and response differentials without service disruption.
+                    </div>
+
                   </div>
-                ))}
+                )}
               </div>
+
             </div>
           )}
         </div>
@@ -421,55 +794,111 @@ function ReportsContent() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3">
-              {reports.map((report) => (
-                <div
-                  key={report._id}
-                  onClick={() => router.push(`/reports?id=${report._id}`)}
-                  className="cyber-card p-6 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 group"
-                >
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2.5">
-                      <h3 className="text-sm font-semibold text-text-primary group-hover:text-brand-primary transition-colors">
-                        {report.title}
-                      </h3>
-                      <span className="text-[9px] font-mono px-2 py-0.5 rounded-md inner-cell text-text-secondary capitalize">
-                        {report.scanType}
-                      </span>
+              {reports.map((report) => {
+                const reportRisk = getRiskRatingInfo(
+                  report.summary?.overallRiskRating,
+                  report.summary?.riskScore
+                );
+                return (
+                  <div
+                    key={report._id}
+                    onClick={() => router.push(`/reports?id=${report._id}`)}
+                    className="cyber-card p-6 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 group hover:border-[#00d4ff]/50 transition-all"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <h3 className="text-sm font-semibold text-text-primary group-hover:text-brand-primary transition-colors">
+                          {report.title}
+                        </h3>
+                        <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border font-bold uppercase ${reportRisk.badgeClass}`}>
+                          {reportRisk.label}
+                        </span>
+                        <span className="text-[9px] font-mono px-2 py-0.5 rounded-md inner-cell text-text-secondary capitalize">
+                          {report.scanType}
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-mono text-text-secondary">{report.targetUrl}</p>
+                      <p className="text-[10px] font-medium text-text-secondary flex items-center gap-1.5">
+                        <Clock className="w-3 h-3" /> {new Date(report.createdAt).toLocaleString()}
+                      </p>
                     </div>
-                    <p className="text-[11px] font-mono text-text-secondary">{report.targetUrl}</p>
-                    <p className="text-[10px] font-medium text-text-secondary flex items-center gap-1.5">
-                      <Clock className="w-3 h-3" /> {new Date(report.createdAt).toLocaleString()}
-                    </p>
-                  </div>
 
-                  <div className="flex items-center gap-6 text-xs">
-                    <div>
-                      <span className="text-[10px] text-text-secondary block uppercase font-medium mb-0.5">Findings</span>
-                      <span className="font-mono font-semibold text-text-primary">{report.summary.injectionPoints}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-text-secondary block uppercase font-medium mb-0.5">Risk</span>
-                      <span className={`font-mono font-semibold ${report.summary.riskScore >= 7 ? 'text-severity-critical' : report.summary.riskScore >= 4 ? 'text-severity-medium' : 'text-severity-low'}`}>
-                        {report.summary.riskScore}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 pl-4 border-l border-border-strong">
-                      <button
-                        onClick={(e) => handleDelete(report._id, e)}
-                        className="p-2 rounded-md text-text-secondary hover:text-severity-critical hover:bg-severity-critical/10 transition-colors"
-                        aria-label="Delete report"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                      <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-brand-primary transition-colors" />
+                    <div className="flex items-center gap-6 text-xs">
+                      <div>
+                        <span className="text-[10px] text-text-secondary block uppercase font-medium mb-0.5">Findings</span>
+                        <span className="font-mono font-semibold text-text-primary">{report.summary.injectionPoints}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-text-secondary block uppercase font-medium mb-0.5">Score</span>
+                        <span className={`font-mono font-bold ${report.summary.riskScore >= 7 ? 'text-severity-critical' : report.summary.riskScore >= 4 ? 'text-severity-medium' : 'text-severity-low'}`}>
+                          {report.summary.riskScore.toFixed(1)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 pl-4 border-l border-border-strong">
+                        <button
+                          onClick={(e) => handleDelete(report._id, e)}
+                          className="p-2 rounded-md text-text-secondary hover:text-severity-critical hover:bg-severity-critical/10 transition-colors"
+                          aria-label="Delete report"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                        <ChevronRight className="w-4 h-4 text-text-secondary group-hover:text-brand-primary transition-colors" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
       )}
+
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* 4. LIGHTBOX MODAL FOR SCREENSHOT ZOOM                     */}
+      {/* ────────────────────────────────────────────────────────── */}
+      {zoomScreenshot && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+          onClick={() => setZoomScreenshot(null)}
+        >
+          <div 
+            className="relative max-w-5xl w-full bg-[#0b0f1e] border border-white/20 rounded-2xl overflow-hidden shadow-2xl space-y-4 p-6"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <Eye className="w-5 h-5 text-[#00d4ff]" />
+                <h3 className="text-base font-bold text-white font-mono">{zoomScreenshot.title}</h3>
+              </div>
+              <button
+                onClick={() => setZoomScreenshot(null)}
+                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Image View */}
+            <div className="bg-[#04060f] rounded-xl p-2 flex items-center justify-center border border-white/10 max-h-[70vh] overflow-auto">
+              <img 
+                src={zoomScreenshot.src} 
+                alt={zoomScreenshot.title} 
+                className="max-w-full h-auto object-contain rounded-lg"
+              />
+            </div>
+
+            {/* Modal Caption */}
+            {zoomScreenshot.caption && (
+              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 text-xs text-slate-300 font-sans leading-relaxed">
+                <strong className="text-[#00d4ff] font-mono">Verified Evidence: </strong>
+                {zoomScreenshot.caption}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

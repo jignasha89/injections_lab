@@ -19,6 +19,11 @@ export interface Finding {
   recommendation: string;
   httpMethod?: string;
   paramLocation?: string;
+  simpleSummary?: string;
+  simpleExplanation?: string;
+  simpleFix?: string[];
+  screenshot?: string;
+  screenshotCaption?: string;
 }
 
 export interface ScanResult {
@@ -45,6 +50,8 @@ export interface ScanResult {
     owaspCoverage: string[];
     familiesTested: string[];
     injectionFamilyCounts: Record<string, number>;
+    overallRiskRating?: string;
+    plainSummary?: string;
   };
 }
 

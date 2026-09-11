@@ -10,6 +10,11 @@ export interface IFinding {
   owasp: string;
   description: string;
   recommendation: string;
+  simpleSummary?: string;
+  simpleExplanation?: string;
+  simpleFix?: string[];
+  screenshot?: string;
+  screenshotCaption?: string;
 }
 
 export interface IReport extends Document {
@@ -28,11 +33,15 @@ export interface IReport extends Document {
     jsonInputs: number;
     riskScore: number;
     owaspCoverage: string[];
+    overallRiskRating?: string;
+    plainSummary?: string;
   };
   findings: IFinding[];
   techStack: string[];
   isHiddenFromReports: boolean;
   isHiddenFromHistory: boolean;
+  isEncrypted?: boolean;
+  encryptedPayload?: string;
   createdAt: Date;
 }
 
@@ -50,6 +59,11 @@ const FindingSchema = new Schema<IFinding>({
   owasp: { type: String, required: true },
   description: { type: String, required: true },
   recommendation: { type: String, required: true },
+  simpleSummary: { type: String },
+  simpleExplanation: { type: String },
+  simpleFix: [{ type: String }],
+  screenshot: { type: String },
+  screenshotCaption: { type: String },
 });
 
 const ReportSchema = new Schema<IReport>(
@@ -69,11 +83,15 @@ const ReportSchema = new Schema<IReport>(
       jsonInputs: { type: Number, default: 0 },
       riskScore: { type: Number, default: 0 },
       owaspCoverage: [{ type: String }],
+      overallRiskRating: { type: String },
+      plainSummary: { type: String },
     },
     findings: [FindingSchema],
     techStack: [{ type: String }],
     isHiddenFromReports: { type: Boolean, default: false },
     isHiddenFromHistory: { type: Boolean, default: false },
+    isEncrypted: { type: Boolean, default: false },
+    encryptedPayload: { type: String },
   },
   { timestamps: true }
 );
